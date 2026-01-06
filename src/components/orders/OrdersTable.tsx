@@ -232,7 +232,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableCell>
                 <TableCell className="font-mono text-xs">{order.code}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {format(new Date(order.created_at), 'dd MMM', { locale: bg })}
+                  {format(new Date(order.created_at), 'dd.MM.yyyy')}
                 </TableCell>
                 <TableCell className="font-medium text-sm">{order.customer_name}</TableCell>
                 <TableCell>
