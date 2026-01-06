@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
+  const { logoUrl, loading: logoLoading } = useCompanyLogo();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -81,9 +83,21 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
-              <Package className="w-8 h-8 text-primary-foreground" />
-            </div>
+            {logoLoading ? (
+              <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt="Фирмено лого" 
+                className="max-w-[120px] max-h-[80px] object-contain"
+              />
+            ) : (
+              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
+                <Package className="w-8 h-8 text-primary-foreground" />
+              </div>
+            )}
           </div>
           <CardTitle className="text-2xl">Управление на поръчки</CardTitle>
           <CardDescription>Влезте в системата за управление на поръчки</CardDescription>
