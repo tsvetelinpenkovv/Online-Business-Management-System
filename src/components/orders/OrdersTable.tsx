@@ -242,10 +242,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Телефон
                 </div>
               </TableHead>
-              <TableHead className="w-[70px]">
+              <TableHead className="w-[80px]">
                 <div className="flex items-center gap-1.5">
-                  <Euro className="w-4 h-4 text-muted-foreground" />
-                  € Цена
+                  <span className="text-muted-foreground">€</span>
+                  <span>Цена</span>
                 </div>
               </TableHead>
               <TableHead className="w-[100px]">

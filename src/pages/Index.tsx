@@ -6,7 +6,7 @@ import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import {
@@ -104,6 +104,69 @@ const Index = () => {
   const handleBulkStatusChange = async (status: OrderStatus) => {
     await updateOrdersStatus(selectedOrders, status);
     setSelectedOrders([]);
+  };
+
+  const exportToCSV = () => {
+    const headers = ['ID', 'Дата', 'Клиент', 'Телефон', 'Имейл', 'Продукт', 'Кат.№', 'Количество', 'Цена', 'Статус', 'Адрес', 'Коментар', 'Източник'];
+    const rows = filteredOrders.map(order => [
+      order.id,
+      new Date(order.created_at).toLocaleDateString('bg-BG'),
+      order.customer_name,
+      order.phone,
+      order.customer_email || '',
+      order.product_name,
+      order.catalog_number || '',
+      order.quantity,
+      order.total_price.toFixed(2),
+      order.status,
+      order.delivery_address || '',
+      order.comment || '',
+      order.source || ''
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToXML = () => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<orders>\n';
+    
+    filteredOrders.forEach(order => {
+      xml += '  <order>\n';
+      xml += `    <id>${order.id}</id>\n`;
+      xml += `    <date>${new Date(order.created_at).toISOString()}</date>\n`;
+      xml += `    <customer_name><![CDATA[${order.customer_name}]]></customer_name>\n`;
+      xml += `    <phone>${order.phone}</phone>\n`;
+      xml += `    <email>${order.customer_email || ''}</email>\n`;
+      xml += `    <product_name><![CDATA[${order.product_name}]]></product_name>\n`;
+      xml += `    <catalog_number>${order.catalog_number || ''}</catalog_number>\n`;
+      xml += `    <quantity>${order.quantity}</quantity>\n`;
+      xml += `    <total_price>${order.total_price.toFixed(2)}</total_price>\n`;
+      xml += `    <status>${order.status}</status>\n`;
+      xml += `    <delivery_address><![CDATA[${order.delivery_address || ''}]]></delivery_address>\n`;
+      xml += `    <comment><![CDATA[${order.comment || ''}]]></comment>\n`;
+      xml += `    <source>${order.source || ''}</source>\n`;
+      xml += '  </order>\n';
+    });
+    
+    xml += '</orders>';
+
+    const blob = new Blob([xml], { type: 'application/xml;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orders_${new Date().toISOString().split('T')[0]}.xml`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   if (authLoading) {
@@ -216,6 +279,24 @@ const Index = () => {
                 </Button>
               </>
             )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="w-4 h-4" />
+                  Експорт
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Експорт в CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToXML} className="cursor-pointer">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Експорт в XML
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="icon" onClick={refetch} title="Обнови">
               <RefreshCw className="w-4 h-4" />
             </Button>
