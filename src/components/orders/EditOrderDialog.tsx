@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { Order, ORDER_STATUSES, OrderStatus } from '@/types/order';
+import { useCouriers } from '@/hooks/useCouriers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,12 +28,23 @@ interface EditOrderDialogProps {
 
 export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<Order>>({});
+  const { couriers, getCourierByUrl } = useCouriers();
 
   useEffect(() => {
     if (order) {
       setFormData(order);
     }
   }, [order]);
+
+  // Auto-detect courier when tracking URL changes
+  useEffect(() => {
+    if (formData.courier_tracking_url && !formData.courier_id) {
+      const detectedCourier = getCourierByUrl(formData.courier_tracking_url);
+      if (detectedCourier) {
+        setFormData(prev => ({ ...prev, courier_id: detectedCourier.id }));
+      }
+    }
+  }, [formData.courier_tracking_url, getCourierByUrl]);
 
   const handleSave = () => {
     if (order && formData) {
@@ -153,13 +165,36 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
           </div>
 
           <div className="col-span-2 space-y-2">
-            <Label htmlFor="courier_tracking_url">Линк за проследяване на куриер</Label>
+            <Label htmlFor="courier_tracking_url">Товарителница (номер или линк)</Label>
             <Input
               id="courier_tracking_url"
               value={formData.courier_tracking_url || ''}
               onChange={(e) => setFormData({ ...formData, courier_tracking_url: e.target.value })}
-              placeholder="Поставете линк към товарителницата (Еконт, Спиди, Box Now...)"
+              placeholder="Поставете линк или номер на товарителница"
             />
+          </div>
+
+          <div className="col-span-2 space-y-2">
+            <Label htmlFor="courier_id">Куриер</Label>
+            <Select
+              value={formData.courier_id || 'none'}
+              onValueChange={(value) => setFormData({ ...formData, courier_id: value === 'none' ? null : value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Избери куриер" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Без куриер —</SelectItem>
+                {couriers.map((courier) => (
+                  <SelectItem key={courier.id} value={courier.id}>
+                    {courier.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Ако въведете пълен URL, куриерът се разпознава автоматично. При номер - изберете ръчно.
+            </p>
           </div>
 
           <div className="col-span-2 space-y-2">

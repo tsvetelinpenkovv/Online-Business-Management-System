@@ -28,6 +28,7 @@ export interface Order {
   quantity: number;
   delivery_address: string | null;
   courier_tracking_url: string | null;
+  courier_id: string | null;
   status: OrderStatus;
   comment: string | null;
   source: 'google' | 'facebook' | 'woocommerce';

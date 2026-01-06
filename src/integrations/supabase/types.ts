@@ -246,6 +246,7 @@ export type Database = {
           catalog_number: string | null
           code: string
           comment: string | null
+          courier_id: string | null
           courier_tracking_url: string | null
           created_at: string
           customer_email: string | null
@@ -265,6 +266,7 @@ export type Database = {
           catalog_number?: string | null
           code: string
           comment?: string | null
+          courier_id?: string | null
           courier_tracking_url?: string | null
           created_at?: string
           customer_email?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           catalog_number?: string | null
           code?: string
           comment?: string | null
+          courier_id?: string | null
           courier_tracking_url?: string | null
           created_at?: string
           customer_email?: string | null
@@ -299,7 +302,15 @@ export type Database = {
           total_price?: number
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
