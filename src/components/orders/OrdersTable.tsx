@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
-import { EcontLogo } from '@/components/icons/EcontLogo';
+import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
 import { PhoneWithFlag } from './PhoneWithFlag';
 import { InfoPopover } from './InfoPopover';
@@ -427,16 +427,18 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableCell>
                 <TableCell title={order.courier_tracking_url ? `Проследяване на пратка` : 'Няма товарителница'}>
                   {order.courier_tracking_url ? (
-                    <a 
-                      href={order.courier_tracking_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1 text-purple-600 hover:text-purple-800 transition-colors"
-                      title="Отвори проследяване в нов таб"
-                    >
-                      <EcontLogo className="w-5 h-5" trackingUrl={order.courier_tracking_url} />
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    <div className="flex items-center justify-center gap-1">
+                      <CourierLogo trackingUrl={order.courier_tracking_url} className="w-5 h-5" />
+                      <a 
+                        href={order.courier_tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:text-purple-800 transition-colors"
+                        title="Отвори проследяване в нов таб"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   ) : (
                     <span className="text-muted-foreground text-xs">—</span>
                   )}

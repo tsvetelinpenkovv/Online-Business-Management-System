@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
-import { EcontLogo } from '@/components/icons/EcontLogo';
+import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
 import { PhoneWithFlag } from './PhoneWithFlag';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
@@ -155,7 +155,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         {/* Courier info */}
         {order.courier_tracking_url && (
           <div className="flex items-center gap-2">
-            <EcontLogo className="w-5 h-5" trackingUrl={order.courier_tracking_url} />
+            <CourierLogo trackingUrl={order.courier_tracking_url} className="w-5 h-5" showLink={false} />
             <a 
               href={order.courier_tracking_url}
               target="_blank"
@@ -163,7 +163,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
             >
               <Search className="w-3 h-3" />
-              <span>{order.courier_tracking_url.match(/\d{10}/)?.[0] || 'Товарителница'}</span>
+              <span>{order.courier_tracking_url.match(/\d{10,}/)?.[0] || 'Товарителница'}</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>

@@ -2,15 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Truck, Plus, Trash2, Upload, Loader2, ImageIcon, X } from 'lucide-react';
+import { Truck, Plus, Trash2, Upload, Loader2, ImageIcon, X, Link, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Courier {
   id: string;
   name: string;
   logo_url: string | null;
+  url_pattern: string | null;
 }
 
 export const CourierSettings = () => {
@@ -21,6 +21,9 @@ export const CourierSettings = () => {
   const [addingCourier, setAddingCourier] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingPatternId, setEditingPatternId] = useState<string | null>(null);
+  const [patternValue, setPatternValue] = useState('');
+  const [savingPattern, setSavingPattern] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const fetchCouriers = async () => {
@@ -213,6 +216,38 @@ export const CourierSettings = () => {
     }
   };
 
+  const startEditingPattern = (courier: Courier) => {
+    setEditingPatternId(courier.id);
+    setPatternValue(courier.url_pattern || '');
+  };
+
+  const handleSavePattern = async (courierId: string) => {
+    setSavingPattern(true);
+    try {
+      const { error } = await supabase
+        .from('couriers')
+        .update({ url_pattern: patternValue.trim() || null })
+        .eq('id', courierId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Успех',
+        description: 'URL шаблонът беше запазен',
+      });
+      setEditingPatternId(null);
+      fetchCouriers();
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно запазване',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingPattern(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -229,8 +264,9 @@ export const CourierSettings = () => {
           Куриерски фирми
         </CardTitle>
         <CardDescription>
-          Добавете логата на куриерските фирми, с които работите. 
-          Препоръчителен размер: <strong>100x40 пиксела</strong> (PNG с прозрачен фон)
+          Добавете логата на куриерските фирми. Препоръчителен размер: <strong>100x40 пиксела</strong> (PNG с прозрачен фон).
+          <br />
+          <strong>URL шаблон</strong> - частта от домейна за разпознаване (напр. "econt.com", "speedy.bg")
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -261,82 +297,131 @@ export const CourierSettings = () => {
             couriers.map((courier) => (
               <div
                 key={courier.id}
-                className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30"
+                className="p-4 border rounded-lg bg-muted/30 space-y-3"
               >
-                {/* Logo preview */}
-                <div className="w-24 h-10 flex items-center justify-center bg-background rounded border overflow-hidden flex-shrink-0">
-                  {courier.logo_url ? (
-                    <img
-                      src={courier.logo_url}
-                      alt={courier.name}
-                      className="max-w-full max-h-full object-contain"
+                <div className="flex items-center gap-4">
+                  {/* Logo preview */}
+                  <div className="w-20 h-8 flex items-center justify-center bg-background rounded border overflow-hidden flex-shrink-0">
+                    {courier.logo_url ? (
+                      <img
+                        src={courier.logo_url}
+                        alt={courier.name}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : (
+                      <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  {/* Name */}
+                  <span className="font-medium flex-1">{courier.name}</span>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={(el) => { fileInputRefs.current[courier.id] = el; }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleLogoUpload(courier.id, file);
+                        e.target.value = '';
+                      }}
                     />
-                  ) : (
-                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                  )}
-                </div>
-
-                {/* Name */}
-                <span className="font-medium flex-1">{courier.name}</span>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    ref={(el) => { fileInputRefs.current[courier.id] = el; }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleLogoUpload(courier.id, file);
-                      e.target.value = '';
-                    }}
-                  />
-                  
-                  {courier.logo_url ? (
+                    
+                    {courier.logo_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemoveLogo(courier.id)}
+                        disabled={uploadingId === courier.id}
+                      >
+                        {uploadingId === courier.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <X className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
+                    
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRemoveLogo(courier.id)}
+                      onClick={() => fileInputRefs.current[courier.id]?.click()}
                       disabled={uploadingId === courier.id}
                     >
                       {uploadingId === courier.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <X className="w-4 h-4" />
+                        <>
+                          <Upload className="w-4 h-4 mr-1" />
+                          {courier.logo_url ? 'Смени' : 'Качи'}
+                        </>
                       )}
                     </Button>
-                  ) : null}
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRefs.current[courier.id]?.click()}
-                    disabled={uploadingId === courier.id}
-                  >
-                    {uploadingId === courier.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4 mr-1" />
-                        {courier.logo_url ? 'Смени' : 'Качи'}
-                      </>
-                    )}
-                  </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteCourier(courier.id)}
-                    disabled={deletingId === courier.id}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    {deletingId === courier.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteCourier(courier.id)}
+                      disabled={deletingId === courier.id}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      {deletingId === courier.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* URL Pattern */}
+                <div className="flex items-center gap-2">
+                  <Link className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  {editingPatternId === courier.id ? (
+                    <>
+                      <Input
+                        placeholder="напр. econt.com, speedy.bg"
+                        value={patternValue}
+                        onChange={(e) => setPatternValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSavePattern(courier.id)}
+                        className="h-8 text-sm flex-1"
+                        autoFocus
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSavePattern(courier.id)}
+                        disabled={savingPattern}
+                      >
+                        {savingPattern ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingPatternId(null)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <button
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left flex-1"
+                      onClick={() => startEditingPattern(courier)}
+                    >
+                      {courier.url_pattern ? (
+                        <span className="font-mono bg-muted px-2 py-1 rounded">{courier.url_pattern}</span>
+                      ) : (
+                        <span className="italic">Кликни за добавяне на URL шаблон</span>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             ))
