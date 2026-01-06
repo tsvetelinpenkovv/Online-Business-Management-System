@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck } from 'lucide-react';
+import { CourierSettings } from '@/components/settings/CourierSettings';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -445,12 +446,17 @@ const Settings = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         <Tabs defaultValue="api" className="w-full">
-          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
-            <TabsTrigger value="api">API Настройки</TabsTrigger>
+          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-5' : 'grid-cols-4'}`}>
+            <TabsTrigger value="api">API</TabsTrigger>
             <TabsTrigger value="branding">Лого</TabsTrigger>
-            <TabsTrigger value="company">Фирмени данни</TabsTrigger>
+            <TabsTrigger value="couriers">Куриери</TabsTrigger>
+            <TabsTrigger value="company">Фирма</TabsTrigger>
             {isAdmin && <TabsTrigger value="users">Потребители</TabsTrigger>}
           </TabsList>
+
+          <TabsContent value="couriers" className="space-y-6">
+            <CourierSettings />
+          </TabsContent>
 
           <TabsContent value="company" className="space-y-6">
             <Card>
