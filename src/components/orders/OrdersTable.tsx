@@ -11,9 +11,11 @@ import { StatusBadge } from './StatusBadge';
 import { PhoneWithFlag } from './PhoneWithFlag';
 import { InfoPopover } from './InfoPopover';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
+import { MobileOrderCard } from './MobileOrderCard';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Table,
   TableBody,
@@ -60,6 +62,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const getRowColorByStatus = (status: string) => {
     switch (status) {
@@ -131,6 +134,70 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
   const isSomeSelected = selectedOrders.length > 0 && selectedOrders.length < orders.length;
 
+  // Mobile view - card layout
+  if (isMobile) {
+    return (
+      <>
+        <div className="space-y-3">
+          {/* Select all on mobile */}
+          <div className="flex items-center gap-2 p-2 bg-card rounded-lg border">
+            <Checkbox
+              checked={isAllSelected}
+              onCheckedChange={handleSelectAll}
+              aria-label="Избери всички"
+              className={isSomeSelected ? 'opacity-50' : ''}
+            />
+            <span className="text-sm text-muted-foreground">
+              {isAllSelected ? 'Премахни избора' : 'Избери всички'}
+            </span>
+          </div>
+
+          {orders.map((order) => (
+            <MobileOrderCard
+              key={order.id}
+              order={order}
+              isSelected={selectedOrders.includes(order.id)}
+              onSelect={(checked) => handleSelectOne(order.id, checked)}
+              onEdit={() => setEditOrder(order)}
+              onDelete={() => setDeleteId(order.id)}
+              onPrint={() => handlePrint(order)}
+            />
+          ))}
+        </div>
+
+        <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Сигурни ли сте?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Това действие не може да бъде отменено. Поръчката ще бъде изтрита завинаги.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Отказ</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (deleteId) onDelete(deleteId);
+                  setDeleteId(null);
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Изтрий
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <EditOrderDialog 
+          order={editOrder} 
+          onClose={() => setEditOrder(null)} 
+          onSave={onUpdate}
+        />
+      </>
+    );
+  }
+
+  // Desktop view - table layout
   return (
     <>
       <div className="rounded-lg border bg-card overflow-hidden">
