@@ -2,7 +2,7 @@ import { FC, useState } from 'react';
 import { 
   Hash, Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -12,6 +12,7 @@ import { PhoneWithFlag } from './PhoneWithFlag';
 import { InfoPopover } from './InfoPopover';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { MobileOrderCard } from './MobileOrderCard';
+import { InvoiceDialog } from './InvoiceDialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
@@ -61,6 +62,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -471,6 +473,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         <Pencil className="w-4 h-4 mr-2" />
                         Редактирай
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setInvoiceOrder(order)}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Фактура
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handlePrint(order)}>
                         <Printer className="w-4 h-4 mr-2" />
                         Печат
@@ -518,6 +524,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
         order={editOrder} 
         onClose={() => setEditOrder(null)} 
         onSave={onUpdate}
+      />
+
+      <InvoiceDialog
+        order={invoiceOrder}
+        open={invoiceOrder !== null}
+        onOpenChange={(open) => !open && setInvoiceOrder(null)}
       />
     </>
   );
