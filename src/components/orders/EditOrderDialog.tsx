@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 import { Order, ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { useCouriers } from '@/hooks/useCouriers';
+import { StatusBadge } from './StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -144,12 +145,14 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
               value={formData.status}
               onValueChange={(value) => setFormData({ ...formData, status: value as OrderStatus })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Избери статус" />
               </SelectTrigger>
               <SelectContent>
                 {ORDER_STATUSES.map((status) => (
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                  <SelectItem key={status} value={status} className="cursor-pointer">
+                    <StatusBadge status={status} />
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
