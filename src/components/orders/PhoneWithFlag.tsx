@@ -1,15 +1,28 @@
 import { FC } from 'react';
-import { Phone } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PhoneWithFlagProps {
   phone: string;
 }
 
 export const PhoneWithFlag: FC<PhoneWithFlagProps> = ({ phone }) => {
+  const { toast } = useToast();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(phone);
+    toast({
+      title: 'Копирано',
+      description: `Телефон ${phone} е копиран`,
+    });
+  };
+
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-      <span>{phone}</span>
+    <span 
+      className="cursor-pointer hover:text-primary transition-colors"
+      onClick={handleCopy}
+      title="Кликни за копиране"
+    >
+      {phone}
     </span>
   );
 };
