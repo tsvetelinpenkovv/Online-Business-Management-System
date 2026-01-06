@@ -275,11 +275,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Доставка
                 </div>
               </TableHead>
-              <TableHead className="w-[60px]">
-                <div className="flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-muted-foreground" />
-                  Куриер
-                </div>
+              <TableHead className="w-[70px] text-center" title="Товарителница">
+                <ExternalLink className="w-4 h-4 text-muted-foreground mx-auto" />
               </TableHead>
               <TableHead className="w-[140px]">
                 <div className="flex items-center gap-1.5">
@@ -430,22 +427,20 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   </div>
                 </TableCell>
                 <TableCell title={order.courier_tracking_url ? `Проследяване на пратка` : 'Няма товарителница'}>
-                  <div className="flex flex-col items-center gap-1">
-                    <EcontLogo className="w-6 h-6" trackingUrl={order.courier_tracking_url} />
-                    {order.courier_tracking_url && (
-                      <a 
-                        href={order.courier_tracking_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
-                        title="Отвори проследяване в нов таб"
-                      >
-                        <Search className="w-3 h-3" />
-                        <span>{order.courier_tracking_url.match(/\d{10}/)?.[0] || 'Товарителница'}</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
+                  {order.courier_tracking_url ? (
+                    <a 
+                      href={order.courier_tracking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1 text-purple-600 hover:text-purple-800 transition-colors"
+                      title="Отвори проследяване в нов таб"
+                    >
+                      <EcontLogo className="w-5 h-5" trackingUrl={order.courier_tracking_url} />
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={order.status} />
