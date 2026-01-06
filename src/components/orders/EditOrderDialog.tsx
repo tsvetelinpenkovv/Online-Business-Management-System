@@ -77,6 +77,17 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="customer_email">Имейл</Label>
+            <Input
+              id="customer_email"
+              type="email"
+              value={formData.customer_email || ''}
+              onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+              placeholder="client@example.com"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="total_price">Цена (€)</Label>
             <Input
               id="total_price"

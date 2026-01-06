@@ -82,6 +82,7 @@ export const useOrders = () => {
         .update({
           code: order.code,
           customer_name: order.customer_name,
+          customer_email: order.customer_email,
           is_correct: order.is_correct,
           phone: order.phone,
           total_price: order.total_price,
