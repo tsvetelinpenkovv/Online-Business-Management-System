@@ -12,12 +12,21 @@ import {
   CircleCheck, 
   Undo2, 
   XCircle, 
-  Ban 
+  Ban,
+  ChevronDown
 } from 'lucide-react';
-import { OrderStatus } from '@/types/order';
+import { OrderStatus, ORDER_STATUSES } from '@/types/order';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface StatusBadgeProps {
   status: OrderStatus;
+  editable?: boolean;
+  onStatusChange?: (newStatus: OrderStatus) => void;
 }
 
 const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string }> = {
@@ -79,14 +88,43 @@ const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string 
   },
 };
 
-export const StatusBadge: FC<StatusBadgeProps> = ({ status }) => {
+export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, onStatusChange }) => {
   const config = statusConfig[status] || statusConfig['Нова'];
   const Icon = config.icon;
 
-  return (
-    <span className={config.className} title={`Статус: ${status}`}>
+  const badge = (
+    <span className={`${config.className} ${editable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`} title={`Статус: ${status}`}>
       <Icon className="w-3 h-3" />
       {status}
+      {editable && <ChevronDown className="w-3 h-3 ml-1" />}
     </span>
+  );
+
+  if (!editable || !onStatusChange) {
+    return badge;
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {badge}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto bg-popover z-50">
+        {ORDER_STATUSES.map((s) => {
+          const sConfig = statusConfig[s];
+          const SIcon = sConfig.icon;
+          return (
+            <DropdownMenuItem
+              key={s}
+              onClick={() => onStatusChange(s)}
+              className={`flex items-center gap-2 ${s === status ? 'bg-muted' : ''}`}
+            >
+              <SIcon className="w-3 h-3" />
+              {s}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

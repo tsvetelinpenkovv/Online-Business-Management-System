@@ -450,7 +450,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={order.status} />
+                  <StatusBadge 
+                    status={order.status} 
+                    editable 
+                    onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus })}
+                  />
                 </TableCell>
                 <TableCell>
                   {order.comment ? (
