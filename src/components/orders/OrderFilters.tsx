@@ -1,9 +1,10 @@
 import { FC } from 'react';
-import { Search, Filter, Calendar, X } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from './StatusBadge';
+import { SourceIcon } from '@/components/icons/SourceIcon';
 import {
   Select,
   SelectContent,
@@ -75,14 +76,35 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
       </Select>
 
       <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="w-[180px]">
+          <Globe className="w-4 h-4 mr-2" />
           <SelectValue placeholder="Източник" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Всички източници</SelectItem>
-          <SelectItem value="google">Google</SelectItem>
-          <SelectItem value="facebook">Facebook</SelectItem>
-          <SelectItem value="woocommerce">WooCommerce</SelectItem>
+          <SelectItem value="all">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+              Всички източници
+            </div>
+          </SelectItem>
+          <SelectItem value="google">
+            <div className="flex items-center gap-2">
+              <SourceIcon source="google" className="w-4 h-4" />
+              Google
+            </div>
+          </SelectItem>
+          <SelectItem value="facebook">
+            <div className="flex items-center gap-2">
+              <SourceIcon source="facebook" className="w-4 h-4" />
+              Facebook
+            </div>
+          </SelectItem>
+          <SelectItem value="woocommerce">
+            <div className="flex items-center gap-2">
+              <SourceIcon source="woocommerce" className="w-4 h-4" />
+              WooCommerce
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
 

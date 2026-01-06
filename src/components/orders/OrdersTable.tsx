@@ -254,7 +254,18 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         <div className="space-y-1">
                           <p><strong>Продукт:</strong> {order.product_name}</p>
                           <p><strong>Кат. номер:</strong> {order.catalog_number || '-'}</p>
-                          <p><strong>Количество:</strong> {order.quantity}</p>
+                          <p className="flex items-center gap-2">
+                            <strong>Количество:</strong> 
+                            {order.quantity > 1 ? (
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-destructive/15 text-destructive text-xs font-semibold">
+                                {order.quantity} бр.
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
+                                {order.quantity} бр.
+                              </span>
+                            )}
+                          </p>
                           <p><strong>Цена:</strong> €{order.total_price.toFixed(2)}</p>
                         </div>
                       }
