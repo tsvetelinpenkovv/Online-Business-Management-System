@@ -200,8 +200,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   // Desktop view - table layout
   return (
     <>
-      <div className="rounded-lg border bg-card overflow-hidden">
-        <Table>
+      <div className="rounded-lg border bg-card">
+        <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[40px]">
