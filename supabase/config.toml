@@ -1,1 +1,13 @@
 project_id = "gpmwkgkvikvlzvqpbqus"
+
+[functions.invite-user]
+verify_jwt = false
+
+[functions.delete-user]
+verify_jwt = false
+
+[functions.setup-admin]
+verify_jwt = false
+
+[functions.create-initial-admin]
+verify_jwt = false
