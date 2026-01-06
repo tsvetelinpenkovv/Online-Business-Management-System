@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrders } from '@/hooks/useOrders';
+import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import {
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { orders, loading: ordersLoading, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
+  const { logoUrl } = useCompanyLogo();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,9 +123,17 @@ const Index = () => {
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
-            </div>
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt="Фирмено лого" 
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+              </div>
+            )}
             <div className="min-w-0">
               <h1 className="text-base sm:text-xl font-semibold truncate">Поръчки</h1>
               <p className="text-xs sm:text-sm text-muted-foreground">

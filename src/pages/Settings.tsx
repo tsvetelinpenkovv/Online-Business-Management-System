@@ -1,24 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 
 const Settings = () => {
   const { user, loading: authLoading } = useAuth();
+  const { logoUrl, uploadLogo, deleteLogo, loading: logoLoading } = useCompanyLogo();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [customApis, setCustomApis] = useState<{ key: string; value: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -127,6 +132,47 @@ const Settings = () => {
     });
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      await uploadLogo(file);
+      toast({
+        title: 'Успех',
+        description: 'Логото беше качено успешно',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно качване на логото',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingLogo(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    try {
+      await deleteLogo();
+      toast({
+        title: 'Успех',
+        description: 'Логото беше изтрито',
+      });
+    } catch (error) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно изтриване на логото',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -162,6 +208,90 @@ const Settings = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
+        <Tabs defaultValue="api" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="api">API Настройки</TabsTrigger>
+            <TabsTrigger value="branding">Лого на фирмата</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="branding" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  Лого на фирмата
+                </CardTitle>
+                <CardDescription>
+                  Качете логото на вашата фирма. То ще се показва в заглавието и на страницата за вход.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg text-sm space-y-2">
+                  <p className="font-medium">Изисквания за логото:</p>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li>Формат: <strong>PNG</strong> или <strong>JPEG</strong></li>
+                    <li>Препоръчителен размер: <strong>200x200 пиксела</strong> или <strong>300x100 пиксела</strong> (за хоризонтално)</li>
+                    <li>Максимален размер: <strong>2MB</strong></li>
+                    <li>За най-добър резултат използвайте PNG с прозрачен фон</li>
+                  </ul>
+                </div>
+
+                <div className="flex flex-col items-center gap-4 p-6 border-2 border-dashed rounded-lg">
+                  {logoLoading ? (
+                    <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
+                  ) : logoUrl ? (
+                    <div className="relative">
+                      <img 
+                        src={logoUrl} 
+                        alt="Фирмено лого" 
+                        className="max-w-[200px] max-h-[100px] object-contain"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={handleLogoDelete}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-muted-foreground">Няма качено лого</p>
+                    </div>
+                  )}
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                  >
+                    {uploadingLogo ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Качване...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {logoUrl ? 'Смени логото' : 'Качи лого'}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="api" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -318,6 +448,8 @@ const Settings = () => {
             </Button>
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
