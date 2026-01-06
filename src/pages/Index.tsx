@@ -5,11 +5,21 @@ import { useOrders } from '@/hooks/useOrders';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { orders, loading: ordersLoading, deleteOrder, updateOrder, refetch } = useOrders();
+  const { orders, loading: ordersLoading, deleteOrder, deleteOrders, updateOrder, refetch } = useOrders();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +28,7 @@ const Index = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -66,12 +77,17 @@ const Index = () => {
       return;
     }
 
-    // Open each tracking URL in a new tab
     ordersWithTracking.forEach(order => {
       if (order.courier_tracking_url) {
         window.open(order.courier_tracking_url, '_blank');
       }
     });
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteOrders(selectedOrders);
+    setSelectedOrders([]);
+    setShowBulkDeleteDialog(false);
   };
 
   if (authLoading) {
@@ -103,10 +119,20 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-2">
             {selectedOrders.length > 0 && (
-              <Button onClick={handleBulkPrintLabels} variant="outline" className="gap-2">
-                <Printer className="w-4 h-4" />
-                Печат товарителници ({selectedOrders.length})
-              </Button>
+              <>
+                <Button onClick={handleBulkPrintLabels} variant="outline" className="gap-2">
+                  <Printer className="w-4 h-4" />
+                  Печат ({selectedOrders.length})
+                </Button>
+                <Button 
+                  onClick={() => setShowBulkDeleteDialog(true)} 
+                  variant="outline" 
+                  className="gap-2 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Изтрий ({selectedOrders.length})
+                </Button>
+              </>
             )}
             <Button variant="outline" size="icon" onClick={refetch} title="Обнови">
               <RefreshCw className="w-4 h-4" />
@@ -155,6 +181,26 @@ const Index = () => {
           />
         )}
       </main>
+
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Изтриване на {selectedOrders.length} поръчки</AlertDialogTitle>
+            <AlertDialogDescription>
+              Сигурни ли сте, че искате да изтриете избраните поръчки? Това действие не може да бъде отменено.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отказ</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Изтрий
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
