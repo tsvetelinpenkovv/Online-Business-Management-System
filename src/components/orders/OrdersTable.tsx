@@ -2,7 +2,7 @@ import { FC, useState } from 'react';
 import { 
   Hash, Tag, Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe 
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -264,7 +264,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {order.catalog_number || '-'}
                 </TableCell>
-                <TableCell className="text-center text-sm">{order.quantity}</TableCell>
+                <TableCell className="text-center">
+                  {order.quantity > 1 ? (
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-destructive/15 text-destructive text-xs font-semibold">
+                      {order.quantity}
+                    </span>
+                  ) : (
+                    <span className="text-sm">{order.quantity}</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-muted-foreground truncate max-w-[50px]">
@@ -279,8 +287,22 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-center">
-                  <EcontLogo className="w-6 h-6 mx-auto" trackingUrl={order.courier_tracking_url} />
+                <TableCell>
+                  <div className="flex flex-col items-center gap-1">
+                    <EcontLogo className="w-6 h-6" trackingUrl={order.courier_tracking_url} />
+                    {order.courier_tracking_url && (
+                      <a 
+                        href={order.courier_tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                      >
+                        <Search className="w-3 h-3" />
+                        <span>{order.courier_tracking_url.match(/\d{10}/)?.[0] || 'Товарителница'}</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={order.status} />
