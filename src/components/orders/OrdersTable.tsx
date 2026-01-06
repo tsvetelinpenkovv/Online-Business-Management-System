@@ -245,7 +245,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               <TableHead className="w-[70px]">
                 <div className="flex items-center gap-1.5">
                   <Euro className="w-4 h-4 text-muted-foreground" />
-                  Цена
+                  € Цена
                 </div>
               </TableHead>
               <TableHead className="w-[100px]">
