@@ -120,6 +120,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             selected={dateFrom}
             onSelect={onDateFromChange}
             initialFocus
+            locale={bg}
           />
         </PopoverContent>
       </Popover>
@@ -137,6 +138,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             selected={dateTo}
             onSelect={onDateToChange}
             initialFocus
+            locale={bg}
           />
         </PopoverContent>
       </Popover>
