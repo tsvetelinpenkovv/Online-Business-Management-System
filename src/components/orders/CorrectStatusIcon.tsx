@@ -29,25 +29,25 @@ const statusConfig: Record<CorrectStatus, {
     icon: CheckCircle2,
     className: 'text-success',
     message: 'Клиентът е с отлична история на коректност. Всички доставки до него са преминали успешно.\n\nwww.nekorekten.com',
-    tooltipClassName: 'bg-success/10 border-success/30 text-success-foreground'
+    tooltipClassName: 'bg-success/15 border-success/40 text-success'
   },
   incorrect: {
     icon: XCircle,
     className: 'text-destructive',
     message: 'Има регистрирани проблеми при доставки и взаимодействия с този клиент.\n\nwww.nekorekten.com',
-    tooltipClassName: 'bg-destructive/10 border-destructive/30 text-destructive-foreground'
+    tooltipClassName: 'bg-destructive/15 border-destructive/40 text-destructive'
   },
   unknown: {
     icon: AlertCircle,
     className: 'text-warning',
     message: 'Няма данни за този клиент.\n\nwww.nekorekten.com',
-    tooltipClassName: 'bg-warning/10 border-warning/30 text-warning-foreground'
+    tooltipClassName: 'bg-warning/15 border-warning/40 text-warning'
   },
   loading: {
     icon: Loader2,
     className: 'text-muted-foreground animate-spin',
     message: 'Клиентът се проверявя. Проверката може да отнеме няколко минути.\n\nwww.nekorekten.com',
-    tooltipClassName: ''
+    tooltipClassName: 'bg-muted border-muted-foreground/40 text-muted-foreground'
   }
 };
 
@@ -58,7 +58,7 @@ export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoa
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex justify-center cursor-help">
+        <div className="flex justify-center cursor-pointer">
           <Icon className={`w-4 h-4 ${className}`} />
         </div>
       </TooltipTrigger>
