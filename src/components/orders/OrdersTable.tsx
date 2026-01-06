@@ -296,7 +296,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       content={
                         <div className="space-y-2">
                           <p className="flex items-center gap-2">
-                            <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                            <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <span><strong>Продукт:</strong> {order.product_name}</span>
                           </p>
                           <p className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                             )}
                           </p>
                           <p className="flex items-center gap-2">
-                            <Euro className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <span><strong>Цена:</strong> €{order.total_price.toFixed(2)}</span>
                           </p>
                         </div>
@@ -354,7 +354,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         icon="eye"
                         content={
                           <div className="flex items-start gap-2">
-                            <Truck className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                            <Truck className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                             <span>{order.delivery_address}</span>
                           </div>
                         }
@@ -390,7 +390,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       icon="info"
                       content={
                         <div className="flex items-start gap-2">
-                          <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <MessageCircle className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                           <span>{order.comment}</span>
                         </div>
                       }
