@@ -185,6 +185,18 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      
+      <div className="mt-6 text-center text-xs text-muted-foreground">
+        Разработен от{' '}
+        <a 
+          href="https://www.linkedin.com/in/tsvetelinpenkov/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          Цветелин Пенков
+        </a>
+      </div>
     </div>
   );
 };
