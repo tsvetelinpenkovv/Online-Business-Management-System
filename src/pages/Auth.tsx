@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Loader2 } from 'lucide-react';
+import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -169,35 +169,52 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Имейл</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Имейл
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Парола</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Label htmlFor="password" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Парола
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-6" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Влизане...
                 </>
               ) : (
-                'Вход'
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Вход
+                </>
               )}
             </Button>
           </form>
@@ -209,15 +226,22 @@ const Auth = () => {
               </p>
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email">Имейл</Label>
-                  <Input
-                    id="reset-email"
-                    type="email"
-                    placeholder="email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="reset-email" className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Имейл
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
                 <Button type="submit" className="w-full" variant="outline" disabled={isResetting}>
                   {isResetting ? (
@@ -226,7 +250,10 @@ const Auth = () => {
                       Изпращане...
                     </>
                   ) : (
-                    'Изпрати линк за възстановяване'
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Изпрати линк за възстановяване
+                    </>
                   )}
                 </Button>
               </form>
@@ -235,6 +262,7 @@ const Auth = () => {
                 className="w-full mt-2 text-xs" 
                 onClick={() => setShowForgotPassword(false)}
               >
+                <ArrowLeft className="w-3 h-3 mr-1" />
                 Обратно към вход
               </Button>
             </div>
@@ -243,8 +271,9 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-xs text-muted-foreground hover:text-primary underline"
+                className="text-xs text-muted-foreground hover:text-primary underline inline-flex items-center gap-1"
               >
+                <KeyRound className="w-3 h-3" />
                 Забравена парола?
               </button>
             </div>
