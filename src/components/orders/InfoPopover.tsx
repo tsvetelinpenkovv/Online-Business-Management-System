@@ -26,7 +26,7 @@ export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info
           className={`h-5 w-5 transition-colors ${
             open 
               ? 'bg-primary hover:bg-primary/90 [&>svg]:text-primary-foreground [&:hover>svg]:text-primary-foreground' 
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-accent-foreground'
           }`}
         >
           <Icon className="w-3.5 h-3.5" />
