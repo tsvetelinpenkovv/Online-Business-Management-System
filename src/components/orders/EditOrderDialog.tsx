@@ -153,12 +153,12 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
           </div>
 
           <div className="col-span-2 space-y-2">
-            <Label htmlFor="courier_tracking_url">Товарителница (URL)</Label>
+            <Label htmlFor="courier_tracking_url">Линк за проследяване на куриер</Label>
             <Input
               id="courier_tracking_url"
               value={formData.courier_tracking_url || ''}
               onChange={(e) => setFormData({ ...formData, courier_tracking_url: e.target.value })}
-              placeholder="https://www.econt.com/services/track-shipment.html?shipmentNumber=..."
+              placeholder="Поставете линк към товарителницата (Еконт, Спиди, Box Now...)"
             />
           </div>
 

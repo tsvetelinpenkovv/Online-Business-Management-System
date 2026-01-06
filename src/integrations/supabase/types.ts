@@ -129,6 +129,7 @@ export type Database = {
           logo_url: string | null
           name: string
           updated_at: string
+          url_pattern: string | null
         }
         Insert: {
           created_at?: string
@@ -136,6 +137,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           updated_at?: string
+          url_pattern?: string | null
         }
         Update: {
           created_at?: string
@@ -143,6 +145,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           updated_at?: string
+          url_pattern?: string | null
         }
         Relationships: []
       }
