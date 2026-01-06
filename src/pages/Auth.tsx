@@ -14,8 +14,8 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSettingUp, setIsSettingUp] = useState(false);
-  const [showSetup, setShowSetup] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn, signOut, user } = useAuth();
   const { logoUrl, loading: logoLoading } = useCompanyLogo();
   const navigate = useNavigate();
@@ -84,37 +84,61 @@ const Auth = () => {
     setIsLoading(false);
   };
 
-  const handleSetupAdmin = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSettingUp(true);
+    
+    if (!email) {
+      toast({
+        title: 'Грешка',
+        description: 'Моля въведете имейл адрес',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsResetting(true);
 
     try {
-      const response = await supabase.functions.invoke('setup-admin', {
-        body: { email, password },
-      });
+      // First check if email is in allowed_users
+      const { data: allowedUser, error: checkError } = await supabase
+        .from('allowed_users')
+        .select('email')
+        .eq('email', email)
+        .single();
 
-      if (response.error) {
-        throw new Error(response.error.message);
+      if (checkError || !allowedUser) {
+        toast({
+          title: 'Грешка',
+          description: 'Няма потребител с този имейл адрес в системата',
+          variant: 'destructive',
+        });
+        setIsResetting(false);
+        return;
       }
 
-      if (response.data?.error) {
-        throw new Error(response.data.error);
+      // Send password reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        throw error;
       }
 
       toast({
         title: 'Успех',
-        description: 'Акаунтът е създаден успешно. Сега можете да влезете.',
+        description: 'Изпратихме ви имейл с инструкции за възстановяване на паролата',
       });
       
-      setShowSetup(false);
+      setShowForgotPassword(false);
     } catch (error: any) {
       toast({
         title: 'Грешка',
-        description: error.message || 'Неуспешно създаване на акаунт',
+        description: error.message || 'Неуспешно изпращане на имейл',
         variant: 'destructive',
       });
     } finally {
-      setIsSettingUp(false);
+      setIsResetting(false);
     }
   };
 
@@ -178,39 +202,50 @@ const Auth = () => {
             </Button>
           </form>
 
-          {showSetup ? (
+          {showForgotPassword ? (
             <div className="mt-6 pt-6 border-t">
               <p className="text-sm text-muted-foreground mb-4 text-center">
-                Първоначална настройка - създайте администраторски акаунт
+                Въведете имейл адреса си и ще ви изпратим линк за възстановяване на паролата
               </p>
-              <form onSubmit={handleSetupAdmin} className="space-y-4">
-                <Button type="submit" className="w-full" variant="outline" disabled={isSettingUp}>
-                  {isSettingUp ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Имейл</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" variant="outline" disabled={isResetting}>
+                  {isResetting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Създаване...
+                      Изпращане...
                     </>
                   ) : (
-                    'Създай акаунт с тези данни'
+                    'Изпрати линк за възстановяване'
                   )}
                 </Button>
               </form>
               <Button 
                 variant="ghost" 
                 className="w-full mt-2 text-xs" 
-                onClick={() => setShowSetup(false)}
+                onClick={() => setShowForgotPassword(false)}
               >
-                Отказ
+                Обратно към вход
               </Button>
             </div>
           ) : (
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => setShowSetup(true)}
+                onClick={() => setShowForgotPassword(true)}
                 className="text-xs text-muted-foreground hover:text-primary underline"
               >
-                Първоначална настройка
+                Забравена парола?
               </button>
             </div>
           )}
