@@ -53,14 +53,10 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // First check if email is in allowed_users
-    const { data: allowedUser, error: checkError } = await supabase
-      .from('allowed_users')
-      .select('email')
-      .eq('email', email)
-      .single();
+    // First check if email is in allowed_users using security definer function
+    const { data: isAllowed, error: checkError } = await supabase.rpc('is_allowed_user', { _email: email });
 
-    if (checkError || !allowedUser) {
+    if (checkError || !isAllowed) {
       toast({
         title: 'Достъп отказан',
         description: 'Нямате право на достъп до системата',
@@ -100,14 +96,10 @@ const Auth = () => {
     setIsResetting(true);
 
     try {
-      // First check if email is in allowed_users
-      const { data: allowedUser, error: checkError } = await supabase
-        .from('allowed_users')
-        .select('email')
-        .eq('email', email)
-        .single();
+      // First check if email is in allowed_users using security definer function
+      const { data: isAllowed, error: checkError } = await supabase.rpc('is_allowed_user', { _email: email });
 
-      if (checkError || !allowedUser) {
+      if (checkError || !isAllowed) {
         toast({
           title: 'Грешка',
           description: 'Няма потребител с този имейл адрес в системата',
