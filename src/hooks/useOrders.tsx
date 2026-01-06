@@ -111,9 +111,32 @@ export const useOrders = () => {
     }
   };
 
+  const updateOrdersStatus = async (ids: number[], status: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      setOrders(orders.map(o => ids.includes(o.id) ? { ...o, status: status as Order['status'] } : o));
+      toast({
+        title: 'Успех',
+        description: `Статусът на ${ids.length} поръчки беше променен`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешна промяна на статуса',
+        variant: 'destructive',
+      });
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  return { orders, loading, deleteOrder, deleteOrders, updateOrder, refetch: fetchOrders };
+  return { orders, loading, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch: fetchOrders };
 };

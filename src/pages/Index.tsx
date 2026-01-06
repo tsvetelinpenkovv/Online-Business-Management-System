@@ -5,7 +5,9 @@ import { useOrders } from '@/hooks/useOrders';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2 } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags } from 'lucide-react';
+import { ORDER_STATUSES, OrderStatus } from '@/types/order';
+import { StatusBadge } from '@/components/orders/StatusBadge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,10 +18,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { orders, loading: ordersLoading, deleteOrder, deleteOrders, updateOrder, refetch } = useOrders();
+  const { orders, loading: ordersLoading, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,6 +99,11 @@ const Index = () => {
     setShowBulkDeleteDialog(false);
   };
 
+  const handleBulkStatusChange = async (status: OrderStatus) => {
+    await updateOrdersStatus(selectedOrders, status);
+    setSelectedOrders([]);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -121,6 +134,25 @@ const Index = () => {
           <div className="flex items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <Tags className="w-4 h-4" />
+                      Смени статус ({selectedOrders.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                    {ORDER_STATUSES.map((status) => (
+                      <DropdownMenuItem
+                        key={status}
+                        onClick={() => handleBulkStatusChange(status)}
+                        className="cursor-pointer"
+                      >
+                        <StatusBadge status={status} />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button onClick={handleBulkPrint} variant="outline" className="gap-2">
                   <Printer className="w-4 h-4" />
                   Печат ({selectedOrders.length})
