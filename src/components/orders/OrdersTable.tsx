@@ -239,7 +239,35 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-xs text-muted-foreground" title={`Дата на поръчка: ${format(new Date(order.created_at), 'dd.MM.yyyy HH:mm')}`}>
                   {format(new Date(order.created_at), 'dd.MM.yyyy')}
                 </TableCell>
-                <TableCell className="text-sm" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</TableCell>
+                <TableCell className="text-sm">
+                  <div className="flex items-center gap-1">
+                    <span title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
+                    <InfoPopover 
+                      title="Данни за клиента" 
+                      icon="eye"
+                      content={
+                        <div className="space-y-2">
+                          <p className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                            <span><strong>Име:</strong> {order.customer_name}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-muted-foreground" />
+                            <span><strong>Телефон:</strong> {order.phone}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Truck className="w-4 h-4 text-muted-foreground" />
+                            <span><strong>Адрес:</strong> {order.delivery_address || '-'}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-muted-foreground" />
+                            <span><strong>Имейл:</strong> {order.customer_email || '-'}</span>
+                          </p>
+                        </div>
+                      }
+                    />
+                  </div>
+                </TableCell>
                 <TableCell>
                   <CorrectStatusIcon isCorrect={order.is_correct} />
                 </TableCell>

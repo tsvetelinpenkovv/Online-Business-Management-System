@@ -27,10 +27,10 @@ export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`h-6 w-6 transition-colors ${
+            className={`h-7 w-7 rounded-full transition-colors ${
               open 
                 ? 'bg-primary hover:bg-primary/90 [&>svg]:text-primary-foreground [&:hover>svg]:text-primary-foreground' 
-                : 'text-muted-foreground hover:text-accent-foreground'
+                : 'text-muted-foreground hover:text-accent-foreground hover:bg-muted'
             }`}
           >
             <Icon className="w-4 h-4" />

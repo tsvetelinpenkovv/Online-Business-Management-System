@@ -19,6 +19,7 @@ export interface Order {
   code: string;
   created_at: string;
   customer_name: string;
+  customer_email: string | null;
   is_correct: boolean;
   phone: string;
   total_price: number;

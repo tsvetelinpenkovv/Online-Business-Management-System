@@ -45,6 +45,7 @@ export type Database = {
           comment: string | null
           courier_tracking_url: string | null
           created_at: string
+          customer_email: string | null
           customer_name: string
           delivery_address: string | null
           id: number
@@ -63,6 +64,7 @@ export type Database = {
           comment?: string | null
           courier_tracking_url?: string | null
           created_at?: string
+          customer_email?: string | null
           customer_name: string
           delivery_address?: string | null
           id?: number
@@ -81,6 +83,7 @@ export type Database = {
           comment?: string | null
           courier_tracking_url?: string | null
           created_at?: string
+          customer_email?: string | null
           customer_name?: string
           delivery_address?: string | null
           id?: number
