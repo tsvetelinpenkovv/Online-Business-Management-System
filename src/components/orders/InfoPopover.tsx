@@ -1,0 +1,40 @@
+import { FC, ReactNode } from 'react';
+import { Info, Eye } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+
+interface InfoPopoverProps {
+  title: string;
+  content: ReactNode;
+  icon?: 'info' | 'eye';
+}
+
+export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info' }) => {
+  const Icon = icon === 'eye' ? Eye : Info;
+  
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-5 w-5 text-muted-foreground hover:text-foreground"
+        >
+          <Icon className="w-3.5 h-3.5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="start">
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm">{title}</h4>
+          <div className="text-sm text-muted-foreground">
+            {content}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};

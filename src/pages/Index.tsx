@@ -5,7 +5,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer } from 'lucide-react';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -17,6 +17,7 @@ const Index = () => {
   const [sourceFilter, setSourceFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -56,6 +57,23 @@ const Index = () => {
     navigate('/auth');
   };
 
+  const handleBulkPrintLabels = () => {
+    const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
+    const ordersWithTracking = selectedOrdersData.filter(o => o.courier_tracking_url);
+    
+    if (ordersWithTracking.length === 0) {
+      alert('Няма избрани поръчки с товарителници');
+      return;
+    }
+
+    // Open each tracking URL in a new tab
+    ordersWithTracking.forEach(order => {
+      if (order.courier_tracking_url) {
+        window.open(order.courier_tracking_url, '_blank');
+      }
+    });
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -77,13 +95,19 @@ const Index = () => {
               <Package className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold">Управление на поръчки</h1>
+              <h1 className="text-xl font-semibold">Поръчки</h1>
               <p className="text-sm text-muted-foreground">
                 {filteredOrders.length} поръчки
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {selectedOrders.length > 0 && (
+              <Button onClick={handleBulkPrintLabels} variant="outline" className="gap-2">
+                <Printer className="w-4 h-4" />
+                Печат товарителници ({selectedOrders.length})
+              </Button>
+            )}
             <Button variant="outline" size="icon" onClick={refetch} title="Обнови">
               <RefreshCw className="w-4 h-4" />
             </Button>
@@ -126,6 +150,8 @@ const Index = () => {
             orders={filteredOrders}
             onDelete={deleteOrder}
             onUpdate={updateOrder}
+            selectedOrders={selectedOrders}
+            onSelectionChange={setSelectedOrders}
           />
         )}
       </main>

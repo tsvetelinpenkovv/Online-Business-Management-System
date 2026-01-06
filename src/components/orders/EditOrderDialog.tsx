@@ -1,10 +1,9 @@
 import { FC, useEffect, useState } from 'react';
-import { Order } from '@/types/order';
+import { Order, ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -120,44 +119,17 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
             <Label htmlFor="status">Статус</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value as Order['status'] })}
+              onValueChange={(value) => setFormData({ ...formData, status: value as OrderStatus })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Избери статус" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Нова">Нова</SelectItem>
-                <SelectItem value="Изпратена">Изпратена</SelectItem>
-                <SelectItem value="Доставена">Доставена</SelectItem>
-                <SelectItem value="Отказана">Отказана</SelectItem>
+                {ORDER_STATUSES.map((status) => (
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="source">Източник</Label>
-            <Select
-              value={formData.source}
-              onValueChange={(value) => setFormData({ ...formData, source: value as Order['source'] })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Избери източник" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="google">Google</SelectItem>
-                <SelectItem value="facebook">Facebook</SelectItem>
-                <SelectItem value="woocommerce">WooCommerce</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-3 pt-6">
-            <Switch
-              id="is_correct"
-              checked={formData.is_correct ?? true}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_correct: checked })}
-            />
-            <Label htmlFor="is_correct">Коректен клиент</Label>
           </div>
 
           <div className="col-span-2 space-y-2">

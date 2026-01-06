@@ -1,3 +1,19 @@
+export type OrderStatus = 
+  | 'Нова' 
+  | 'В обработка' 
+  | 'Неуспешна връзка' 
+  | 'Потвърдена' 
+  | 'Платена с карта' 
+  | 'На лизинг през TBI' 
+  | 'На лизинг през BNP' 
+  | 'Изпратена' 
+  | 'Неуспешна доставка' 
+  | 'Доставена' 
+  | 'Завършена' 
+  | 'Върната' 
+  | 'Отказана' 
+  | 'Анулирана';
+
 export interface Order {
   id: number;
   code: string;
@@ -11,7 +27,7 @@ export interface Order {
   quantity: number;
   delivery_address: string | null;
   courier_tracking_url: string | null;
-  status: 'Нова' | 'Изпратена' | 'Доставена' | 'Отказана';
+  status: OrderStatus;
   comment: string | null;
   source: 'google' | 'facebook' | 'woocommerce';
   user_id: string | null;
@@ -24,3 +40,20 @@ export interface ApiSetting {
   created_at: string;
   updated_at: string;
 }
+
+export const ORDER_STATUSES: OrderStatus[] = [
+  'Нова',
+  'В обработка',
+  'Неуспешна връзка',
+  'Потвърдена',
+  'Платена с карта',
+  'На лизинг през TBI',
+  'На лизинг през BNP',
+  'Изпратена',
+  'Неуспешна доставка',
+  'Доставена',
+  'Завършена',
+  'Върната',
+  'Отказана',
+  'Анулирана',
+];
