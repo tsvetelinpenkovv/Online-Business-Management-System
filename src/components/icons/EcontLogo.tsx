@@ -6,6 +6,11 @@ interface EcontLogoProps {
 }
 
 export const EcontLogo: FC<EcontLogoProps> = ({ className = "w-8 h-8", trackingUrl }) => {
+  // Don't render anything if there's no tracking URL
+  if (!trackingUrl) {
+    return null;
+  }
+
   const logo = (
     <svg className={className} viewBox="0 0 100 100" fill="none">
       <rect width="100" height="100" rx="12" fill="#E31E24"/>
@@ -13,19 +18,15 @@ export const EcontLogo: FC<EcontLogoProps> = ({ className = "w-8 h-8", trackingU
     </svg>
   );
 
-  if (trackingUrl) {
-    return (
-      <a 
-        href={trackingUrl} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="hover:opacity-80 transition-opacity cursor-pointer"
-        title="Отвори товарителница"
-      >
-        {logo}
-      </a>
-    );
-  }
-
-  return <div className="opacity-30">{logo}</div>;
+  return (
+    <a 
+      href={trackingUrl} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="hover:opacity-80 transition-opacity cursor-pointer"
+      title="Отвори товарителница"
+    >
+      {logo}
+    </a>
+  );
 };
