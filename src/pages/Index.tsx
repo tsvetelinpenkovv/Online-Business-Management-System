@@ -119,19 +119,58 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background w-full">
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="w-full px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Package className="w-5 h-5 text-primary-foreground" />
+        <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="text-xl font-semibold">Поръчки</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-semibold truncate">Поръчки</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {filteredOrders.length} поръчки
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          
+          {/* Mobile bulk actions */}
+          {selectedOrders.length > 0 && (
+            <div className="flex items-center gap-1 sm:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1 text-xs px-2">
+                    <Tags className="w-3 h-3" />
+                    <span className="sr-only sm:not-sr-only">Статус</span>
+                    ({selectedOrders.length})
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                  {ORDER_STATUSES.map((status) => (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={() => handleBulkStatusChange(status)}
+                      className="cursor-pointer"
+                    >
+                      <StatusBadge status={status} />
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button onClick={handleBulkPrint} variant="outline" size="sm" className="px-2">
+                <Printer className="w-3 h-3" />
+              </Button>
+              <Button 
+                onClick={() => setShowBulkDeleteDialog(true)} 
+                variant="outline" 
+                size="sm"
+                className="px-2 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+
+          {/* Desktop actions */}
+          <div className="hidden sm:flex items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
                 <DropdownMenu>
@@ -177,10 +216,23 @@ const Index = () => {
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* Mobile menu */}
+          <div className="flex sm:hidden items-center gap-1">
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={refetch} title="Обнови">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('/settings')} title="Настройки">
+              <Settings className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSignOut} title="Изход">
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="w-full px-6 py-6 space-y-4">
+      <main className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4">
         <OrderFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -215,8 +267,8 @@ const Index = () => {
         )}
       </main>
 
-      <footer className="w-full px-6 py-4 border-t bg-card">
-        <p className="text-center text-sm text-muted-foreground">
+      <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground">
           Разработен от{' '}
           <a
             href="https://www.linkedin.com/in/tsvetelinpenkov/"
