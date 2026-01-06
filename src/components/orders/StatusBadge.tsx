@@ -84,7 +84,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status }) => {
   const Icon = config.icon;
 
   return (
-    <span className={config.className}>
+    <span className={config.className} title={`Статус: ${status}`}>
       <Icon className="w-3 h-3" />
       {status}
     </span>
