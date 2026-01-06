@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { 
-  Hash, Tag, Calendar, User, UserCheck, Phone, Euro, Package, 
+  Hash, Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe, Search, ExternalLink
 } from 'lucide-react';
@@ -139,12 +139,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               </TableHead>
               <TableHead className="w-[90px]">
                 <div className="flex items-center gap-1.5">
-                  <Tag className="w-4 h-4 text-muted-foreground" />
-                  Код
-                </div>
-              </TableHead>
-              <TableHead className="w-[90px]">
-                <div className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   Дата
                 </div>
@@ -178,7 +172,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Продукт
                 </div>
               </TableHead>
-              <TableHead className="w-[80px]">
+              <TableHead className="w-[100px]">
                 <div className="flex items-center gap-1.5">
                   <Barcode className="w-4 h-4 text-muted-foreground" />
                   Кат.№
@@ -189,7 +183,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   <Layers className="w-4 h-4 text-muted-foreground" />
                 </div>
               </TableHead>
-              <TableHead className="w-[80px]">
+              <TableHead className="w-[120px]">
                 <div className="flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-muted-foreground" />
                   Доставка
@@ -230,7 +224,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell>
                   <SourceIcon source={order.source} className="w-5 h-5" />
                 </TableCell>
-                <TableCell className="font-mono text-xs">{order.code}</TableCell>
+                
                 <TableCell className="text-xs text-muted-foreground">
                   {format(new Date(order.created_at), 'dd.MM.yyyy')}
                 </TableCell>
@@ -272,7 +266,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">
+                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                   {order.catalog_number || '-'}
                 </TableCell>
                 <TableCell className="text-center">
@@ -288,8 +282,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground truncate max-w-[50px]">
-                      {order.delivery_address ? (order.delivery_address.length > 10 ? order.delivery_address.substring(0, 10) + '...' : order.delivery_address) : '-'}
+                    <span className="text-xs text-muted-foreground line-clamp-2 max-w-[100px]" title={order.delivery_address || ''}>
+                      {order.delivery_address || '-'}
                     </span>
                     {order.delivery_address && (
                       <InfoPopover 
