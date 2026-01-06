@@ -426,18 +426,24 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   </div>
                 </TableCell>
                 <TableCell title={order.courier_tracking_url ? `Проследяване на пратка` : 'Няма товарителница'}>
-                  {order.courier_tracking_url ? (
+                  {order.courier_tracking_url || order.courier_id ? (
                     <div className="flex items-center justify-center gap-1">
-                      <CourierLogo trackingUrl={order.courier_tracking_url} className="w-5 h-5" />
-                      <a 
-                        href={order.courier_tracking_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-600 hover:text-purple-800 transition-colors"
-                        title="Отвори проследяване в нов таб"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      <CourierLogo 
+                        trackingUrl={order.courier_tracking_url} 
+                        courierId={order.courier_id}
+                        className="w-5 h-5" 
+                      />
+                      {order.courier_tracking_url && (
+                        <a 
+                          href={order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-600 hover:text-purple-800 transition-colors"
+                          title="Отвори проследяване в нов таб"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
                     </div>
                   ) : (
                     <span className="text-muted-foreground text-xs">—</span>

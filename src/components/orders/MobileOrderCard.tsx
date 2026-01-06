@@ -153,19 +153,26 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         )}
 
         {/* Courier info */}
-        {order.courier_tracking_url && (
+        {(order.courier_tracking_url || order.courier_id) && (
           <div className="flex items-center gap-2">
-            <CourierLogo trackingUrl={order.courier_tracking_url} className="w-5 h-5" showLink={false} />
-            <a 
-              href={order.courier_tracking_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
-            >
-              <Search className="w-3 h-3" />
-              <span>{order.courier_tracking_url.match(/\d{10,}/)?.[0] || 'Товарителница'}</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            <CourierLogo 
+              trackingUrl={order.courier_tracking_url} 
+              courierId={order.courier_id}
+              className="w-5 h-5" 
+              showLink={false} 
+            />
+            {order.courier_tracking_url && (
+              <a 
+                href={order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+              >
+                <Search className="w-3 h-3" />
+                <span>{order.courier_tracking_url.match(/\d{10,}/)?.[0] || 'Товарителница'}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
         )}
 

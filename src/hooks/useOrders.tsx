@@ -91,6 +91,7 @@ export const useOrders = () => {
           quantity: order.quantity,
           delivery_address: order.delivery_address,
           courier_tracking_url: order.courier_tracking_url,
+          courier_id: order.courier_id,
           status: order.status,
           comment: order.comment,
           source: order.source,

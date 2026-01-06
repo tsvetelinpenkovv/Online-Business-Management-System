@@ -1,23 +1,30 @@
 import { FC } from 'react';
-import { ExternalLink, Truck } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { useCouriers } from '@/hooks/useCouriers';
 
 interface CourierLogoProps {
-  trackingUrl: string | null | undefined;
+  trackingUrl?: string | null;
+  courierId?: string | null;
   className?: string;
   showLink?: boolean;
 }
 
 export const CourierLogo: FC<CourierLogoProps> = ({ 
   trackingUrl, 
+  courierId,
   className = "w-6 h-6",
   showLink = true 
 }) => {
-  const { getCourierByUrl } = useCouriers();
+  const { couriers, getCourierByUrl } = useCouriers();
   
-  if (!trackingUrl) return null;
+  // First try to find courier by ID, then by URL
+  let courier = courierId ? couriers.find(c => c.id === courierId) : null;
+  if (!courier && trackingUrl) {
+    courier = getCourierByUrl(trackingUrl);
+  }
 
-  const courier = getCourierByUrl(trackingUrl);
+  // If no courier found and no tracking URL, show nothing
+  if (!courier && !trackingUrl) return null;
 
   const content = courier?.logo_url ? (
     <img 
@@ -27,12 +34,12 @@ export const CourierLogo: FC<CourierLogoProps> = ({
       title={courier.name}
     />
   ) : (
-    <div title="Куриер">
+    <div title={courier?.name || 'Куриер'}>
       <Truck className={`${className} text-muted-foreground`} />
     </div>
   );
 
-  if (showLink) {
+  if (showLink && trackingUrl) {
     return (
       <a 
         href={trackingUrl} 
