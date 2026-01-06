@@ -68,20 +68,53 @@ const Index = () => {
     navigate('/auth');
   };
 
-  const handleBulkPrintLabels = () => {
+  const handleBulkPrint = () => {
     const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
-    const ordersWithTracking = selectedOrdersData.filter(o => o.courier_tracking_url);
     
-    if (ordersWithTracking.length === 0) {
-      alert('Няма избрани поръчки с товарителници');
+    if (selectedOrdersData.length === 0) {
       return;
     }
 
-    ordersWithTracking.forEach(order => {
-      if (order.courier_tracking_url) {
-        window.open(order.courier_tracking_url, '_blank');
-      }
-    });
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      const ordersHtml = selectedOrdersData.map(order => `
+        <div class="order" style="page-break-after: always;">
+          <h2>Поръчка #${order.id} - ${order.code}</h2>
+          <div class="info"><span class="label">Клиент:</span> ${order.customer_name}</div>
+          <div class="info"><span class="label">Телефон:</span> ${order.phone}</div>
+          <div class="info"><span class="label">Продукт:</span> ${order.product_name}</div>
+          <div class="info"><span class="label">Каталожен номер:</span> ${order.catalog_number || '-'}</div>
+          <div class="info"><span class="label">Количество:</span> ${order.quantity}</div>
+          <div class="info"><span class="label">Цена:</span> €${order.total_price.toFixed(2)}</div>
+          <div class="info"><span class="label">Доставка:</span> ${order.delivery_address || '-'}</div>
+          <div class="info"><span class="label">Статус:</span> ${order.status}</div>
+          <div class="info"><span class="label">Коментар:</span> ${order.comment || '-'}</div>
+        </div>
+      `).join('');
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Печат на ${selectedOrdersData.length} поръчки</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+              .info { margin: 8px 0; }
+              .label { font-weight: bold; }
+              .order { margin-bottom: 30px; }
+              @media print {
+                .order:last-child { page-break-after: avoid; }
+              }
+            </style>
+          </head>
+          <body>
+            ${ordersHtml}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
   };
 
   const handleBulkDelete = async () => {
@@ -120,7 +153,7 @@ const Index = () => {
           <div className="flex items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
-                <Button onClick={handleBulkPrintLabels} variant="outline" className="gap-2">
+                <Button onClick={handleBulkPrint} variant="outline" className="gap-2">
                   <Printer className="w-4 h-4" />
                   Печат ({selectedOrders.length})
                 </Button>
