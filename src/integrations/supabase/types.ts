@@ -65,6 +65,155 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          bank_bic: string | null
+          bank_iban: string | null
+          bank_name: string | null
+          company_name: string | null
+          correspondence_address: string | null
+          created_at: string
+          eik: string | null
+          email: string | null
+          id: string
+          manager_name: string | null
+          next_invoice_number: number | null
+          phone: string | null
+          registered_address: string | null
+          updated_at: string
+          vat_number: string | null
+          vat_registered: boolean | null
+        }
+        Insert: {
+          bank_bic?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          company_name?: string | null
+          correspondence_address?: string | null
+          created_at?: string
+          eik?: string | null
+          email?: string | null
+          id?: string
+          manager_name?: string | null
+          next_invoice_number?: number | null
+          phone?: string | null
+          registered_address?: string | null
+          updated_at?: string
+          vat_number?: string | null
+          vat_registered?: boolean | null
+        }
+        Update: {
+          bank_bic?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          company_name?: string | null
+          correspondence_address?: string | null
+          created_at?: string
+          eik?: string | null
+          email?: string | null
+          id?: string
+          manager_name?: string | null
+          next_invoice_number?: number | null
+          phone?: string | null
+          registered_address?: string | null
+          updated_at?: string
+          vat_number?: string | null
+          vat_registered?: boolean | null
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          buyer_address: string | null
+          buyer_eik: string | null
+          buyer_email: string | null
+          buyer_name: string
+          buyer_phone: string | null
+          buyer_vat_number: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_number: number
+          issue_date: string
+          notes: string | null
+          order_id: number | null
+          product_description: string
+          quantity: number
+          seller_address: string | null
+          seller_eik: string | null
+          seller_name: string
+          seller_vat_number: string | null
+          subtotal: number
+          tax_event_date: string | null
+          total_amount: number
+          unit_price: number
+          vat_amount: number | null
+          vat_rate: number | null
+        }
+        Insert: {
+          buyer_address?: string | null
+          buyer_eik?: string | null
+          buyer_email?: string | null
+          buyer_name: string
+          buyer_phone?: string | null
+          buyer_vat_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_number: number
+          issue_date?: string
+          notes?: string | null
+          order_id?: number | null
+          product_description: string
+          quantity?: number
+          seller_address?: string | null
+          seller_eik?: string | null
+          seller_name: string
+          seller_vat_number?: string | null
+          subtotal: number
+          tax_event_date?: string | null
+          total_amount: number
+          unit_price: number
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Update: {
+          buyer_address?: string | null
+          buyer_eik?: string | null
+          buyer_email?: string | null
+          buyer_name?: string
+          buyer_phone?: string | null
+          buyer_vat_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_number?: number
+          issue_date?: string
+          notes?: string | null
+          order_id?: number | null
+          product_description?: string
+          quantity?: number
+          seller_address?: string | null
+          seller_eik?: string | null
+          seller_name?: string
+          seller_vat_number?: string | null
+          subtotal?: number
+          tax_event_date?: string | null
+          total_amount?: number
+          unit_price?: number
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           catalog_number: string | null

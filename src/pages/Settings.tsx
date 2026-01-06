@@ -10,9 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
+import { Switch } from '@/components/ui/switch';
 
 interface AllowedUser {
   id: string;
@@ -20,6 +21,23 @@ interface AllowedUser {
   name: string;
   role: 'admin' | 'user';
   created_at: string;
+}
+
+interface CompanySettings {
+  id: string;
+  company_name: string | null;
+  eik: string | null;
+  registered_address: string | null;
+  correspondence_address: string | null;
+  manager_name: string | null;
+  vat_registered: boolean;
+  vat_number: string | null;
+  email: string | null;
+  phone: string | null;
+  bank_name: string | null;
+  bank_iban: string | null;
+  bank_bic: string | null;
+  next_invoice_number: number;
 }
 
 const Settings = () => {
@@ -44,6 +62,11 @@ const Settings = () => {
   const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
   const [addingUser, setAddingUser] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+
+  // Company settings state
+  const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
+  const [loadingCompany, setLoadingCompany] = useState(false);
+  const [savingCompany, setSavingCompany] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -87,8 +110,68 @@ const Settings = () => {
     if (user) {
       fetchSettings();
       checkAdminAndFetchUsers();
+      fetchCompanySettings();
     }
   }, [user, toast]);
+
+  const fetchCompanySettings = async () => {
+    setLoadingCompany(true);
+    try {
+      const { data, error } = await supabase
+        .from('company_settings')
+        .select('*')
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+      setCompanySettings(data as CompanySettings);
+    } catch (error) {
+      console.error('Error fetching company settings:', error);
+    } finally {
+      setLoadingCompany(false);
+    }
+  };
+
+  const handleSaveCompanySettings = async () => {
+    if (!companySettings) return;
+    
+    setSavingCompany(true);
+    try {
+      const { error } = await supabase
+        .from('company_settings')
+        .update({
+          company_name: companySettings.company_name,
+          eik: companySettings.eik,
+          registered_address: companySettings.registered_address,
+          correspondence_address: companySettings.correspondence_address,
+          manager_name: companySettings.manager_name,
+          vat_registered: companySettings.vat_registered,
+          vat_number: companySettings.vat_number,
+          email: companySettings.email,
+          phone: companySettings.phone,
+          bank_name: companySettings.bank_name,
+          bank_iban: companySettings.bank_iban,
+          bank_bic: companySettings.bank_bic,
+          next_invoice_number: companySettings.next_invoice_number,
+        })
+        .eq('id', companySettings.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Успех',
+        description: 'Фирмените данни бяха запазени',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно запазване на фирмените данни',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingCompany(false);
+    }
+  };
 
   const checkAdminAndFetchUsers = async () => {
     if (!user?.email) return;
@@ -362,11 +445,199 @@ const Settings = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         <Tabs defaultValue="api" className="w-full">
-          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="api">API Настройки</TabsTrigger>
-            <TabsTrigger value="branding">Лого на фирмата</TabsTrigger>
+            <TabsTrigger value="branding">Лого</TabsTrigger>
+            <TabsTrigger value="company">Фирмени данни</TabsTrigger>
             {isAdmin && <TabsTrigger value="users">Потребители</TabsTrigger>}
           </TabsList>
+
+          <TabsContent value="company" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Фирмени данни
+                </CardTitle>
+                <CardDescription>
+                  Данни за вашата фирма, които ще се използват при издаване на фактури
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {loadingCompany ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : companySettings ? (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="company-name">Пълно наименование на фирмата *</Label>
+                        <Input
+                          id="company-name"
+                          placeholder="ООД / ЕООД / ЕТ ..."
+                          value={companySettings.company_name || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, company_name: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="company-eik">ЕИК / Булстат *</Label>
+                        <Input
+                          id="company-eik"
+                          placeholder="123456789"
+                          value={companySettings.eik || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, eik: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="manager-name">Управител / Представляващ</Label>
+                        <Input
+                          id="manager-name"
+                          placeholder="Иван Иванов"
+                          value={companySettings.manager_name || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, manager_name: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="registered-address">Седалище и адрес на управление *</Label>
+                        <Input
+                          id="registered-address"
+                          placeholder="гр. София, ул. Примерна 1"
+                          value={companySettings.registered_address || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, registered_address: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="correspondence-address">Адрес за кореспонденция (ако е различен)</Label>
+                        <Input
+                          id="correspondence-address"
+                          placeholder="гр. София, ул. Друга 2"
+                          value={companySettings.correspondence_address || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, correspondence_address: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Регистрация по ДДС</h3>
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          id="vat-registered"
+                          checked={companySettings.vat_registered}
+                          onCheckedChange={(checked) => setCompanySettings({...companySettings, vat_registered: checked})}
+                        />
+                        <Label htmlFor="vat-registered">Регистрирана по ДДС</Label>
+                      </div>
+                      {companySettings.vat_registered && (
+                        <div className="space-y-2">
+                          <Label htmlFor="vat-number">ДДС номер</Label>
+                          <Input
+                            id="vat-number"
+                            placeholder="BG123456789"
+                            value={companySettings.vat_number || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, vat_number: e.target.value})}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="company-email">Имейл</Label>
+                        <Input
+                          id="company-email"
+                          type="email"
+                          placeholder="office@firma.bg"
+                          value={companySettings.email || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, email: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="company-phone">Телефон</Label>
+                        <Input
+                          id="company-phone"
+                          placeholder="+359 888 123 456"
+                          value={companySettings.phone || ''}
+                          onChange={(e) => setCompanySettings({...companySettings, phone: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Банкова сметка</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bank-name">Банка</Label>
+                          <Input
+                            id="bank-name"
+                            placeholder="Примерна Банка АД"
+                            value={companySettings.bank_name || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, bank_name: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="bank-bic">BIC</Label>
+                          <Input
+                            id="bank-bic"
+                            placeholder="ABCDBGSF"
+                            value={companySettings.bank_bic || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, bank_bic: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                          <Label htmlFor="bank-iban">IBAN</Label>
+                          <Input
+                            id="bank-iban"
+                            placeholder="BG12ABCD12345678901234"
+                            value={companySettings.bank_iban || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, bank_iban: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <Label htmlFor="next-invoice">Следващ номер на фактура</Label>
+                      <Input
+                        id="next-invoice"
+                        type="number"
+                        value={companySettings.next_invoice_number}
+                        onChange={(e) => setCompanySettings({...companySettings, next_invoice_number: parseInt(e.target.value) || 1})}
+                        className="w-[200px]"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Номерът автоматично се увеличава след издаване на фактура
+                      </p>
+                    </div>
+
+                    <Button onClick={handleSaveCompanySettings} disabled={savingCompany} className="w-full sm:w-auto">
+                      {savingCompany ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Запазване...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Запази фирмени данни
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">Грешка при зареждане на данните</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {isAdmin && (
             <TabsContent value="users" className="space-y-6">
