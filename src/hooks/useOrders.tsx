@@ -51,6 +51,29 @@ export const useOrders = () => {
     }
   };
 
+  const deleteOrders = async (ids: number[]) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .in('id', ids);
+
+      if (error) throw error;
+
+      setOrders(orders.filter(order => !ids.includes(order.id)));
+      toast({
+        title: 'Успех',
+        description: `${ids.length} поръчки бяха изтрити`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно изтриване на поръчките',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const updateOrder = async (order: Order) => {
     try {
       const { error } = await supabase
@@ -92,5 +115,5 @@ export const useOrders = () => {
     fetchOrders();
   }, []);
 
-  return { orders, loading, deleteOrder, updateOrder, refetch: fetchOrders };
+  return { orders, loading, deleteOrder, deleteOrders, updateOrder, refetch: fetchOrders };
 };
