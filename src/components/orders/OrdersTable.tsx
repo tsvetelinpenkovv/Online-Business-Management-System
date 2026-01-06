@@ -2,7 +2,7 @@ import { FC, useState } from 'react';
 import { 
   Hash, Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -207,7 +207,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Коментар
                 </div>
               </TableHead>
-              <TableHead className="w-[60px] text-center">Действия</TableHead>
+              <TableHead className="w-[50px] text-center">
+                <Settings2 className="w-4 h-4 text-muted-foreground mx-auto" />
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -316,9 +318,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableCell>
                 <TableCell>
                   {order.comment ? (
-                    <span className="comment-bubble">
-                      {order.comment}
-                    </span>
+                    <InfoPopover 
+                      title="Коментар" 
+                      icon="info"
+                      content={order.comment}
+                    >
+                      <span className="comment-bubble line-clamp-3 cursor-pointer">
+                        {order.comment}
+                      </span>
+                    </InfoPopover>
                   ) : (
                     <span className="text-muted-foreground text-sm">-</span>
                   )}
