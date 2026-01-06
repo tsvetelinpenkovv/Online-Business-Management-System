@@ -216,12 +216,12 @@ const Index = () => {
                     ({selectedOrders.length})
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
                   {ORDER_STATUSES.map((status) => (
                     <DropdownMenuItem
                       key={status}
                       onClick={() => handleBulkStatusChange(status)}
-                      className="cursor-pointer"
+                      className="p-1 focus:bg-transparent hover:bg-transparent cursor-pointer"
                     >
                       <StatusBadge status={status} />
                     </DropdownMenuItem>
@@ -253,12 +253,12 @@ const Index = () => {
                       Смени статус ({selectedOrders.length})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
                     {ORDER_STATUSES.map((status) => (
                       <DropdownMenuItem
                         key={status}
                         onClick={() => handleBulkStatusChange(status)}
-                        className="cursor-pointer"
+                        className="p-1 focus:bg-transparent hover:bg-transparent cursor-pointer"
                       >
                         <StatusBadge status={status} />
                       </DropdownMenuItem>
