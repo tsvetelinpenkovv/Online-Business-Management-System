@@ -119,7 +119,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full">
+    <div className="min-h-screen bg-background w-full flex flex-col">
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -242,7 +242,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4">
+      <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
         <OrderFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -267,17 +267,19 @@ const Index = () => {
             <p>Няма намерени поръчки</p>
           </div>
         ) : (
-          <OrdersTable
-            orders={filteredOrders}
-            onDelete={deleteOrder}
-            onUpdate={updateOrder}
-            selectedOrders={selectedOrders}
-            onSelectionChange={setSelectedOrders}
-          />
+          <div className="w-full overflow-x-auto">
+            <OrdersTable
+              orders={filteredOrders}
+              onDelete={deleteOrder}
+              onUpdate={updateOrder}
+              selectedOrders={selectedOrders}
+              onSelectionChange={setSelectedOrders}
+            />
+          </div>
         )}
       </main>
 
-      <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card">
+      <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card mt-auto">
         <p className="text-center text-xs sm:text-sm text-muted-foreground">
           Разработен от{' '}
           <a
