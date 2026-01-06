@@ -77,7 +77,6 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
       <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
         <SelectTrigger className="w-[180px]">
-          <Globe className="w-4 h-4 mr-2" />
           <SelectValue placeholder="Източник" />
         </SelectTrigger>
         <SelectContent>
