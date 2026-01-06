@@ -64,28 +64,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const getRowColorByStatus = (status: string) => {
     switch (status) {
       case 'Нова':
-        return 'bg-blue-50/70 hover:bg-blue-100/70 dark:bg-blue-950/30 dark:hover:bg-blue-900/40';
       case 'В обработка':
-        return 'bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-950/20 dark:hover:bg-amber-900/30';
-      case 'Неуспешна връзка':
-        return 'bg-orange-50/50 hover:bg-orange-100/50 dark:bg-orange-950/20 dark:hover:bg-orange-900/30';
-      case 'Потвърдена':
-        return 'bg-cyan-50/50 hover:bg-cyan-100/50 dark:bg-cyan-950/20 dark:hover:bg-cyan-900/30';
-      case 'Платена с карта':
-      case 'На лизинг през TBI':
-      case 'На лизинг през BNP':
-        return 'bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30';
-      case 'Изпратена':
-        return 'bg-purple-50/50 hover:bg-purple-100/50 dark:bg-purple-950/20 dark:hover:bg-purple-900/30';
-      case 'Неуспешна доставка':
-        return 'bg-red-50/50 hover:bg-red-100/50 dark:bg-red-950/20 dark:hover:bg-red-900/30';
-      case 'Доставена':
-      case 'Завършена':
-        return 'bg-green-50/50 hover:bg-green-100/50 dark:bg-green-950/20 dark:hover:bg-green-900/30';
-      case 'Върната':
-      case 'Отказана':
-      case 'Анулирана':
-        return 'bg-gray-100/50 hover:bg-gray-200/50 dark:bg-gray-800/30 dark:hover:bg-gray-700/40';
+        return 'bg-muted/40 hover:bg-muted/60';
       default:
         return 'hover:bg-muted/30';
     }
