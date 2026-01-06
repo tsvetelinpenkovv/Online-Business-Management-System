@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 
@@ -231,6 +231,50 @@ const Settings = () => {
               <p className="text-sm text-muted-foreground">
                 Добавете този URL в WooCommerce → Settings → Advanced → Webhooks
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5" />
+              Nekorekten.com API
+            </CardTitle>
+            <CardDescription>
+              Проверка на телефонни номера за некоректни клиенти
+              <a 
+                href="https://nekorekten.com/bg/api/doc" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 ml-2 text-primary hover:underline"
+              >
+                Документация <ExternalLink className="w-3 h-3" />
+              </a>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nekorekten_api_key">API ключ</Label>
+              <Input
+                id="nekorekten_api_key"
+                type="password"
+                placeholder="Вашият Nekorekten API ключ"
+                value={settings.nekorekten_api_key || ''}
+                onChange={(e) => setSettings({ ...settings, nekorekten_api_key: e.target.value })}
+              />
+              <p className="text-sm text-muted-foreground">
+                Можете да получите API ключ от профила си в Nekorekten.com
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nekorekten_site_id">Site ID (опционално)</Label>
+              <Input
+                id="nekorekten_site_id"
+                placeholder="ID на вашия сайт в Nekorekten"
+                value={settings.nekorekten_site_id || ''}
+                onChange={(e) => setSettings({ ...settings, nekorekten_site_id: e.target.value })}
+              />
             </div>
           </CardContent>
         </Card>
