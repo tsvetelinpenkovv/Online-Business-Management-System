@@ -10,6 +10,7 @@ import { EcontLogo } from '@/components/icons/EcontLogo';
 import { StatusBadge } from './StatusBadge';
 import { PhoneWithFlag } from './PhoneWithFlag';
 import { InfoPopover } from './InfoPopover';
+import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -36,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { CheckCircle2, XCircle } from 'lucide-react';
+
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { EditOrderDialog } from './EditOrderDialog';
@@ -234,12 +235,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   {format(new Date(order.created_at), 'dd MMM', { locale: bg })}
                 </TableCell>
                 <TableCell className="font-medium text-sm">{order.customer_name}</TableCell>
-                <TableCell className="text-center">
-                  {order.is_correct ? (
-                    <CheckCircle2 className="w-4 h-4 text-success mx-auto" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-destructive mx-auto" />
-                  )}
+                <TableCell>
+                  <CorrectStatusIcon isCorrect={order.is_correct} />
                 </TableCell>
                 <TableCell className="text-sm">
                   <PhoneWithFlag phone={order.phone} />
