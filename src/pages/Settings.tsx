@@ -9,9 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
+
+interface AllowedUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'user';
+  created_at: string;
+}
 
 const Settings = () => {
   const { user, loading: authLoading } = useAuth();
@@ -24,6 +33,17 @@ const Settings = () => {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [customApis, setCustomApis] = useState<{ key: string; value: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // User management state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [allowedUsers, setAllowedUsers] = useState<AllowedUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
+  const [addingUser, setAddingUser] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -66,8 +86,141 @@ const Settings = () => {
 
     if (user) {
       fetchSettings();
+      checkAdminAndFetchUsers();
     }
   }, [user, toast]);
+
+  const checkAdminAndFetchUsers = async () => {
+    if (!user?.email) return;
+    
+    try {
+      // Check if current user is admin
+      const { data: adminCheck } = await supabase.rpc('is_admin', { _email: user.email });
+      setIsAdmin(adminCheck || false);
+      
+      if (adminCheck) {
+        // Fetch allowed users
+        setLoadingUsers(true);
+        const { data, error } = await supabase
+          .from('allowed_users')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        setAllowedUsers((data as AllowedUser[]) || []);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleAddUser = async () => {
+    if (!newUserEmail || !newUserName || !newUserPassword) {
+      toast({
+        title: 'Грешка',
+        description: 'Моля попълнете всички полета',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (newUserPassword.length < 6) {
+      toast({
+        title: 'Грешка',
+        description: 'Паролата трябва да е поне 6 символа',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setAddingUser(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('invite-user', {
+        body: {
+          email: newUserEmail,
+          name: newUserName,
+          password: newUserPassword,
+          role: newUserRole,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast({
+        title: 'Успех',
+        description: 'Потребителят беше добавен успешно',
+      });
+
+      // Reset form
+      setNewUserEmail('');
+      setNewUserName('');
+      setNewUserPassword('');
+      setNewUserRole('user');
+
+      // Refresh users list
+      checkAdminAndFetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно добавяне на потребител',
+        variant: 'destructive',
+      });
+    } finally {
+      setAddingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (userToDelete: AllowedUser) => {
+    if (userToDelete.email === user?.email) {
+      toast({
+        title: 'Грешка',
+        description: 'Не можете да изтриете себе си',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setDeletingUserId(userToDelete.id);
+    try {
+      const response = await supabase.functions.invoke('delete-user', {
+        body: { email: userToDelete.email },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast({
+        title: 'Успех',
+        description: 'Потребителят беше изтрит',
+      });
+
+      // Refresh users list
+      checkAdminAndFetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно изтриване на потребител',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -209,10 +362,151 @@ const Settings = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         <Tabs defaultValue="api" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="api">API Настройки</TabsTrigger>
             <TabsTrigger value="branding">Лого на фирмата</TabsTrigger>
+            {isAdmin && <TabsTrigger value="users">Потребители</TabsTrigger>}
           </TabsList>
+
+          {isAdmin && (
+            <TabsContent value="users" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserPlus className="w-5 h-5" />
+                    Добави нов потребител
+                  </CardTitle>
+                  <CardDescription>
+                    Добавете хора които могат да влизат в системата и да работят с поръчките
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-user-name">Име</Label>
+                      <Input
+                        id="new-user-name"
+                        placeholder="Иван Иванов"
+                        value={newUserName}
+                        onChange={(e) => setNewUserName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-user-email">Имейл</Label>
+                      <Input
+                        id="new-user-email"
+                        type="email"
+                        placeholder="ivan@example.com"
+                        value={newUserEmail}
+                        onChange={(e) => setNewUserEmail(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-user-password">Парола</Label>
+                      <Input
+                        id="new-user-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={newUserPassword}
+                        onChange={(e) => setNewUserPassword(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-user-role">Роля</Label>
+                      <Select value={newUserRole} onValueChange={(v: 'admin' | 'user') => setNewUserRole(v)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user">Потребител</SelectItem>
+                          <SelectItem value="admin">Администратор</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button onClick={handleAddUser} disabled={addingUser} className="w-full sm:w-auto">
+                    {addingUser ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Добавяне...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Добави потребител
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Потребители с достъп
+                  </CardTitle>
+                  <CardDescription>
+                    Списък на всички потребители които имат достъп до системата
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingUsers ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : allowedUsers.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">Няма добавени потребители</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {allowedUsers.map((allowedUser) => (
+                        <div
+                          key={allowedUser.id}
+                          className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            {allowedUser.role === 'admin' && (
+                              <Crown className="w-4 h-4 text-warning" />
+                            )}
+                            <div>
+                              <p className="font-medium">{allowedUser.name}</p>
+                              <p className="text-sm text-muted-foreground">{allowedUser.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              allowedUser.role === 'admin' 
+                                ? 'bg-warning/20 text-warning' 
+                                : 'bg-primary/20 text-primary'
+                            }`}>
+                              {allowedUser.role === 'admin' ? 'Админ' : 'Потребител'}
+                            </span>
+                            {allowedUser.email !== user?.email && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteUser(allowedUser)}
+                                disabled={deletingUserId === allowedUser.id}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                {deletingUserId === allowedUser.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="branding" className="space-y-6">
             <Card>
