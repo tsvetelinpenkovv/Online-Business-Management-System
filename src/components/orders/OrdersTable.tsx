@@ -284,10 +284,17 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       title="Детайли на продукта" 
                       icon="eye"
                       content={
-                        <div className="space-y-1">
-                          <p><strong>Продукт:</strong> {order.product_name}</p>
-                          <p><strong>Кат. номер:</strong> {order.catalog_number || '-'}</p>
+                        <div className="space-y-2">
                           <p className="flex items-center gap-2">
+                            <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span><strong>Продукт:</strong> {order.product_name}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            <span><strong>Кат. номер:</strong> {order.catalog_number || '-'}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <strong>Количество:</strong> 
                             {order.quantity > 1 ? (
                               <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-destructive/15 text-destructive text-xs font-semibold">
@@ -299,7 +306,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                               </span>
                             )}
                           </p>
-                          <p><strong>Цена:</strong> €{order.total_price.toFixed(2)}</p>
+                          <p className="flex items-center gap-2">
+                            <Euro className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            <span><strong>Цена:</strong> €{order.total_price.toFixed(2)}</span>
+                          </p>
                         </div>
                       }
                     />
@@ -368,7 +378,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <InfoPopover 
                       title="Коментар" 
                       icon="info"
-                      content={order.comment}
+                      content={
+                        <div className="flex items-start gap-2">
+                          <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <span>{order.comment}</span>
+                        </div>
+                      }
                     >
                       <span className="comment-bubble line-clamp-3 cursor-pointer">
                         {order.comment}
