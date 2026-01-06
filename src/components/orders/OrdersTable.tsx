@@ -228,14 +228,14 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-xs text-muted-foreground">
                   {format(new Date(order.created_at), 'dd.MM.yyyy')}
                 </TableCell>
-                <TableCell className="font-medium text-sm">{order.customer_name}</TableCell>
+                <TableCell className="text-sm">{order.customer_name}</TableCell>
                 <TableCell>
                   <CorrectStatusIcon isCorrect={order.is_correct} />
                 </TableCell>
                 <TableCell className="text-sm">
                   <PhoneWithFlag phone={order.phone} />
                 </TableCell>
-                <TableCell className="font-semibold text-sm">€{order.total_price.toFixed(2)}</TableCell>
+                <TableCell className="text-sm font-medium">€{order.total_price.toFixed(2)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <span className="text-sm line-clamp-2 max-w-[80px]" title={order.product_name}>
