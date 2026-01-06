@@ -244,8 +244,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="font-semibold text-sm">€{order.total_price.toFixed(2)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm truncate max-w-[70px]" title={order.product_name}>
-                      {order.product_name.length > 15 ? order.product_name.substring(0, 15) + '...' : order.product_name}
+                    <span className="text-sm line-clamp-2 max-w-[80px]" title={order.product_name}>
+                      {order.product_name}
                     </span>
                     <InfoPopover 
                       title="Детайли на продукта" 

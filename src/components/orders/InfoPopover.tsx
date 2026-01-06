@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useState } from 'react';
 import { Info, Eye } from 'lucide-react';
 import {
   Popover,
@@ -14,15 +14,20 @@ interface InfoPopoverProps {
 }
 
 export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info' }) => {
+  const [open, setOpen] = useState(false);
   const Icon = icon === 'eye' ? Eye : Info;
   
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-5 w-5 text-muted-foreground hover:text-foreground"
+          className={`h-5 w-5 transition-colors ${
+            open 
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
         >
           <Icon className="w-3.5 h-3.5" />
         </Button>
