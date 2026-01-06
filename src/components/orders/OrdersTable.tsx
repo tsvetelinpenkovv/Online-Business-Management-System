@@ -332,7 +332,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       <InfoPopover 
                         title="Адрес за доставка" 
                         icon="eye"
-                        content={order.delivery_address}
+                        content={
+                          <div className="flex items-start gap-2">
+                            <Truck className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                            <span>{order.delivery_address}</span>
+                          </div>
+                        }
                       />
                     )}
                   </div>
