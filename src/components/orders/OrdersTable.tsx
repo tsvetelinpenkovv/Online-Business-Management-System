@@ -2,7 +2,7 @@ import { FC, useState } from 'react';
 import { 
   Hash, Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, Sparkles
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -222,17 +222,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     aria-label={`Избери поръчка ${order.id}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex flex-col items-start gap-0.5">
-                    {order.status === 'Нова' && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold">
-                        <Sparkles className="w-2.5 h-2.5" />
-                        НОВА
-                      </span>
-                    )}
-                    <span>#{order.id}</span>
-                  </div>
-                </TableCell>
+                <TableCell className="font-medium">#{order.id}</TableCell>
                 <TableCell>
                   <SourceIcon source={order.source} className="w-5 h-5" />
                 </TableCell>
