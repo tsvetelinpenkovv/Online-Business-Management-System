@@ -13,6 +13,7 @@ import { InfoPopover } from './InfoPopover';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
 import {
   Table,
   TableBody,
@@ -39,7 +40,6 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { format } from 'date-fns';
-import { bg } from 'date-fns/locale';
 import { EditOrderDialog } from './EditOrderDialog';
 
 interface OrdersTableProps {
@@ -59,6 +59,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
+  const { toast } = useToast();
+
+  const handleCopyCatalog = (catalogNumber: string) => {
+    navigator.clipboard.writeText(catalogNumber);
+    toast({
+      title: 'Копирано',
+      description: `Каталожен номер ${catalogNumber} е копиран`,
+    });
+  };
 
   const handlePrint = (order: Order) => {
     const printWindow = window.open('', '_blank');
@@ -268,7 +277,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                <TableCell 
+                  className="font-mono text-xs text-muted-foreground whitespace-nowrap cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => order.catalog_number && handleCopyCatalog(order.catalog_number)}
+                  title={order.catalog_number ? "Кликни за копиране" : undefined}
+                >
                   {order.catalog_number || '-'}
                 </TableCell>
                 <TableCell className="text-center">
