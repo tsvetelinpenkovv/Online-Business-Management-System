@@ -198,7 +198,7 @@ const Index = () => {
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-base sm:text-xl font-semibold truncate">Поръчки</h1>
+              <h1 className="text-base sm:text-xl font-semibold truncate">Управление на поръчки</h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {filteredOrders.length} поръчки
               </p>
