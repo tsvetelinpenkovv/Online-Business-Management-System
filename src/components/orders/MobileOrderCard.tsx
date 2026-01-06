@@ -99,7 +99,10 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
-            {format(new Date(order.created_at), 'dd.MM.yyyy HH:mm')}
+            <div className="flex flex-col">
+              <span>{format(new Date(order.created_at), 'dd.MM.yyyy')}</span>
+              <span className="text-xs opacity-70">{format(new Date(order.created_at), 'HH:mm')}</span>
+            </div>
           </div>
           <StatusBadge status={order.status} />
         </div>
