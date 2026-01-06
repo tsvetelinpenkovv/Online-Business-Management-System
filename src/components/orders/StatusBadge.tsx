@@ -117,7 +117,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
             <DropdownMenuItem
               key={s}
               onClick={() => onStatusChange(s)}
-              className={`flex items-center gap-2 p-1 ${s === status ? 'bg-muted/50' : ''}`}
+              className={`p-1 focus:bg-transparent hover:bg-transparent ${s === status ? 'bg-muted/30' : ''}`}
             >
               <span className={sConfig.className}>
                 <SIcon className="w-3 h-3" />
