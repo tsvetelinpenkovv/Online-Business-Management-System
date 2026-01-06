@@ -215,6 +215,20 @@ const Index = () => {
         )}
       </main>
 
+      <footer className="w-full px-6 py-4 border-t bg-card">
+        <p className="text-center text-sm text-muted-foreground">
+          Разработен от{' '}
+          <a
+            href="https://www.linkedin.com/in/tsvetelinpenkov/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium"
+          >
+            Цветелин Пенков
+          </a>
+        </p>
+      </footer>
+
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
