@@ -169,10 +169,7 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Имейл
-              </Label>
+              <Label htmlFor="email">Имейл</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -187,10 +184,7 @@ const Auth = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Парола
-              </Label>
+              <Label htmlFor="password">Парола</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -204,19 +198,21 @@ const Auth = () => {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full mt-6" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Влизане...
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Вход
-                </>
-              )}
-            </Button>
+            <div className="pt-4">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Влизане...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Вход
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
 
           {showForgotPassword ? (
@@ -226,10 +222,7 @@ const Auth = () => {
               </p>
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email" className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    Имейл
-                  </Label>
+                  <Label htmlFor="reset-email">Имейл</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
