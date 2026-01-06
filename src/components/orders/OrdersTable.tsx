@@ -307,7 +307,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableCell>
                 
                 <TableCell className="text-xs text-muted-foreground" title={`Дата на поръчка: ${format(new Date(order.created_at), 'dd.MM.yyyy HH:mm')}`}>
-                  {format(new Date(order.created_at), 'dd.MM.yyyy')}
+                  <div className="flex flex-col">
+                    <span>{format(new Date(order.created_at), 'dd.MM.yyyy')}</span>
+                    <span className="text-[10px] opacity-70">{format(new Date(order.created_at), 'HH:mm')}</span>
+                  </div>
                 </TableCell>
                 <TableCell className="text-sm">
                   <div className="flex items-center gap-1">
