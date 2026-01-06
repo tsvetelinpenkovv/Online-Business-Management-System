@@ -281,7 +281,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       {order.quantity}
                     </span>
                   ) : (
-                    <span className="text-sm">{order.quantity}</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs">
+                      {order.quantity}
+                    </span>
                   )}
                 </TableCell>
                 <TableCell>
