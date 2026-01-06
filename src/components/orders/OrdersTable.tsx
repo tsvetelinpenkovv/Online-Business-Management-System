@@ -163,6 +163,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               onEdit={() => setEditOrder(order)}
               onDelete={() => setDeleteId(order.id)}
               onPrint={() => handlePrint(order)}
+              onStatusChange={(orderId, newStatus) => {
+                const orderToUpdate = orders.find(o => o.id === orderId);
+                if (orderToUpdate) {
+                  onUpdate({ ...orderToUpdate, status: newStatus });
+                }
+              }}
             />
           ))}
         </div>
