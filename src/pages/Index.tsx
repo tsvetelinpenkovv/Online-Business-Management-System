@@ -221,7 +221,7 @@ const Index = () => {
                     <DropdownMenuItem
                       key={status}
                       onClick={() => handleBulkStatusChange(status)}
-                      className="p-1 focus:bg-transparent hover:bg-transparent cursor-pointer"
+                      className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
                     >
                       <StatusBadge status={status} />
                     </DropdownMenuItem>
@@ -258,7 +258,7 @@ const Index = () => {
                       <DropdownMenuItem
                         key={status}
                         onClick={() => handleBulkStatusChange(status)}
-                        className="p-1 focus:bg-transparent hover:bg-transparent cursor-pointer"
+                        className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
                       >
                         <StatusBadge status={status} />
                       </DropdownMenuItem>

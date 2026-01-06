@@ -107,7 +107,9 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {badge}
+        <span className="transition-transform duration-200">
+          {badge}
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto bg-popover z-50 p-1">
         {ORDER_STATUSES.map((s) => {
@@ -117,7 +119,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
             <DropdownMenuItem
               key={s}
               onClick={() => onStatusChange(s)}
-              className={`p-1 focus:bg-transparent hover:bg-transparent ${s === status ? 'bg-muted/30' : ''}`}
+              className={`p-1.5 rounded-md cursor-pointer ${s === status ? 'bg-muted' : 'hover:bg-muted/50'}`}
             >
               <span className={sConfig.className}>
                 <SIcon className="w-3 h-3" />
