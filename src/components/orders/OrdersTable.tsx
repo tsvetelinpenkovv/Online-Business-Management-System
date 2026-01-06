@@ -231,22 +231,22 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     aria-label={`Избери поръчка ${order.id}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium">#{order.id}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium" title={`Поръчка номер ${order.id}`}>#{order.id}</TableCell>
+                <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
                   <SourceIcon source={order.source} className="w-5 h-5" />
                 </TableCell>
                 
-                <TableCell className="text-xs text-muted-foreground">
+                <TableCell className="text-xs text-muted-foreground" title={`Дата на поръчка: ${format(new Date(order.created_at), 'dd.MM.yyyy HH:mm')}`}>
                   {format(new Date(order.created_at), 'dd.MM.yyyy')}
                 </TableCell>
-                <TableCell className="text-sm">{order.customer_name}</TableCell>
+                <TableCell className="text-sm" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</TableCell>
                 <TableCell>
                   <CorrectStatusIcon isCorrect={order.is_correct} />
                 </TableCell>
                 <TableCell className="text-sm">
                   <PhoneWithFlag phone={order.phone} />
                 </TableCell>
-                <TableCell className="text-sm font-medium">€{order.total_price.toFixed(2)}</TableCell>
+                <TableCell className="text-sm font-medium" title={`Обща сума: €${order.total_price.toFixed(2)}`}>€{order.total_price.toFixed(2)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <span className="text-sm line-clamp-2 max-w-[80px]" title={order.product_name}>
@@ -284,7 +284,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 >
                   {order.catalog_number || '-'}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center" title={`Количество: ${order.quantity} бр.`}>
                   {order.quantity > 1 ? (
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-destructive/15 text-destructive text-xs font-semibold">
                       {order.quantity}
@@ -309,7 +309,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell title={order.courier_tracking_url ? `Проследяване на пратка` : 'Няма товарителница'}>
                   <div className="flex flex-col items-center gap-1">
                     <EcontLogo className="w-6 h-6" trackingUrl={order.courier_tracking_url} />
                     {order.courier_tracking_url && (
@@ -318,6 +318,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                        title="Отвори проследяване в нов таб"
                       >
                         <Search className="w-3 h-3" />
                         <span>{order.courier_tracking_url.match(/\d{10}/)?.[0] || 'Товарителница'}</span>
@@ -344,10 +345,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <span className="text-muted-foreground text-sm">-</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell title="Действия с поръчката">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" title="Отвори меню с действия">
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
