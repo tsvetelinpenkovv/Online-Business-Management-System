@@ -25,11 +25,11 @@ export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info
           size="icon" 
           className={`h-5 w-5 transition-colors ${
             open 
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' 
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <Icon className="w-3.5 h-3.5" />
+          <Icon className={`w-3.5 h-3.5 ${open ? 'text-primary-foreground' : ''}`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
