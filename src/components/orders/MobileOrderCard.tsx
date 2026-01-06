@@ -4,7 +4,7 @@ import {
   MoreHorizontal, Pencil, Trash2, Printer, Calendar,
   Barcode, ExternalLink, Search, Globe
 } from 'lucide-react';
-import { Order } from '@/types/order';
+import { Order, OrderStatus } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
@@ -28,6 +28,7 @@ interface MobileOrderCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onPrint: () => void;
+  onStatusChange?: (orderId: number, newStatus: OrderStatus) => void;
 }
 
 export const MobileOrderCard: FC<MobileOrderCardProps> = ({
@@ -37,6 +38,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onEdit,
   onDelete,
   onPrint,
+  onStatusChange,
 }) => {
   const getCardBorderColor = (status: string) => {
     switch (status) {
@@ -104,7 +106,11 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               <span className="text-xs opacity-70">{format(new Date(order.created_at), 'HH:mm')}</span>
             </div>
           </div>
-          <StatusBadge status={order.status} />
+          <StatusBadge 
+            status={order.status} 
+            editable={!!onStatusChange}
+            onStatusChange={(newStatus) => onStatusChange?.(order.id, newStatus)}
+          />
         </div>
 
         {/* Customer info */}
