@@ -331,6 +331,29 @@ const Index = () => {
       </header>
 
       <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
+        {/* Statistics Dashboard */}
+        <Collapsible open={showStatistics} onOpenChange={setShowStatistics}>
+          <div className="flex items-center gap-2 mb-2">
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Статистика</span>
+                {showStatistics ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent className="mb-4">
+            <OrderStatistics orders={orders} />
+          </CollapsibleContent>
+        </Collapsible>
+
         <OrderFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
