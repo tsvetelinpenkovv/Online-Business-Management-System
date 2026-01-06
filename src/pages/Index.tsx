@@ -5,8 +5,9 @@ import { useOrders } from '@/hooks/useOrders';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
+import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import {
@@ -25,6 +26,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -39,6 +45,7 @@ const Index = () => {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showStatistics, setShowStatistics] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
