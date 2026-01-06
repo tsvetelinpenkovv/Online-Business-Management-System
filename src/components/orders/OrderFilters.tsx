@@ -2,6 +2,8 @@ import { FC } from 'react';
 import { Search, Filter, Calendar, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ORDER_STATUSES, OrderStatus } from '@/types/order';
+import { StatusBadge } from './StatusBadge';
 import {
   Select,
   SelectContent,
@@ -56,16 +58,19 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
       </div>
 
       <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="w-[180px]">
           <Filter className="w-4 h-4 mr-2" />
           <SelectValue placeholder="Статус" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Всички статуси</SelectItem>
-          <SelectItem value="Нова">Нова</SelectItem>
-          <SelectItem value="Изпратена">Изпратена</SelectItem>
-          <SelectItem value="Доставена">Доставена</SelectItem>
-          <SelectItem value="Отказана">Отказана</SelectItem>
+          {ORDER_STATUSES.map((status) => (
+            <SelectItem key={status} value={status}>
+              <div className="flex items-center gap-2">
+                <StatusBadge status={status} />
+              </div>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 

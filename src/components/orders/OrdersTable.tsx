@@ -4,11 +4,14 @@ import {
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe 
 } from 'lucide-react';
-import { Order } from '@/types/order';
+import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { EcontLogo } from '@/components/icons/EcontLogo';
 import { StatusBadge } from './StatusBadge';
+import { PhoneWithFlag } from './PhoneWithFlag';
+import { InfoPopover } from './InfoPopover';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -42,9 +45,17 @@ interface OrdersTableProps {
   orders: Order[];
   onDelete: (id: number) => void;
   onUpdate: (order: Order) => void;
+  selectedOrders: number[];
+  onSelectionChange: (ids: number[]) => void;
 }
 
-export const OrdersTable: FC<OrdersTableProps> = ({ orders, onDelete, onUpdate }) => {
+export const OrdersTable: FC<OrdersTableProps> = ({ 
+  orders, 
+  onDelete, 
+  onUpdate,
+  selectedOrders,
+  onSelectionChange
+}) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
 
@@ -81,140 +92,205 @@ export const OrdersTable: FC<OrdersTableProps> = ({ orders, onDelete, onUpdate }
     }
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      onSelectionChange(orders.map(o => o.id));
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleSelectOne = (orderId: number, checked: boolean) => {
+    if (checked) {
+      onSelectionChange([...selectedOrders, orderId]);
+    } else {
+      onSelectionChange(selectedOrders.filter(id => id !== orderId));
+    }
+  };
+
+  const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
+  const isSomeSelected = selectedOrders.length > 0 && selectedOrders.length < orders.length;
+
   return (
     <>
       <div className="rounded-lg border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="w-[60px]">
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Избери всички"
+                  className={isSomeSelected ? 'opacity-50' : ''}
+                />
+              </TableHead>
+              <TableHead className="w-[50px]">
                 <div className="flex items-center gap-1.5">
                   <Hash className="w-4 h-4 text-muted-foreground" />
                   ID
                 </div>
               </TableHead>
-              <TableHead className="w-[60px]">
+              <TableHead className="w-[50px]">
                 <div className="flex items-center gap-1.5">
                   <Globe className="w-4 h-4 text-muted-foreground" />
-                  Източник
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[90px]">
                 <div className="flex items-center gap-1.5">
                   <Tag className="w-4 h-4 text-muted-foreground" />
                   Код
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[90px]">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   Дата
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[110px]">
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4 text-muted-foreground" />
                   Клиент
                 </div>
               </TableHead>
-              <TableHead className="w-[80px]">
+              <TableHead className="w-[50px]">
                 <div className="flex items-center gap-1.5">
                   <UserCheck className="w-4 h-4 text-muted-foreground" />
-                  Коректен
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[130px]">
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-4 h-4 text-muted-foreground" />
                   Телефон
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[70px]">
                 <div className="flex items-center gap-1.5">
                   <Euro className="w-4 h-4 text-muted-foreground" />
                   Цена
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[100px]">
                 <div className="flex items-center gap-1.5">
                   <Package className="w-4 h-4 text-muted-foreground" />
                   Продукт
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[80px]">
                 <div className="flex items-center gap-1.5">
                   <Barcode className="w-4 h-4 text-muted-foreground" />
-                  Кат. номер
+                  Кат.№
                 </div>
               </TableHead>
-              <TableHead className="w-[60px]">
+              <TableHead className="w-[40px]">
                 <div className="flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-muted-foreground" />
-                  Кол.
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[80px]">
                 <div className="flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-muted-foreground" />
                   Доставка
                 </div>
               </TableHead>
-              <TableHead className="w-[70px] text-center">Куриер</TableHead>
-              <TableHead>
+              <TableHead className="w-[60px]">
+                <div className="flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-muted-foreground" />
+                  Куриер
+                </div>
+              </TableHead>
+              <TableHead className="w-[140px]">
                 <div className="flex items-center gap-1.5">
                   <Package className="w-4 h-4 text-muted-foreground" />
                   Статус
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[200px]">
                 <div className="flex items-center gap-1.5">
                   <MessageCircle className="w-4 h-4 text-muted-foreground" />
                   Коментар
                 </div>
               </TableHead>
-              <TableHead className="w-[80px] text-center">Действия</TableHead>
+              <TableHead className="w-[60px] text-center">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
               <TableRow key={order.id} className="hover:bg-muted/30">
+                <TableCell>
+                  <Checkbox
+                    checked={selectedOrders.includes(order.id)}
+                    onCheckedChange={(checked) => handleSelectOne(order.id, checked as boolean)}
+                    aria-label={`Избери поръчка ${order.id}`}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">#{order.id}</TableCell>
                 <TableCell>
                   <SourceIcon source={order.source} className="w-5 h-5" />
                 </TableCell>
-                <TableCell className="font-mono text-sm">{order.code}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {format(new Date(order.created_at), 'dd MMM yyyy', { locale: bg })}
+                <TableCell className="font-mono text-xs">{order.code}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {format(new Date(order.created_at), 'dd MMM', { locale: bg })}
                 </TableCell>
-                <TableCell className="font-medium">{order.customer_name}</TableCell>
+                <TableCell className="font-medium text-sm">{order.customer_name}</TableCell>
                 <TableCell className="text-center">
                   {order.is_correct ? (
-                    <CheckCircle2 className="w-5 h-5 text-success mx-auto" />
+                    <CheckCircle2 className="w-4 h-4 text-success mx-auto" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-destructive mx-auto" />
+                    <XCircle className="w-4 h-4 text-destructive mx-auto" />
                   )}
                 </TableCell>
-                <TableCell className="text-sm">{order.phone}</TableCell>
-                <TableCell className="font-semibold">€{order.total_price.toFixed(2)}</TableCell>
-                <TableCell className="max-w-[150px] truncate" title={order.product_name}>
-                  {order.product_name}
+                <TableCell className="text-sm">
+                  <PhoneWithFlag phone={order.phone} />
                 </TableCell>
-                <TableCell className="font-mono text-sm text-muted-foreground">
+                <TableCell className="font-semibold text-sm">€{order.total_price.toFixed(2)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm truncate max-w-[70px]" title={order.product_name}>
+                      {order.product_name.length > 15 ? order.product_name.substring(0, 15) + '...' : order.product_name}
+                    </span>
+                    <InfoPopover 
+                      title="Детайли на продукта" 
+                      icon="eye"
+                      content={
+                        <div className="space-y-1">
+                          <p><strong>Продукт:</strong> {order.product_name}</p>
+                          <p><strong>Кат. номер:</strong> {order.catalog_number || '-'}</p>
+                          <p><strong>Количество:</strong> {order.quantity}</p>
+                          <p><strong>Цена:</strong> €{order.total_price.toFixed(2)}</p>
+                        </div>
+                      }
+                    />
+                  </div>
+                </TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">
                   {order.catalog_number || '-'}
                 </TableCell>
-                <TableCell className="text-center">{order.quantity}</TableCell>
-                <TableCell className="max-w-[120px] truncate text-sm text-muted-foreground" title={order.delivery_address || ''}>
-                  {order.delivery_address || '-'}
+                <TableCell className="text-center text-sm">{order.quantity}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground truncate max-w-[50px]">
+                      {order.delivery_address ? (order.delivery_address.length > 10 ? order.delivery_address.substring(0, 10) + '...' : order.delivery_address) : '-'}
+                    </span>
+                    {order.delivery_address && (
+                      <InfoPopover 
+                        title="Адрес за доставка" 
+                        icon="eye"
+                        content={order.delivery_address}
+                      />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <EcontLogo className="w-7 h-7 mx-auto" trackingUrl={order.courier_tracking_url} />
+                  <EcontLogo className="w-6 h-6 mx-auto" trackingUrl={order.courier_tracking_url} />
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={order.status} />
                 </TableCell>
                 <TableCell>
                   {order.comment ? (
-                    <span className="comment-bubble" title={order.comment}>
+                    <span className="comment-bubble">
                       {order.comment}
                     </span>
                   ) : (
