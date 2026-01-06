@@ -93,7 +93,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   const Icon = config.icon;
 
   const badge = (
-    <span className={`${config.className} ${editable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`} title={`Статус: ${status}`}>
+    <span className={`${config.className} ${editable ? 'cursor-pointer' : ''}`} title={`Статус: ${status}`}>
       <Icon className="w-3 h-3" />
       {status}
       {editable && <ChevronDown className="w-3 h-3 ml-1" />}
@@ -107,9 +107,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <span className="transition-transform duration-200">
-          {badge}
-        </span>
+        {badge}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto bg-popover z-50 p-1">
         {ORDER_STATUSES.map((s) => {
