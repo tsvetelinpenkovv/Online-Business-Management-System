@@ -218,10 +218,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   ID
                 </div>
               </TableHead>
-              <TableHead className="w-[50px]">
-                <div className="flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-muted-foreground" />
-                </div>
+              <TableHead className="w-[50px] text-center" title="Източник">
+                <Globe className="w-4 h-4 text-muted-foreground mx-auto" />
               </TableHead>
               <TableHead className="w-[90px]">
                 <div className="flex items-center gap-1.5">
@@ -235,10 +233,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Клиент
                 </div>
               </TableHead>
-              <TableHead className="w-[50px]">
-                <div className="flex items-center gap-1.5">
-                  <UserCheck className="w-4 h-4 text-muted-foreground" />
-                </div>
+              <TableHead className="w-[50px] text-center" title="Коректност на клиента">
+                <UserCheck className="w-4 h-4 text-muted-foreground mx-auto" />
               </TableHead>
               <TableHead className="w-[130px]">
                 <div className="flex items-center gap-1.5">
@@ -264,10 +260,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Кат.№
                 </div>
               </TableHead>
-              <TableHead className="w-[40px]">
-                <div className="flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-muted-foreground" />
-                </div>
+              <TableHead className="w-[50px] text-center" title="Количество">
+                <Layers className="w-4 h-4 text-muted-foreground mx-auto" />
               </TableHead>
               <TableHead className="w-[120px]">
                 <div className="flex items-center gap-1.5">
