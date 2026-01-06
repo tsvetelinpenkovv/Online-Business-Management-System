@@ -7,7 +7,7 @@ import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import {
@@ -26,11 +26,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -331,29 +326,6 @@ const Index = () => {
       </header>
 
       <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
-        {/* Statistics Dashboard */}
-        <Collapsible open={showStatistics} onOpenChange={setShowStatistics}>
-          <div className="flex items-center gap-2 mb-2">
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="gap-2"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span className="hidden sm:inline">Статистика</span>
-                {showStatistics ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent className="mb-4">
-            <OrderStatistics orders={orders} />
-          </CollapsibleContent>
-        </Collapsible>
-
         <OrderFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -366,7 +338,14 @@ const Index = () => {
           onDateFromChange={setDateFrom}
           onDateToChange={setDateTo}
           onClearFilters={clearFilters}
+          onToggleStatistics={() => setShowStatistics(!showStatistics)}
+          showStatistics={showStatistics}
         />
+
+        {/* Statistics Dashboard */}
+        {showStatistics && (
+          <OrderStatistics orders={orders} />
+        )}
 
         {ordersLoading ? (
           <div className="flex items-center justify-center py-12">

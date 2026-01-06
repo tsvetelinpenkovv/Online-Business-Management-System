@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Search, Filter, Calendar, X, Globe } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe, BarChart3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
@@ -29,6 +29,8 @@ interface OrderFiltersProps {
   onDateFromChange: (date: Date | undefined) => void;
   onDateToChange: (date: Date | undefined) => void;
   onClearFilters: () => void;
+  onToggleStatistics?: () => void;
+  showStatistics?: boolean;
 }
 
 export const OrderFilters: FC<OrderFiltersProps> = ({
@@ -43,6 +45,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   onDateFromChange,
   onDateToChange,
   onClearFilters,
+  onToggleStatistics,
+  showStatistics,
 }) => {
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
 
@@ -50,6 +54,16 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
     <div className="flex flex-col gap-3 p-3 sm:p-4 bg-card rounded-lg border">
       {/* Desktop: all in one row */}
       <div className="hidden lg:flex items-center gap-3">
+        {onToggleStatistics && (
+          <Button 
+            variant={showStatistics ? "default" : "outline"} 
+            size="icon"
+            onClick={onToggleStatistics}
+            title="Статистика"
+          >
+            <BarChart3 className="w-4 h-4" />
+          </Button>
+        )}
         <div className="relative w-[280px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -155,14 +169,27 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
       {/* Mobile/Tablet: stacked layout */}
       <div className="lg:hidden space-y-3">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Търсене по клиент, телефон, ID..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex items-center gap-2">
+          {onToggleStatistics && (
+            <Button 
+              variant={showStatistics ? "default" : "outline"} 
+              size="icon"
+              onClick={onToggleStatistics}
+              title="Статистика"
+              className="flex-shrink-0"
+            >
+              <BarChart3 className="w-4 h-4" />
+            </Button>
+          )}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Търсене по клиент, телефон, ID..."
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
