@@ -474,7 +474,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         </div>
                       }
                     >
-                      <span className="comment-bubble line-clamp-3 cursor-pointer">
+                      <span className="comment-bubble line-clamp-2 cursor-pointer">
                         {order.comment}
                       </span>
                     </InfoPopover>

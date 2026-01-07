@@ -24,7 +24,7 @@ export const generateOrderReceiptHTML = (
         ${logoUrl ? `<img src="${logoUrl}" alt="Лого" class="logo" />` : ''}
         <h1>СТОКОВА РАЗПИСКА</h1>
         <p class="date">Дата: ${today}</p>
-        <p class="order-number">Поръчка №: ${order.code}</p>
+        <p class="order-number">Поръчка №: #${order.id}</p>
       </div>
       
       <div class="parties">
