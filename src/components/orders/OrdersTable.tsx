@@ -423,7 +423,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         icon="eye"
                         content={
                           <div className="flex items-start gap-2">
-                            <Truck className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <Truck className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                             <span>{order.delivery_address}</span>
                           </div>
                         }
