@@ -105,7 +105,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             <div class="info"><span class="label">Продукт:</span> ${order.product_name}</div>
             <div class="info"><span class="label">Каталожен номер:</span> ${order.catalog_number || '-'}</div>
             <div class="info"><span class="label">Количество:</span> ${order.quantity}</div>
-            <div class="info"><span class="label">Цена:</span> €${order.total_price.toFixed(2)}</div>
+            <div class="info"><span class="label">Цена:</span> ${order.total_price.toFixed(2)} €</div>
             <div class="info"><span class="label">Доставка:</span> ${order.delivery_address || '-'}</div>
             <div class="info"><span class="label">Статус:</span> ${order.status}</div>
             <div class="info"><span class="label">Коментар:</span> ${order.comment || '-'}</div>
@@ -353,7 +353,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-sm">
                   <PhoneWithFlag phone={order.phone} />
                 </TableCell>
-                <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: €${order.total_price.toFixed(2)}`}>€ {order.total_price.toFixed(2)}</TableCell>
+                <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <span className="text-sm line-clamp-2 max-w-[80px]" title={order.product_name}>
@@ -387,7 +387,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                           </p>
                           <p className="flex items-center gap-2">
                             <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span><strong>Цена:</strong> <span className="text-success font-medium">€ {order.total_price.toFixed(2)}</span></span>
+                            <span><strong>Цена:</strong> <span className="text-success font-medium">{order.total_price.toFixed(2)} €</span></span>
                           </p>
                         </div>
                       }

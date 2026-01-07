@@ -64,14 +64,14 @@ export const generateOrderReceiptHTML = (
             <td class="product">${order.product_name}</td>
             <td class="catalog">${order.catalog_number || '-'}</td>
             <td class="qty">${order.quantity}</td>
-            <td class="price">€ ${(order.total_price / order.quantity).toFixed(2)}</td>
-            <td class="total">€ ${order.total_price.toFixed(2)}</td>
+            <td class="price">${(order.total_price / order.quantity).toFixed(2)} €</td>
+            <td class="total">${order.total_price.toFixed(2)} €</td>
           </tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
             <td colspan="5" class="total-label">ОБЩО:</td>
-            <td class="total-amount">€ ${order.total_price.toFixed(2)}</td>
+            <td class="total-amount">${order.total_price.toFixed(2)} €</td>
           </tr>
         </tfoot>
       </table>

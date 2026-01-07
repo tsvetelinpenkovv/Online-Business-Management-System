@@ -385,8 +385,8 @@ export const InvoiceDialog: FC<InvoiceDialogProps> = ({ order, open, onOpenChang
                           {order.catalog_number && <span style={{ color: '#666' }}> (Кат.№ {order.catalog_number})</span>}
                         </td>
                         <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>{order.quantity}</td>
-                        <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>€{(order.total_price / order.quantity).toFixed(2)}</td>
-                        <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>€{subtotal.toFixed(2)}</td>
+                        <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>{(order.total_price / order.quantity).toFixed(2)} €</td>
+                        <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>{subtotal.toFixed(2)} €</td>
                       </tr>
                     </tbody>
                   </table>
@@ -397,12 +397,12 @@ export const InvoiceDialog: FC<InvoiceDialogProps> = ({ order, open, onOpenChang
                     <tbody>
                       <tr>
                         <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Данъчна основа:</td>
-                        <td style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'right' }}>€{subtotal.toFixed(2)}</td>
+                        <td style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'right' }}>{subtotal.toFixed(2)} €</td>
                       </tr>
                       {includeVat ? (
                         <tr>
                           <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>ДДС ({vatRate}%):</td>
-                          <td style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'right' }}>€{vatAmount.toFixed(2)}</td>
+                          <td style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'right' }}>{vatAmount.toFixed(2)} €</td>
                         </tr>
                       ) : (
                         <tr>
@@ -413,7 +413,7 @@ export const InvoiceDialog: FC<InvoiceDialogProps> = ({ order, open, onOpenChang
                       )}
                       <tr>
                         <td style={{ padding: '8px', background: '#333', color: 'white', fontWeight: 'bold' }}>ОБЩО ЗА ПЛАЩАНЕ:</td>
-                        <td style={{ padding: '8px', background: '#333', color: 'white', fontWeight: 'bold', textAlign: 'right' }}>€{total.toFixed(2)}</td>
+                        <td style={{ padding: '8px', background: '#333', color: 'white', fontWeight: 'bold', textAlign: 'right' }}>{total.toFixed(2)} €</td>
                       </tr>
                     </tbody>
                   </table>
