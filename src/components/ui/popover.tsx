@@ -36,11 +36,12 @@ const PopoverContent = React.forwardRef<
       {props.children}
       {showArrow && (
         <PopoverPrimitive.Arrow 
-          className={cn("drop-shadow-sm", arrowClassName)} 
+          className={cn(arrowClassName)} 
           width={16} 
           height={8}
           style={{ 
-            fill: arrowColor || 'hsl(var(--popover))'
+            fill: arrowColor || 'hsl(var(--popover))',
+            filter: 'drop-shadow(0 -1px 0 hsl(var(--border)))'
           }}
         />
       )}
