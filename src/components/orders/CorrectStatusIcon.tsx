@@ -24,37 +24,42 @@ const statusConfig: Record<CorrectStatus, {
   className: string;
   message: string;
   popoverClassName: string;
+  arrowColor: string;
 }> = {
   correct: {
     icon: CheckCircle2,
     className: 'text-success',
     message: 'Клиентът е с отлична история на коректност. Всички доставки до него са преминали успешно.\n\nwww.nekorekten.com',
-    popoverClassName: 'bg-success/90 backdrop-blur-md border-success/40 text-white'
+    popoverClassName: 'bg-success/90 backdrop-blur-md border-success/40 text-white',
+    arrowColor: 'hsl(142 76% 36% / 0.9)'
   },
   incorrect: {
     icon: XCircle,
     className: 'text-destructive',
     message: 'Има регистрирани проблеми при доставки и взаимодействия с този клиент.\n\nwww.nekorekten.com',
-    popoverClassName: 'bg-destructive/90 backdrop-blur-md border-destructive/40 text-white'
+    popoverClassName: 'bg-destructive/90 backdrop-blur-md border-destructive/40 text-white',
+    arrowColor: 'hsl(0 84% 60% / 0.9)'
   },
   unknown: {
     icon: AlertCircle,
     className: 'text-warning',
     message: 'Няма данни за този клиент.\n\nwww.nekorekten.com',
-    popoverClassName: 'bg-warning/90 backdrop-blur-md border-warning/40 text-black'
+    popoverClassName: 'bg-warning/90 backdrop-blur-md border-warning/40 text-black',
+    arrowColor: 'hsl(38 92% 50% / 0.9)'
   },
   loading: {
     icon: Loader2,
     className: 'text-muted-foreground animate-spin',
     message: 'Клиентът се проверявя. Проверката може да отнеме няколко минути.\n\nwww.nekorekten.com',
-    popoverClassName: 'bg-muted/90 backdrop-blur-md border-muted-foreground/40 text-muted-foreground'
+    popoverClassName: 'bg-muted/90 backdrop-blur-md border-muted-foreground/40 text-muted-foreground',
+    arrowColor: 'hsl(210 40% 96% / 0.9)'
   }
 };
 
 export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoading = false }) => {
   const [open, setOpen] = useState(false);
   const status = getStatus(isCorrect, isLoading);
-  const { icon: Icon, className, message, popoverClassName } = statusConfig[status];
+  const { icon: Icon, className, message, popoverClassName, arrowColor } = statusConfig[status];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -66,12 +71,7 @@ export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoa
       <PopoverContent 
         className={`max-w-[250px] whitespace-pre-line text-center text-sm ${popoverClassName}`}
         showArrow
-        arrowClassName={
-          status === 'correct' ? 'fill-success/90' : 
-          status === 'incorrect' ? 'fill-destructive/90' : 
-          status === 'unknown' ? 'fill-warning/90' : 
-          'fill-muted/90'
-        }
+        arrowColor={arrowColor}
       >
         {message}
       </PopoverContent>
