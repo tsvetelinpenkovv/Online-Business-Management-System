@@ -318,10 +318,35 @@ const Index = () => {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button onClick={handleBulkPrint} variant="outline" className="gap-2">
-                  <Printer className="w-4 h-4" />
-                  Печат ({selectedOrders.length})
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <Printer className="w-4 h-4" />
+                      Печат ({selectedOrders.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleBulkPrint} className="cursor-pointer">
+                      <Printer className="w-4 h-4 mr-2" />
+                      Печат на поръчки
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
+                        const ordersWithTracking = selectedOrdersData.filter(o => o.courier_tracking_url);
+                        ordersWithTracking.forEach(order => {
+                          if (order.courier_tracking_url) {
+                            window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
+                          }
+                        });
+                      }} 
+                      className="cursor-pointer"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Печат на товарителници
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button 
                   onClick={() => setShowBulkDeleteDialog(true)} 
                   variant="outline" 
