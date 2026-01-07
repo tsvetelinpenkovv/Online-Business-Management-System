@@ -2,7 +2,7 @@ import { FC, useState } from 'react';
 import { 
   Hash, Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -500,7 +500,19 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handlePrint(order)}>
                         <Printer className="w-4 h-4 mr-2" />
-                        Печат
+                        Печат на поръчка
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          if (order.courier_tracking_url) {
+                            window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
+                          }
+                        }}
+                        disabled={!order.courier_tracking_url}
+                        className={!order.courier_tracking_url ? 'opacity-50' : ''}
+                      >
+                        <FileBox className="w-4 h-4 mr-2" />
+                        Печат на товарителница
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setDeleteId(order.id)}
