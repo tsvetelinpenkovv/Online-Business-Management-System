@@ -12,7 +12,7 @@ interface CourierLogoProps {
 export const CourierLogo: FC<CourierLogoProps> = ({ 
   trackingUrl, 
   courierId,
-  className = "w-6 h-6",
+  className = "w-8 h-8",
   showLink = true 
 }) => {
   const { couriers, getCourierByUrl } = useCouriers();
