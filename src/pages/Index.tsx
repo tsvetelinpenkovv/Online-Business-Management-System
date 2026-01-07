@@ -459,7 +459,9 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <ThemeToggle />
+            <div className="h-8 w-8 flex items-center justify-center">
+              <ThemeToggle />
+            </div>
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
             </Button>
