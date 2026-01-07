@@ -157,7 +157,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               <span className={`text-xs px-2 py-0.5 rounded-full ${order.quantity > 1 ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground'} font-semibold`}>
                 {order.quantity} бр.
               </span>
-              <span className="font-semibold text-green-600">€{order.total_price.toFixed(2)}</span>
+              <span className="font-semibold text-green-600">{order.total_price.toFixed(2)} €</span>
             </div>
           </div>
         </div>
