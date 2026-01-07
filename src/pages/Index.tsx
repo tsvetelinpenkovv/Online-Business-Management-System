@@ -146,7 +146,7 @@ const Index = () => {
       return;
     }
 
-    printOrderReceipts(selectedOrdersData, companySettings);
+    printOrderReceipts(selectedOrdersData, companySettings, logoUrl);
   };
 
   const handleBulkPrintWaybills = () => {
@@ -321,11 +321,11 @@ const Index = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
                     <Printer className="w-4 h-4 mr-2" />
-                    Печат на поръчки
+                    {selectedOrders.length === 1 ? 'Печат на поръчка' : 'Печат на поръчки'}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
                     <FileBox className="w-4 h-4 mr-2" />
-                    Печат на товарителници
+                    {selectedOrders.length === 1 ? 'Печат на товарителница' : 'Печат на товарителници'}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -370,16 +370,16 @@ const Index = () => {
                       Печат ({selectedOrders.length})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
-                      <Printer className="w-4 h-4 mr-2" />
-                      Печат на поръчки
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
-                      <FileBox className="w-4 h-4 mr-2" />
-                      Печат на товарителници
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
+                    <Printer className="w-4 h-4 mr-2" />
+                    {selectedOrders.length === 1 ? 'Печат на поръчка' : 'Печат на поръчки'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
+                    <FileBox className="w-4 h-4 mr-2" />
+                    {selectedOrders.length === 1 ? 'Печат на товарителница' : 'Печат на товарителници'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
                 </DropdownMenu>
                 <Button 
                   onClick={() => setShowBulkDeleteDialog(true)} 

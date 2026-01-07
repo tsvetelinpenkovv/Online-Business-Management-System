@@ -180,7 +180,7 @@
   }
   
   .status-failed-delivery {
-    @apply bg-destructive/20 text-destructive dark:text-white;
+    @apply bg-destructive/20 text-destructive;
   }
   
   .status-delivered {
@@ -196,7 +196,7 @@
   }
   
   .status-cancelled {
-    @apply bg-destructive/20 text-destructive dark:text-white;
+    @apply bg-destructive/20 text-destructive;
   }
   
   .status-voided {
