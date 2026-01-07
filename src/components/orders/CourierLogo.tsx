@@ -27,14 +27,16 @@ export const CourierLogo: FC<CourierLogoProps> = ({
   if (!courier && !trackingUrl) return null;
 
   const content = courier?.logo_url ? (
-    <img 
-      src={courier.logo_url} 
-      alt={courier.name} 
-      className={`${className} object-contain`}
-      title={courier.name}
-    />
+    <div className="p-1 border-2 border-primary/30 rounded bg-background">
+      <img 
+        src={courier.logo_url} 
+        alt={courier.name} 
+        className={`${className} object-contain`}
+        title={courier.name}
+      />
+    </div>
   ) : (
-    <div title={courier?.name || 'Куриер'}>
+    <div className="p-1 border-2 border-muted-foreground/30 rounded bg-background" title={courier?.name || 'Куриер'}>
       <Truck className={`${className} text-muted-foreground`} />
     </div>
   );
