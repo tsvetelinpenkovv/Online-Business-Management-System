@@ -7,11 +7,12 @@ import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
+import { printOrderReceipts } from '@/components/orders/OrderReceipt';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,16 @@ const Index = () => {
   const [showStatistics, setShowStatistics] = useState(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
   const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
+  const [companySettings, setCompanySettings] = useState<{
+    company_name: string | null;
+    registered_address: string | null;
+    correspondence_address: string | null;
+    eik: string | null;
+    vat_number: string | null;
+    phone: string | null;
+    email: string | null;
+    manager_name: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -55,23 +66,33 @@ const Index = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Fetch website URL from company settings
+  // Fetch company settings
   useEffect(() => {
-    const fetchWebsiteUrl = async () => {
+    const fetchCompanySettings = async () => {
       try {
         const { data } = await supabase
           .from('company_settings')
-          .select('website_url')
+          .select('*')
           .limit(1)
-          .single();
-        if (data?.website_url) {
+          .maybeSingle();
+        if (data) {
           setWebsiteUrl(data.website_url);
+          setCompanySettings({
+            company_name: data.company_name,
+            registered_address: data.registered_address,
+            correspondence_address: data.correspondence_address,
+            eik: data.eik,
+            vat_number: data.vat_number,
+            phone: data.phone,
+            email: data.email,
+            manager_name: data.manager_name,
+          });
         }
       } catch (error) {
-        console.error('Error fetching website URL:', error);
+        console.error('Error fetching company settings:', error);
       }
     };
-    fetchWebsiteUrl();
+    fetchCompanySettings();
   }, []);
 
   // Auto-refresh logic
@@ -117,7 +138,18 @@ const Index = () => {
     navigate('/auth');
   };
 
-  const handleBulkPrint = () => {
+  const handleBulkPrintReceipts = () => {
+    const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
+    
+    if (selectedOrdersData.length === 0) {
+      alert('Няма избрани поръчки');
+      return;
+    }
+
+    printOrderReceipts(selectedOrdersData, companySettings);
+  };
+
+  const handleBulkPrintWaybills = () => {
     const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
     const ordersWithTracking = selectedOrdersData.filter(o => o.courier_tracking_url);
     
@@ -126,10 +158,9 @@ const Index = () => {
       return;
     }
 
-    // Open each tracking URL in a new tab for printing
     ordersWithTracking.forEach(order => {
       if (order.courier_tracking_url) {
-        window.open(order.courier_tracking_url, '_blank');
+        window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
       }
     });
   };
@@ -281,9 +312,23 @@ const Index = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button onClick={handleBulkPrint} variant="outline" size="sm" className="px-2">
-                <Printer className="w-3 h-3" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="px-2">
+                    <Printer className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
+                    <Printer className="w-4 h-4 mr-2" />
+                    Печат на поръчки
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
+                    <FileBox className="w-4 h-4 mr-2" />
+                    Печат на товарителници
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button 
                 onClick={() => setShowBulkDeleteDialog(true)} 
                 variant="outline" 
@@ -326,23 +371,12 @@ const Index = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleBulkPrint} className="cursor-pointer">
+                    <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
                       <Printer className="w-4 h-4 mr-2" />
                       Печат на поръчки
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
-                        const ordersWithTracking = selectedOrdersData.filter(o => o.courier_tracking_url);
-                        ordersWithTracking.forEach(order => {
-                          if (order.courier_tracking_url) {
-                            window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
-                          }
-                        });
-                      }} 
-                      className="cursor-pointer"
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
+                    <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
+                      <FileBox className="w-4 h-4 mr-2" />
                       Печат на товарителници
                     </DropdownMenuItem>
                   </DropdownMenuContent>
