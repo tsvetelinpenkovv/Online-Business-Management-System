@@ -216,7 +216,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2 w-full">
                   <Globe className="w-4 h-4 text-muted-foreground" />
                   Източници
                 </div>
