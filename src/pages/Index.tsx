@@ -462,12 +462,24 @@ const Index = () => {
             <div className="h-8 w-8 flex items-center justify-center">
               <ThemeToggle />
             </div>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('/settings')} title="Настройки">
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSignOut} title="Изход">
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8" title="Още">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Настройки
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Изход
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -533,9 +545,11 @@ const Index = () => {
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Изтриване на {selectedOrders.length} поръчки</AlertDialogTitle>
+            <AlertDialogTitle>
+              Изтриване на {selectedOrders.length === 1 ? 'поръчка' : `${selectedOrders.length} поръчки`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Сигурни ли сте, че искате да изтриете избраните поръчки? Това действие не може да бъде отменено.
+              Сигурен ли си, че искаш да изтриеш {selectedOrders.length === 1 ? 'поръчката' : 'поръчките'}? Това действие не може да бъде отменено.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
