@@ -89,7 +89,6 @@ export const generateOrderReceiptHTML = (
         </div>
         <div class="signature">
           <p>Получил: ___________________</p>
-          <p class="name">${order.customer_name}</p>
         </div>
       </div>
     </div>
