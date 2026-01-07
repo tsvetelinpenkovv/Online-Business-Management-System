@@ -222,78 +222,78 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               </TableHead>
               <TableHead className="w-[50px]">
                 <div className="flex items-center gap-1.5">
-                  <Hash className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Hash className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   ID
                 </div>
               </TableHead>
               <TableHead className="w-[50px] text-center" title="Източник">
-                <Globe className="w-5 h-5 text-muted-foreground mx-auto flex-shrink-0" />
+                <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
               <TableHead className="w-[90px]">
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Дата
                 </div>
               </TableHead>
               <TableHead className="w-[110px]">
                 <div className="flex items-center gap-1.5">
-                  <User className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Клиент
                 </div>
               </TableHead>
               <TableHead className="w-[50px] text-center" title="Коректност на клиента">
-                <UserCheck className="w-5 h-5 text-muted-foreground mx-auto flex-shrink-0" />
+                <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
               <TableHead className="w-[130px]">
                 <div className="flex items-center gap-1.5">
-                  <Phone className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Телефон
                 </div>
               </TableHead>
               <TableHead className="w-[80px]">
                 <div className="flex items-center gap-1.5">
-                  <Euro className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Цена
                 </div>
               </TableHead>
               <TableHead className="w-[100px]">
                 <div className="flex items-center gap-1.5">
-                  <Package className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Продукт
                 </div>
               </TableHead>
               <TableHead className="w-[100px]">
                 <div className="flex items-center gap-1.5">
-                  <Barcode className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Кат.№
                 </div>
               </TableHead>
               <TableHead className="w-[50px] text-center" title="Количество">
-                <Layers className="w-5 h-5 text-muted-foreground mx-auto flex-shrink-0" />
+                <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
               <TableHead className="w-[120px]">
                 <div className="flex items-center gap-1.5">
-                  <Truck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Доставка
                 </div>
               </TableHead>
               <TableHead className="w-[70px] text-center" title="Товарителница">
-                <ExternalLink className="w-5 h-5 text-muted-foreground mx-auto flex-shrink-0" />
+                <ExternalLink className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
               <TableHead className="w-[140px]">
                 <div className="flex items-center gap-1.5">
-                  <Package className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Статус
                 </div>
               </TableHead>
               <TableHead className="w-[200px]">
                 <div className="flex items-center gap-1.5">
-                  <MessageCircle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Коментар
                 </div>
               </TableHead>
               <TableHead className="w-[50px] text-center">
-                <Settings2 className="w-5 h-5 text-muted-foreground mx-auto flex-shrink-0" />
+                <Settings2 className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
             </TableRow>
           </TableHeader>
