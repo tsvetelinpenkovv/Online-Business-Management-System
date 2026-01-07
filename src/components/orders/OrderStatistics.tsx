@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  DollarSign
+  Euro
 } from 'lucide-react';
 import {
   BarChart,
@@ -120,7 +120,7 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('bg-BG', {
       style: 'currency',
-      currency: 'BGN',
+      currency: 'EUR',
       minimumFractionDigits: 2
     }).format(value);
   };
@@ -245,7 +245,7 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
         <Card className="overflow-hidden">
           <CardHeader className="pb-2 bg-gradient-to-r from-green-500/10 to-transparent">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-green-600" />
+              <Euro className="w-4 h-4 text-green-600" />
               Днес
             </CardTitle>
           </CardHeader>
@@ -257,7 +257,7 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
         <Card className="overflow-hidden">
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/10 to-transparent">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-blue-600" />
+              <Euro className="w-4 h-4 text-blue-600" />
               Тази седмица
             </CardTitle>
           </CardHeader>
@@ -269,7 +269,7 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
         <Card className="overflow-hidden">
           <CardHeader className="pb-2 bg-gradient-to-r from-purple-500/10 to-transparent">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-purple-600" />
+              <Euro className="w-4 h-4 text-purple-600" />
               Този месец
             </CardTitle>
           </CardHeader>
