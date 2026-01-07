@@ -7,9 +7,10 @@ import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock } from 'lucide-react';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+
+type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -41,12 +45,44 @@ const Index = () => {
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
+  const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
+
+  // Fetch website URL from company settings
+  useEffect(() => {
+    const fetchWebsiteUrl = async () => {
+      try {
+        const { data } = await supabase
+          .from('company_settings')
+          .select('website_url')
+          .limit(1)
+          .single();
+        if (data?.website_url) {
+          setWebsiteUrl(data.website_url);
+        }
+      } catch (error) {
+        console.error('Error fetching website URL:', error);
+      }
+    };
+    fetchWebsiteUrl();
+  }, []);
+
+  // Auto-refresh logic
+  useEffect(() => {
+    if (autoRefreshInterval === 0) return;
+    
+    const interval = setInterval(() => {
+      refetch();
+    }, autoRefreshInterval);
+
+    return () => clearInterval(interval);
+  }, [autoRefreshInterval, refetch]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
@@ -201,9 +237,23 @@ const Index = () => {
             )}
             <div className="min-w-0">
               <h1 className="text-base sm:text-xl font-semibold truncate">Управление на поръчки</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {filteredOrders.length} поръчки
-              </p>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <span>{filteredOrders.length} поръчки</span>
+                {websiteUrl && (
+                  <>
+                    <span>•</span>
+                    <a 
+                      href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 hover:text-primary transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span className="truncate max-w-[150px]">{websiteUrl.replace(/^https?:\/\//, '')}</span>
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           
@@ -299,9 +349,55 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="icon" onClick={refetch} title="Обнови">
-              <RefreshCw className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" title="Обнови" className={autoRefreshInterval > 0 ? 'border-primary' : ''}>
+                  <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => refetch()} className="cursor-pointer">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Обнови сега
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(0)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Без автоматично
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(60000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 60000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  На всяка 1 минута
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(120000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 120000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  На всеки 2 минути
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(300000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 300000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  На всеки 5 минути
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(600000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 600000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  На всеки 10 минути
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
             </Button>
@@ -312,9 +408,55 @@ const Index = () => {
 
           {/* Mobile menu */}
           <div className="flex sm:hidden items-center gap-1">
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={refetch} title="Обнови">
-              <RefreshCw className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className={`h-8 w-8 ${autoRefreshInterval > 0 ? 'border-primary' : ''}`} title="Обнови">
+                  <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => refetch()} className="cursor-pointer">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Обнови сега
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(0)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Без автоматично
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(60000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 60000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  1 мин
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(120000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 120000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  2 мин
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(300000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 300000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  5 мин
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setAutoRefreshInterval(600000)} 
+                  className={`cursor-pointer ${autoRefreshInterval === 600000 ? 'bg-muted' : ''}`}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  10 мин
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
             </Button>

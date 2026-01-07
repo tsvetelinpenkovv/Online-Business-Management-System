@@ -83,6 +83,7 @@ export type Database = {
           updated_at: string
           vat_number: string | null
           vat_registered: boolean | null
+          website_url: string | null
         }
         Insert: {
           bank_bic?: string | null
@@ -101,6 +102,7 @@ export type Database = {
           updated_at?: string
           vat_number?: string | null
           vat_registered?: boolean | null
+          website_url?: string | null
         }
         Update: {
           bank_bic?: string | null
@@ -119,6 +121,7 @@ export type Database = {
           updated_at?: string
           vat_number?: string | null
           vat_registered?: boolean | null
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -240,6 +243,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      order_statuses: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          is_default: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       orders: {
         Row: {

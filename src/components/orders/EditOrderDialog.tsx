@@ -63,15 +63,6 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
         
         <div className="grid grid-cols-2 gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="code">Код</Label>
-            <Input
-              id="code"
-              value={formData.code || ''}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="customer_name">Клиент</Label>
             <Input
               id="customer_name"

@@ -63,7 +63,16 @@ export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoa
           <Icon className={`w-4 h-4 ${className}`} />
         </div>
       </PopoverTrigger>
-      <PopoverContent className={`max-w-[250px] whitespace-pre-line text-center text-sm ${popoverClassName}`}>
+      <PopoverContent 
+        className={`max-w-[250px] whitespace-pre-line text-center text-sm ${popoverClassName}`}
+        showArrow
+        arrowClassName={
+          status === 'correct' ? 'fill-success/90' : 
+          status === 'incorrect' ? 'fill-destructive/90' : 
+          status === 'unknown' ? 'fill-warning/90' : 
+          'fill-muted/90'
+        }
+      >
         {message}
       </PopoverContent>
     </Popover>
