@@ -252,8 +252,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               </TableHead>
               <TableHead className="w-[80px]">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">€</span>
-                  <span>Цена</span>
+                  <Euro className="w-4 h-4 text-muted-foreground" />
+                  Цена
                 </div>
               </TableHead>
               <TableHead className="w-[100px]">
@@ -353,7 +353,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-sm">
                   <PhoneWithFlag phone={order.phone} />
                 </TableCell>
-                <TableCell className="text-sm font-medium text-success" title={`Обща сума: €${order.total_price.toFixed(2)}`}>€{order.total_price.toFixed(2)}</TableCell>
+                <TableCell className="text-sm font-medium text-success" title={`Обща сума: €${order.total_price.toFixed(2)}`}>€ {order.total_price.toFixed(2)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <span className="text-sm line-clamp-2 max-w-[80px]" title={order.product_name}>

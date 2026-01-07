@@ -13,13 +13,15 @@ interface CompanySettings {
 
 export const generateOrderReceiptHTML = (
   orders: Order[],
-  companySettings: CompanySettings | null
+  companySettings: CompanySettings | null,
+  logoUrl: string | null
 ): string => {
   const today = new Date().toLocaleDateString('bg-BG');
   
   const ordersHTML = orders.map((order, index) => `
     <div class="receipt ${index > 0 ? 'page-break' : ''}">
       <div class="header">
+        ${logoUrl ? `<img src="${logoUrl}" alt="Лого" class="logo" />` : ''}
         <h1>СТОКОВА РАЗПИСКА</h1>
         <p class="date">Дата: ${today}</p>
         <p class="order-number">Поръчка №: ${order.code}</p>
@@ -62,14 +64,14 @@ export const generateOrderReceiptHTML = (
             <td class="product">${order.product_name}</td>
             <td class="catalog">${order.catalog_number || '-'}</td>
             <td class="qty">${order.quantity}</td>
-            <td class="price">${(order.total_price / order.quantity).toFixed(2)} лв.</td>
-            <td class="total">${order.total_price.toFixed(2)} лв.</td>
+            <td class="price">€ ${(order.total_price / order.quantity).toFixed(2)}</td>
+            <td class="total">€ ${order.total_price.toFixed(2)}</td>
           </tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
             <td colspan="5" class="total-label">ОБЩО:</td>
-            <td class="total-amount">${order.total_price.toFixed(2)} лв.</td>
+            <td class="total-amount">€ ${order.total_price.toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
@@ -131,6 +133,13 @@ export const generateOrderReceiptHTML = (
           border-bottom: 2px solid #333;
         }
         
+        .header .logo {
+          max-width: 120px;
+          max-height: 60px;
+          object-fit: contain;
+          margin-bottom: 15px;
+        }
+        
         .header h1 {
           font-size: 24px;
           font-weight: bold;
@@ -154,7 +163,7 @@ export const generateOrderReceiptHTML = (
           flex: 1;
           padding: 15px;
           background: #f9f9f9;
-          border-radius: 8px;
+          border-radius: 12px;
         }
         
         .party h3 {
@@ -178,15 +187,18 @@ export const generateOrderReceiptHTML = (
         
         .items {
           width: 100%;
-          border-collapse: collapse;
+          border-collapse: separate;
+          border-spacing: 0;
           margin-bottom: 30px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid #ddd;
         }
         
         .items th,
         .items td {
           padding: 12px;
           text-align: left;
-          border: 1px solid #ddd;
         }
         
         .items th {
@@ -194,6 +206,15 @@ export const generateOrderReceiptHTML = (
           font-weight: 600;
           font-size: 12px;
           text-transform: uppercase;
+          border-bottom: 1px solid #ddd;
+        }
+        
+        .items th:first-child {
+          border-top-left-radius: 12px;
+        }
+        
+        .items th:last-child {
+          border-top-right-radius: 12px;
         }
         
         .items .num { width: 40px; text-align: center; }
@@ -204,11 +225,20 @@ export const generateOrderReceiptHTML = (
         
         .items tbody td {
           background: white;
+          border-bottom: 1px solid #eee;
         }
         
-        .items tfoot .total-row {
+        .items tfoot .total-row td {
           background: #f5f5f5;
           font-weight: bold;
+        }
+        
+        .items tfoot .total-row td:first-child {
+          border-bottom-left-radius: 12px;
+        }
+        
+        .items tfoot .total-row td:last-child {
+          border-bottom-right-radius: 12px;
         }
         
         .items .total-label {
@@ -226,7 +256,7 @@ export const generateOrderReceiptHTML = (
           padding: 15px;
           background: #fffbeb;
           border-left: 4px solid #f59e0b;
-          border-radius: 4px;
+          border-radius: 12px;
           margin-bottom: 30px;
           font-size: 13px;
         }
@@ -281,9 +311,10 @@ export const generateOrderReceiptHTML = (
 
 export const printOrderReceipts = (
   orders: Order[],
-  companySettings: CompanySettings | null
+  companySettings: CompanySettings | null,
+  logoUrl: string | null
 ): void => {
-  const html = generateOrderReceiptHTML(orders, companySettings);
+  const html = generateOrderReceiptHTML(orders, companySettings, logoUrl);
   const printWindow = window.open('', '_blank');
   
   if (printWindow) {
