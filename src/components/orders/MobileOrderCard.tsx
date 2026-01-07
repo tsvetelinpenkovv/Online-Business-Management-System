@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { 
   User, Phone, Euro, Package, Truck, MessageCircle, 
   MoreHorizontal, Pencil, Trash2, Printer, Calendar,
-  Barcode, ExternalLink, Search, Globe
+  Barcode, ExternalLink, Search, Globe, FileBox
 } from 'lucide-react';
 import { Order, OrderStatus } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -87,7 +87,19 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onPrint}>
                 <Printer className="w-4 h-4 mr-2" />
-                Печат
+                Печат на поръчка
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  if (order.courier_tracking_url) {
+                    window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
+                  }
+                }}
+                disabled={!order.courier_tracking_url}
+                className={!order.courier_tracking_url ? 'opacity-50' : ''}
+              >
+                <FileBox className="w-4 h-4 mr-2" />
+                Печат на товарителница
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onDelete} className="text-destructive">
                 <Trash2 className="w-4 h-4 mr-2" />
