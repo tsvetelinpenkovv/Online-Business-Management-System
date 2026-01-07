@@ -19,14 +19,14 @@ interface PopoverContentProps extends React.ComponentPropsWithoutRef<typeof Popo
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   PopoverContentProps
->(({ className, align = "center", sideOffset = 4, showArrow = false, arrowClassName, ...props }, ref) => (
+>(({ className, align = "center", sideOffset = 8, showArrow = false, arrowClassName, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       ref={ref}
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "z-50 w-72 rounded-lg border bg-popover p-4 text-popover-foreground shadow-lg outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className,
       )}
       {...props}
@@ -34,9 +34,10 @@ const PopoverContent = React.forwardRef<
       {props.children}
       {showArrow && (
         <PopoverPrimitive.Arrow 
-          className={cn("fill-popover", arrowClassName)} 
-          width={12} 
-          height={6} 
+          className={cn("drop-shadow-sm", arrowClassName)} 
+          width={14} 
+          height={7}
+          style={{ fill: 'hsl(var(--popover))' }}
         />
       )}
     </PopoverPrimitive.Content>
