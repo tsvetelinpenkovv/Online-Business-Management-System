@@ -437,7 +437,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       <CourierLogo 
                         trackingUrl={order.courier_tracking_url} 
                         courierId={order.courier_id}
-                        className="w-[30px] h-[30px]" 
+                        className="w-8 h-8" 
                       />
                       {order.courier_tracking_url && (
                         <a 
