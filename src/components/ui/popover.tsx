@@ -19,7 +19,7 @@ interface PopoverContentProps extends React.ComponentPropsWithoutRef<typeof Popo
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   PopoverContentProps
->(({ className, align = "center", sideOffset = 10, showArrow = false, arrowClassName, ...props }, ref) => (
+>(({ className, align = "center", sideOffset = 12, showArrow = false, arrowClassName, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       ref={ref}
@@ -35,11 +35,11 @@ const PopoverContent = React.forwardRef<
       {showArrow && (
         <PopoverPrimitive.Arrow 
           className={cn(arrowClassName)} 
-          width={16} 
-          height={8}
+          width={20} 
+          height={10}
           style={{ 
             fill: 'hsl(var(--popover))',
-            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.1))'
+            filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.08))'
           }}
         />
       )}
