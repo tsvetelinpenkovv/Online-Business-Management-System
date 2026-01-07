@@ -80,7 +80,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Всички статуси</SelectItem>
+            <SelectItem value="all">Статуси</SelectItem>
             {ORDER_STATUSES.map((status) => (
               <SelectItem key={status} value={status}>
                 <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             <SelectItem value="all">
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-muted-foreground" />
-                Всички
+                Източници
               </div>
             </SelectItem>
             <SelectItem value="google">
@@ -199,7 +199,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <SelectValue placeholder="Статус" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Всички статуси</SelectItem>
+              <SelectItem value="all">Статуси</SelectItem>
               {ORDER_STATUSES.map((status) => (
                 <SelectItem key={status} value={status}>
                   <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <SelectItem value="all">
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-muted-foreground" />
-                  Всички източници
+                  Източници
                 </div>
               </SelectItem>
               <SelectItem value="google">

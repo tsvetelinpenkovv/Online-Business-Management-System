@@ -504,10 +504,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setDeleteId(order.id)}
-                        className="text-destructive focus:text-destructive"
+                        className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Изтрий
+                        Изтрій
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
