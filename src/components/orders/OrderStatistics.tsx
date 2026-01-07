@@ -118,11 +118,7 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
   }, [orders]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('bg-BG', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2
-    }).format(value);
+    return `€ ${value.toFixed(2)}`;
   };
 
   const formatHours = (hours: number) => {
