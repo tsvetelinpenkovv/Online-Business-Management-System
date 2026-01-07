@@ -325,7 +325,7 @@ const Index = () => {
                 <Button 
                   onClick={() => setShowBulkDeleteDialog(true)} 
                   variant="outline" 
-                  className="gap-2 text-destructive hover:text-destructive"
+                  className="gap-2 text-destructive border-destructive/30 hover:bg-destructive hover:text-white hover:border-destructive"
                 >
                   <Trash2 className="w-4 h-4" />
                   Изтрий ({selectedOrders.length})
