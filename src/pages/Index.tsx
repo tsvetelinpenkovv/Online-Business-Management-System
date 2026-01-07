@@ -8,6 +8,7 @@ import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
 import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
@@ -398,6 +399,7 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <ThemeToggle />
             <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
             </Button>
@@ -457,6 +459,7 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <ThemeToggle />
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
             </Button>

@@ -37,7 +37,7 @@ export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start" showArrow arrowClassName="fill-popover drop-shadow-sm">
+      <PopoverContent className="w-80" align="start" showArrow arrowClassName="fill-popover drop-shadow-md">
         <div className="space-y-2">
           <h4 className="font-medium text-sm">{title}</h4>
           <div className="text-sm text-muted-foreground">
