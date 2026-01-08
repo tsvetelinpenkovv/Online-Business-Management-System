@@ -197,8 +197,8 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
   const downloadTemplate = (type: ExportType) => {
     const { headers, sampleRows } = TEMPLATE_DATA[type];
     const data = [headers, ...sampleRows];
-    const filename = getFilename(type, exportFormat, true);
-    downloadFile(data, filename, exportFormat);
+    const filename = `шаблон_${TYPE_LABELS[type].toLowerCase()}.csv`;
+    downloadFile(data, filename, 'csv');
     toast({ title: 'Шаблон изтеглен', description: `Файлът ${filename} е изтеглен` });
   };
 
