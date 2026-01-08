@@ -152,11 +152,6 @@
     --tw-ring-offset-shadow: none !important;
   }
 
-  /* Remove default active state styling from popover triggers when open */
-  button[data-state="open"]:not([data-active="true"]) {
-    background-color: inherit;
-  }
-
   /* Blur buttons after click to remove active/focus state */
   button:active,
   [role="button"]:active {
