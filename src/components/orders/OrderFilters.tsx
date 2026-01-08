@@ -1,4 +1,5 @@
 import { FC, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { Search, Filter, Calendar, X, Globe, BarChart3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
   const [dateFromOpen, setDateFromOpen] = useState(false);
   const [dateToOpen, setDateToOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [sourceOpen, setSourceOpen] = useState(false);
 
   const handleDateFromOpenChange = (open: boolean) => {
     setDateFromOpen(open);
@@ -87,8 +90,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-          <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+        <Select value={statusFilter} onValueChange={onStatusFilterChange} open={statusOpen} onOpenChange={setStatusOpen}>
+          <SelectTrigger className={cn("w-[160px]", statusOpen && "bg-primary text-primary-foreground border-primary")}>
             <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
@@ -104,8 +107,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
-          <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+        <Select value={sourceFilter} onValueChange={onSourceFilterChange} open={sourceOpen} onOpenChange={setSourceOpen}>
+          <SelectTrigger className={cn("w-[160px]", sourceOpen && "bg-primary text-primary-foreground border-primary")}>
             <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Източници" />
           </SelectTrigger>
@@ -202,8 +205,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-            <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+          <Select value={statusFilter} onValueChange={onStatusFilterChange} open={statusOpen} onOpenChange={setStatusOpen}>
+            <SelectTrigger className={cn("w-full sm:w-[180px]", statusOpen && "bg-primary text-primary-foreground border-primary")}>
               <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Статус" />
             </SelectTrigger>
@@ -219,8 +222,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </SelectContent>
           </Select>
 
-          <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
-            <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+          <Select value={sourceFilter} onValueChange={onSourceFilterChange} open={sourceOpen} onOpenChange={setSourceOpen}>
+            <SelectTrigger className={cn("w-full sm:w-[180px]", sourceOpen && "bg-primary text-primary-foreground border-primary")}>
               <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Източници" />
             </SelectTrigger>
