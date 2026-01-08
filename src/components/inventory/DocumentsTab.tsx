@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DocumentsTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -46,6 +47,7 @@ interface DocumentItem {
 }
 
 export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -177,59 +179,104 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
         </div>
       </div>
 
-      {/* Documents Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Документ №</TableHead>
-                  <TableHead>Тип</TableHead>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Контрагент</TableHead>
-                  <TableHead className="text-right">Сума</TableHead>
-                  <TableHead>Бележки</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDocuments.length === 0 ? (
+      {/* Documents - Mobile Cards */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {filteredDocuments.length === 0 ? (
+            <Card className="py-8">
+              <CardContent className="text-center text-muted-foreground">
+                <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Няма намерени документи</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredDocuments.map((doc) => (
+              <Card key={doc.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      {getDocumentIcon(doc.document_type)}
+                      <span className="font-mono font-medium">{doc.document_number}</span>
+                    </div>
+                    {getDocumentBadge(doc.document_type)}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Дата:</span>
+                      <span className="text-sm">{format(new Date(doc.document_date), 'dd.MM.yyyy', { locale: bg })}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Контрагент:</span>
+                      <span className="text-sm font-medium">{doc.supplier?.name || doc.counterparty_name || '-'}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <span className="text-sm text-muted-foreground">Сума:</span>
+                      <span className="font-bold">{doc.total_amount.toFixed(2)} €</span>
+                    </div>
+                    {doc.notes && (
+                      <p className="text-xs text-muted-foreground pt-2 border-t line-clamp-2">{doc.notes}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Documents Table - Desktop */
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Няма намерени документи</p>
-                    </TableCell>
+                    <TableHead>Документ №</TableHead>
+                    <TableHead>Тип</TableHead>
+                    <TableHead>Дата</TableHead>
+                    <TableHead>Контрагент</TableHead>
+                    <TableHead className="text-right">Сума</TableHead>
+                    <TableHead>Бележки</TableHead>
                   </TableRow>
-                ) : (
-                  filteredDocuments.map((doc) => (
-                    <TableRow key={doc.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getDocumentIcon(doc.document_type)}
-                          <span className="font-mono font-medium">{doc.document_number}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getDocumentBadge(doc.document_type)}</TableCell>
-                      <TableCell>
-                        {format(new Date(doc.document_date), 'dd.MM.yyyy', { locale: bg })}
-                      </TableCell>
-                      <TableCell>
-                        {doc.supplier?.name || doc.counterparty_name || '-'}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {doc.total_amount.toFixed(2)} €
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">
-                        {doc.notes || '-'}
+                </TableHeader>
+                <TableBody>
+                  {filteredDocuments.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>Няма намерени документи</p>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  ) : (
+                    filteredDocuments.map((doc) => (
+                      <TableRow key={doc.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getDocumentIcon(doc.document_type)}
+                            <span className="font-mono font-medium">{doc.document_number}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getDocumentBadge(doc.document_type)}</TableCell>
+                        <TableCell>
+                          {format(new Date(doc.document_date), 'dd.MM.yyyy', { locale: bg })}
+                        </TableCell>
+                        <TableCell>
+                          {doc.supplier?.name || doc.counterparty_name || '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {doc.total_amount.toFixed(2)} €
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">
+                          {doc.notes || '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Create Document Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

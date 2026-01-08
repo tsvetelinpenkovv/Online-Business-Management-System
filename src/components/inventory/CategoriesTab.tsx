@@ -38,8 +38,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { 
-  Plus, Search, Pencil, Trash2, FolderTree, MoreHorizontal
+  Plus, Search, Pencil, Trash2, FolderTree, MoreHorizontal, Package
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -47,12 +48,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CategoriesTabProps {
   inventory: ReturnType<typeof useInventory>;
 }
 
 export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -138,67 +141,132 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
         </Button>
       </div>
 
-      {/* Categories Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Наименование</TableHead>
-                  <TableHead>Описание</TableHead>
-                  <TableHead>Родителска категория</TableHead>
-                  <TableHead className="text-right">Артикули</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCategories.length === 0 ? (
+      {/* Categories - Mobile Cards */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {filteredCategories.length === 0 ? (
+            <Card className="py-8">
+              <CardContent className="text-center text-muted-foreground">
+                <FolderTree className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Няма намерени категории</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredCategories.map((category) => (
+              <Card key={category.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FolderTree className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <p className="font-medium truncate">{category.name}</p>
+                      </div>
+                      {category.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">{category.description}</p>
+                      )}
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(category)}>
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Редактирай
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => setDeleteId(category.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Изтрий
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t text-sm">
+                    {getParentName(category.parent_id) !== '-' && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <span>Родител:</span>
+                        <Badge variant="outline">{getParentName(category.parent_id)}</Badge>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Package className="w-3 h-3 text-muted-foreground" />
+                      <span className="font-medium">{getProductCount(category.id)}</span>
+                      <span className="text-muted-foreground">артикула</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Categories Table - Desktop */
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      <FolderTree className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Няма намерени категории</p>
-                    </TableCell>
+                    <TableHead>Наименование</TableHead>
+                    <TableHead>Описание</TableHead>
+                    <TableHead>Родителска категория</TableHead>
+                    <TableHead className="text-right">Артикули</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
-                ) : (
-                  filteredCategories.map((category) => (
-                    <TableRow key={category.id}>
-                      <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {category.description || '-'}
-                      </TableCell>
-                      <TableCell>{getParentName(category.parent_id)}</TableCell>
-                      <TableCell className="text-right">{getProductCount(category.id)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(category)}>
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Редактирай
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => setDeleteId(category.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Изтрий
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                </TableHeader>
+                <TableBody>
+                  {filteredCategories.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <FolderTree className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>Няма намерени категории</p>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  ) : (
+                    filteredCategories.map((category) => (
+                      <TableRow key={category.id}>
+                        <TableCell className="font-medium">{category.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {category.description || '-'}
+                        </TableCell>
+                        <TableCell>{getParentName(category.parent_id)}</TableCell>
+                        <TableCell className="text-right">{getProductCount(category.id)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditDialog(category)}>
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Редактирай
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => setDeleteId(category.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Изтрий
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
