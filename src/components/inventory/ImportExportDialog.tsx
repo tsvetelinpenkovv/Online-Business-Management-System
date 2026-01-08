@@ -15,13 +15,14 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Download, Upload, FileSpreadsheet, Package, Users, FolderTree, FileText, Check, AlertCircle, 
-  FileDown, Eye, ArrowLeft, Loader2
+  FileDown, Eye, ArrowLeft, Loader2, ArrowRight, Link2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
 type ExportType = 'products' | 'suppliers' | 'categories' | 'documents';
 type FileFormat = 'csv' | 'xlsx' | 'xls' | 'ods';
+type ImportStep = 'select' | 'mapping' | 'preview';
 
 interface ImportExportDialogProps {
   open: boolean;
@@ -29,11 +30,15 @@ interface ImportExportDialogProps {
   inventory: ReturnType<typeof useInventory>;
 }
 
-interface PreviewData {
+interface FileData {
   type: ExportType;
   headers: string[];
   rows: string[][];
   fileName: string;
+}
+
+interface ColumnMapping {
+  [targetField: string]: number | null; // maps target field to source column index
 }
 
 const SUPPORTED_FORMATS: { value: FileFormat; label: string; extension: string }[] = [
@@ -44,6 +49,46 @@ const SUPPORTED_FORMATS: { value: FileFormat; label: string; extension: string }
 ];
 
 const ACCEPTED_FILE_TYPES = '.csv,.xls,.xlsx,.xlst,.ods,.ots';
+
+const FIELD_DEFINITIONS: Record<ExportType, { key: string; label: string; required?: boolean }[]> = {
+  products: [
+    { key: 'sku', label: 'SKU', required: true },
+    { key: 'name', label: 'Име', required: true },
+    { key: 'description', label: 'Описание' },
+    { key: 'category', label: 'Категория' },
+    { key: 'unit', label: 'Мерна единица' },
+    { key: 'purchase_price', label: 'Покупна цена' },
+    { key: 'sale_price', label: 'Продажна цена' },
+    { key: 'min_stock', label: 'Мин. наличност' },
+    { key: 'current_stock', label: 'Текуща наличност' },
+    { key: 'barcode', label: 'Баркод' },
+    { key: 'is_active', label: 'Активен' },
+  ],
+  suppliers: [
+    { key: 'name', label: 'Име', required: true },
+    { key: 'contact_person', label: 'Контактно лице' },
+    { key: 'email', label: 'Имейл' },
+    { key: 'phone', label: 'Телефон' },
+    { key: 'address', label: 'Адрес' },
+    { key: 'eik', label: 'ЕИК' },
+    { key: 'vat_number', label: 'ДДС номер' },
+    { key: 'notes', label: 'Бележки' },
+    { key: 'is_active', label: 'Активен' },
+  ],
+  categories: [
+    { key: 'name', label: 'Име', required: true },
+    { key: 'description', label: 'Описание' },
+    { key: 'parent', label: 'Родителска категория' },
+  ],
+  documents: [
+    { key: 'number', label: 'Номер' },
+    { key: 'type', label: 'Тип' },
+    { key: 'date', label: 'Дата' },
+    { key: 'counterparty', label: 'Контрагент' },
+    { key: 'amount', label: 'Сума' },
+    { key: 'notes', label: 'Бележки' },
+  ]
+};
 
 const TEMPLATE_DATA: Record<ExportType, { headers: string[]; sampleRows: string[][] }> = {
   products: {
@@ -81,6 +126,42 @@ const TYPE_LABELS: Record<ExportType, string> = {
   documents: 'Документи'
 };
 
+// Try to auto-detect column mapping based on header names
+const autoDetectMapping = (fileHeaders: string[], targetFields: { key: string; label: string }[]): ColumnMapping => {
+  const mapping: ColumnMapping = {};
+  const normalizedFileHeaders = fileHeaders.map(h => h.toLowerCase().trim());
+  
+  targetFields.forEach(field => {
+    // Try to find matching column
+    const fieldLabelLower = field.label.toLowerCase();
+    const fieldKeyLower = field.key.toLowerCase().replace(/_/g, ' ');
+    
+    let matchIndex = normalizedFileHeaders.findIndex(h => 
+      h === fieldLabelLower || 
+      h === fieldKeyLower ||
+      h.includes(fieldLabelLower) ||
+      fieldLabelLower.includes(h)
+    );
+    
+    // Special cases for common WooCommerce fields
+    if (matchIndex === -1) {
+      if (field.key === 'sku') {
+        matchIndex = normalizedFileHeaders.findIndex(h => h.includes('sku') || h.includes('артикул'));
+      } else if (field.key === 'name') {
+        matchIndex = normalizedFileHeaders.findIndex(h => h.includes('име') || h.includes('name') || h.includes('заглавие') || h.includes('title'));
+      } else if (field.key === 'sale_price') {
+        matchIndex = normalizedFileHeaders.findIndex(h => h.includes('цена') || h.includes('price'));
+      } else if (field.key === 'current_stock') {
+        matchIndex = normalizedFileHeaders.findIndex(h => h.includes('наличност') || h.includes('stock') || h.includes('количество'));
+      }
+    }
+    
+    mapping[field.key] = matchIndex >= 0 ? matchIndex : null;
+  });
+  
+  return mapping;
+};
+
 export const ImportExportDialog: FC<ImportExportDialogProps> = ({ 
   open, 
   onOpenChange, 
@@ -89,10 +170,19 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
   const [activeTab, setActiveTab] = useState<'export' | 'import'>('export');
   const [exportFormat, setExportFormat] = useState<FileFormat>('xlsx');
   const [importing, setImporting] = useState(false);
-  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
+  const [importStep, setImportStep] = useState<ImportStep>('select');
+  const [fileData, setFileData] = useState<FileData | null>(null);
+  const [columnMapping, setColumnMapping] = useState<ColumnMapping>({});
   const [importResult, setImportResult] = useState<{ success: number; errors: string[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const resetImport = () => {
+    setImportStep('select');
+    setFileData(null);
+    setColumnMapping({});
+    setImportResult(null);
+  };
 
   const getDataForType = (type: ExportType): { headers: string[]; rows: string[][] } => {
     switch (type) {
@@ -169,7 +259,6 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
 
-    // Set column widths
     const colWidths = data[0].map((_, i) => ({
       wch: Math.max(...data.map(row => (row[i] || '').toString().length)) + 2
     }));
@@ -237,12 +326,21 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
       const headers = rows[0] || [];
       const dataRows = rows.slice(1).filter(row => row.some(cell => cell && cell.toString().trim()));
       
-      setPreviewData({
+      const newFileData: FileData = {
         type,
         headers: headers.map(h => h.toString()),
         rows: dataRows.map(row => row.map(cell => (cell || '').toString())),
         fileName: file.name
-      });
+      };
+      
+      setFileData(newFileData);
+      
+      // Auto-detect column mapping
+      const fields = FIELD_DEFINITIONS[type];
+      const autoMapping = autoDetectMapping(newFileData.headers, fields);
+      setColumnMapping(autoMapping);
+      
+      setImportStep('mapping');
     } catch (err) {
       toast({ title: 'Грешка', description: 'Неуспешно четене на файла', variant: 'destructive' });
     } finally {
@@ -252,8 +350,23 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     }
   };
 
+  const getMappedValue = (row: string[], fieldKey: string): string => {
+    const colIndex = columnMapping[fieldKey];
+    if (colIndex === null || colIndex === undefined || colIndex < 0) return '';
+    return row[colIndex] || '';
+  };
+
+  const getMappedRows = (): string[][] => {
+    if (!fileData) return [];
+    
+    const fields = FIELD_DEFINITIONS[fileData.type];
+    return fileData.rows.map(row => 
+      fields.map(field => getMappedValue(row, field.key))
+    );
+  };
+
   const confirmImport = async () => {
-    if (!previewData) return;
+    if (!fileData) return;
     
     setImporting(true);
     setImportResult(null);
@@ -261,50 +374,74 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     let success = 0;
     const errors: string[] = [];
 
-    for (let i = 0; i < previewData.rows.length; i++) {
-      const row = previewData.rows[i];
+    for (let i = 0; i < fileData.rows.length; i++) {
+      const row = fileData.rows[i];
       try {
-        switch (previewData.type) {
+        switch (fileData.type) {
           case 'products': {
-            const category = inventory.categories.find(c => c.name === row[3]);
-            const unit = inventory.units.find(u => u.abbreviation === row[4] || u.name === row[4]);
+            const categoryName = getMappedValue(row, 'category');
+            const unitName = getMappedValue(row, 'unit');
+            const category = inventory.categories.find(c => c.name === categoryName);
+            const unit = inventory.units.find(u => u.abbreviation === unitName || u.name === unitName);
+            
+            const sku = getMappedValue(row, 'sku') || `SKU-${Date.now()}-${i}`;
+            const name = getMappedValue(row, 'name');
+            
+            if (!name) {
+              errors.push(`Ред ${i + 2}: Липсва име на продукта`);
+              continue;
+            }
             
             await inventory.createProduct({
-              sku: row[0] || `SKU-${Date.now()}-${i}`,
-              name: row[1],
-              description: row[2] || null,
+              sku,
+              name,
+              description: getMappedValue(row, 'description') || null,
               category_id: category?.id || null,
               unit_id: unit?.id || null,
-              purchase_price: parseFloat(row[5]) || 0,
-              sale_price: parseFloat(row[6]) || 0,
-              min_stock_level: parseFloat(row[7]) || 0,
-              barcode: row[9] || null,
-              is_active: row[10] !== 'Не',
+              purchase_price: parseFloat(getMappedValue(row, 'purchase_price')) || 0,
+              sale_price: parseFloat(getMappedValue(row, 'sale_price')) || 0,
+              min_stock_level: parseFloat(getMappedValue(row, 'min_stock')) || 0,
+              barcode: getMappedValue(row, 'barcode') || null,
+              is_active: getMappedValue(row, 'is_active') !== 'Не',
               woocommerce_id: null,
             });
             success++;
             break;
           }
           case 'suppliers': {
+            const name = getMappedValue(row, 'name');
+            if (!name) {
+              errors.push(`Ред ${i + 2}: Липсва име на доставчика`);
+              continue;
+            }
+            
             await inventory.createSupplier({
-              name: row[0],
-              contact_person: row[1] || null,
-              email: row[2] || null,
-              phone: row[3] || null,
-              address: row[4] || null,
-              eik: row[5] || null,
-              vat_number: row[6] || null,
-              notes: row[7] || null,
-              is_active: row[8] !== 'Не',
+              name,
+              contact_person: getMappedValue(row, 'contact_person') || null,
+              email: getMappedValue(row, 'email') || null,
+              phone: getMappedValue(row, 'phone') || null,
+              address: getMappedValue(row, 'address') || null,
+              eik: getMappedValue(row, 'eik') || null,
+              vat_number: getMappedValue(row, 'vat_number') || null,
+              notes: getMappedValue(row, 'notes') || null,
+              is_active: getMappedValue(row, 'is_active') !== 'Не',
             });
             success++;
             break;
           }
           case 'categories': {
-            const parent = inventory.categories.find(c => c.name === row[2]);
+            const name = getMappedValue(row, 'name');
+            if (!name) {
+              errors.push(`Ред ${i + 2}: Липсва име на категорията`);
+              continue;
+            }
+            
+            const parentName = getMappedValue(row, 'parent');
+            const parent = inventory.categories.find(c => c.name === parentName);
+            
             await inventory.createCategory({
-              name: row[0],
-              description: row[1] || null,
+              name,
+              description: getMappedValue(row, 'description') || null,
               parent_id: parent?.id || null,
             });
             success++;
@@ -317,16 +454,11 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     }
 
     setImportResult({ success, errors });
-    setPreviewData(null);
-    setImporting(false);
+    resetImport();
     
     if (success > 0) {
       toast({ title: 'Импорт завършен', description: `Успешно импортирани: ${success}` });
     }
-  };
-
-  const cancelPreview = () => {
-    setPreviewData(null);
   };
 
   const triggerImport = (type: ExportType) => {
@@ -336,6 +468,10 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     }
   };
 
+  const updateMapping = (fieldKey: string, colIndex: number | null) => {
+    setColumnMapping(prev => ({ ...prev, [fieldKey]: colIndex }));
+  };
+
   const exportButtons = [
     { type: 'products' as ExportType, label: 'Артикули', icon: Package, color: 'bg-primary' },
     { type: 'suppliers' as ExportType, label: 'Доставчици', icon: Users, color: 'bg-success' },
@@ -343,18 +479,103 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     { type: 'documents' as ExportType, label: 'Документи', icon: FileText, color: 'bg-warning' },
   ];
 
-  // Preview mode
-  if (previewData) {
+  // Mapping step
+  if (importStep === 'mapping' && fileData) {
+    const fields = FIELD_DEFINITIONS[fileData.type];
+    const requiredFields = fields.filter(f => f.required);
+    const allRequiredMapped = requiredFields.every(f => columnMapping[f.key] !== null && columnMapping[f.key] !== undefined);
+    
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+      <Dialog open={open} onOpenChange={(o) => { if (!o) resetImport(); onOpenChange(o); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5" />
+              Свързване на колони - {TYPE_LABELS[fileData.type]}
+            </DialogTitle>
+            <DialogDescription>
+              Изберете коя колона от файла отговаря на всяко поле. Полетата с * са задължителни.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-3 bg-muted/50 rounded-lg text-sm">
+              <span className="font-medium">Файл:</span> {fileData.fileName} • 
+              <span className="font-medium ml-2">Колони:</span> {fileData.headers.length} • 
+              <span className="font-medium ml-2">Редове:</span> {fileData.rows.length}
+            </div>
+
+            <ScrollArea className="h-[350px] pr-4">
+              <div className="space-y-3">
+                {fields.map(field => (
+                  <div key={field.key} className="flex items-center gap-4">
+                    <div className="w-40 flex-shrink-0">
+                      <Label className={field.required ? 'font-semibold' : ''}>
+                        {field.label}
+                        {field.required && <span className="text-destructive ml-1">*</span>}
+                      </Label>
+                    </div>
+                    <ArrowLeft className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <Select
+                      value={columnMapping[field.key]?.toString() ?? 'none'}
+                      onValueChange={(v) => updateMapping(field.key, v === 'none' ? null : parseInt(v))}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Изберете колона" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">
+                          <span className="text-muted-foreground">-- Не импортирай --</span>
+                        </SelectItem>
+                        {fileData.headers.map((header, index) => (
+                          <SelectItem key={index} value={index.toString()}>
+                            <span className="font-medium">{header}</span>
+                            {fileData.rows[0] && fileData.rows[0][index] && (
+                              <span className="text-muted-foreground ml-2 text-xs">
+                                (пр: {fileData.rows[0][index].substring(0, 20)}{fileData.rows[0][index].length > 20 ? '...' : ''})
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={resetImport}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Назад
+            </Button>
+            <Button onClick={() => setImportStep('preview')} disabled={!allRequiredMapped}>
+              <Eye className="w-4 h-4 mr-2" />
+              Преглед
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Preview step
+  if (importStep === 'preview' && fileData) {
+    const fields = FIELD_DEFINITIONS[fileData.type];
+    const mappedRows = getMappedRows();
+    
+    return (
+      <Dialog open={open} onOpenChange={(o) => { if (!o) resetImport(); onOpenChange(o); }}>
+        <DialogContent className="max-w-5xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
-              Преглед преди импорт - {TYPE_LABELS[previewData.type]}
+              Преглед преди импорт - {TYPE_LABELS[fileData.type]}
             </DialogTitle>
             <DialogDescription>
-              Файл: {previewData.fileName} • {previewData.rows.length} записа за импорт
+              Файл: {fileData.fileName} • {fileData.rows.length} записа за импорт
             </DialogDescription>
           </DialogHeader>
 
@@ -364,38 +585,41 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
                 <thead className="bg-muted sticky top-0">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-muted-foreground">#</th>
-                    {previewData.headers.map((header, i) => (
-                      <th key={i} className="px-3 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">
-                        {header}
+                    {fields.map((field) => (
+                      <th key={field.key} className="px-3 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">
+                        {field.label}
+                        {columnMapping[field.key] === null && (
+                          <span className="text-orange-500 ml-1">(празно)</span>
+                        )}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {previewData.rows.slice(0, 100).map((row, rowIndex) => (
+                  {mappedRows.slice(0, 100).map((row, rowIndex) => (
                     <tr key={rowIndex} className="border-t hover:bg-muted/50">
                       <td className="px-3 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       {row.map((cell, cellIndex) => (
                         <td key={cellIndex} className="px-3 py-2 whitespace-nowrap max-w-[200px] truncate">
-                          {cell || <span className="text-muted-foreground italic">празно</span>}
+                          {cell || <span className="text-muted-foreground italic">-</span>}
                         </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {previewData.rows.length > 100 && (
+              {fileData.rows.length > 100 && (
                 <div className="p-3 text-center text-sm text-muted-foreground bg-muted/50">
-                  Показани са първите 100 реда от общо {previewData.rows.length}
+                  Показани са първите 100 реда от общо {fileData.rows.length}
                 </div>
               )}
             </div>
           </ScrollArea>
 
           <DialogFooter className="flex gap-2 sm:gap-0">
-            <Button variant="outline" onClick={cancelPreview} disabled={importing}>
+            <Button variant="outline" onClick={() => setImportStep('mapping')} disabled={importing}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Назад
+              Промени mapping
             </Button>
             <Button onClick={confirmImport} disabled={importing}>
               {importing ? (
@@ -406,7 +630,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
               ) : (
                 <>
                   <Check className="w-4 h-4 mr-2" />
-                  Потвърди импорт ({previewData.rows.length} записа)
+                  Потвърди импорт ({fileData.rows.length} записа)
                 </>
               )}
             </Button>
@@ -417,7 +641,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) resetImport(); onOpenChange(o); }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -440,7 +664,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
           }}
         />
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'export' | 'import')}>
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'export' | 'import'); setImportResult(null); }}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="export" className="flex items-center gap-2">
               <Download className="w-4 h-4" />
