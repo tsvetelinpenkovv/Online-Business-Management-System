@@ -9,13 +9,16 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { 
   Download, Upload, FileSpreadsheet, Package, Users, FolderTree, FileText, Check, AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 
 type ExportType = 'products' | 'suppliers' | 'categories' | 'documents';
+type FileFormat = 'csv' | 'xlsx' | 'xls' | 'ods';
 
 interface ImportExportDialogProps {
   open: boolean;
@@ -23,26 +26,33 @@ interface ImportExportDialogProps {
   inventory: ReturnType<typeof useInventory>;
 }
 
+const SUPPORTED_FORMATS: { value: FileFormat; label: string; extension: string }[] = [
+  { value: 'csv', label: 'CSV', extension: '.csv' },
+  { value: 'xlsx', label: 'Excel (XLSX)', extension: '.xlsx' },
+  { value: 'xls', label: 'Excel (XLS)', extension: '.xls' },
+  { value: 'ods', label: 'OpenDocument (ODS)', extension: '.ods' },
+];
+
+const ACCEPTED_FILE_TYPES = '.csv,.xls,.xlsx,.xlst,.ods,.ots';
+
 export const ImportExportDialog: FC<ImportExportDialogProps> = ({ 
   open, 
   onOpenChange, 
   inventory 
 }) => {
   const [activeTab, setActiveTab] = useState<'export' | 'import'>('export');
+  const [exportFormat, setExportFormat] = useState<FileFormat>('xlsx');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ success: number; errors: string[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const exportToCSV = (type: ExportType) => {
-    let data: string[][] = [];
-    let filename = '';
-
+  const getDataForType = (type: ExportType): { headers: string[]; rows: string[][] } => {
     switch (type) {
       case 'products':
-        data = [
-          ['SKU', 'Име', 'Описание', 'Категория', 'Мерна единица', 'Покупна цена', 'Продажна цена', 'Мин. наличност', 'Текуща наличност', 'Баркод', 'Активен'],
-          ...inventory.products.map(p => [
+        return {
+          headers: ['SKU', 'Име', 'Описание', 'Категория', 'Мерна единица', 'Покупна цена', 'Продажна цена', 'Мин. наличност', 'Текуща наличност', 'Баркод', 'Активен'],
+          rows: inventory.products.map(p => [
             p.sku,
             p.name,
             p.description || '',
@@ -55,14 +65,12 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             p.barcode || '',
             p.is_active ? 'Да' : 'Не'
           ])
-        ];
-        filename = `артикули_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
+        };
 
       case 'suppliers':
-        data = [
-          ['Име', 'Контактно лице', 'Имейл', 'Телефон', 'Адрес', 'ЕИК', 'ДДС номер', 'Бележки', 'Активен'],
-          ...inventory.suppliers.map(s => [
+        return {
+          headers: ['Име', 'Контактно лице', 'Имейл', 'Телефон', 'Адрес', 'ЕИК', 'ДДС номер', 'Бележки', 'Активен'],
+          rows: inventory.suppliers.map(s => [
             s.name,
             s.contact_person || '',
             s.email || '',
@@ -73,14 +81,12 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             s.notes || '',
             s.is_active ? 'Да' : 'Не'
           ])
-        ];
-        filename = `доставчици_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
+        };
 
       case 'categories':
-        data = [
-          ['Име', 'Описание', 'Родителска категория'],
-          ...inventory.categories.map(c => {
+        return {
+          headers: ['Име', 'Описание', 'Родителска категория'],
+          rows: inventory.categories.map(c => {
             const parent = inventory.categories.find(p => p.id === c.parent_id);
             return [
               c.name,
@@ -88,14 +94,12 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
               parent?.name || ''
             ];
           })
-        ];
-        filename = `категории_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
+        };
 
       case 'documents':
-        data = [
-          ['Номер', 'Тип', 'Дата', 'Контрагент', 'Сума', 'Бележки'],
-          ...inventory.documents.map(d => [
+        return {
+          headers: ['Номер', 'Тип', 'Дата', 'Контрагент', 'Сума', 'Бележки'],
+          rows: inventory.documents.map(d => [
             d.document_number,
             d.document_type,
             d.document_date,
@@ -103,25 +107,90 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             d.total_amount.toString(),
             d.notes || ''
           ])
-        ];
-        filename = `документи_${new Date().toISOString().split('T')[0]}.csv`;
+        };
+    }
+  };
+
+  const getFilename = (type: ExportType, format: FileFormat): string => {
+    const typeNames: Record<ExportType, string> = {
+      products: 'артикули',
+      suppliers: 'доставчици',
+      categories: 'категории',
+      documents: 'документи'
+    };
+    const formatInfo = SUPPORTED_FORMATS.find(f => f.value === format);
+    return `${typeNames[type]}_${new Date().toISOString().split('T')[0]}${formatInfo?.extension || '.xlsx'}`;
+  };
+
+  const exportData = (type: ExportType) => {
+    const { headers, rows } = getDataForType(type);
+    const data = [headers, ...rows];
+    const filename = getFilename(type, exportFormat);
+
+    // Create workbook
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+
+    // Set column widths
+    const colWidths = headers.map((_, i) => ({
+      wch: Math.max(
+        headers[i].length,
+        ...rows.map(row => (row[i] || '').toString().length)
+      ) + 2
+    }));
+    ws['!cols'] = colWidths;
+
+    // Determine book type based on format
+    let bookType: XLSX.BookType;
+    switch (exportFormat) {
+      case 'csv':
+        bookType = 'csv';
         break;
+      case 'xls':
+        bookType = 'biff8';
+        break;
+      case 'ods':
+        bookType = 'ods';
+        break;
+      default:
+        bookType = 'xlsx';
     }
 
-    const csvContent = data.map(row => 
-      row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
-    
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    // Write and download
+    XLSX.writeFile(wb, filename, { bookType });
 
     toast({ title: 'Експорт успешен', description: `Файлът ${filename} е изтеглен` });
+  };
+
+  const parseFileData = async (file: File): Promise<string[][]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Get first sheet
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          
+          // Convert to array of arrays
+          const jsonData = XLSX.utils.sheet_to_json<string[]>(worksheet, { 
+            header: 1,
+            defval: ''
+          });
+          
+          resolve(jsonData as string[][]);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
   };
 
   const handleFileSelect = async (type: ExportType) => {
@@ -132,40 +201,15 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
     setImportResult(null);
 
     try {
-      const text = await file.text();
-      const lines = text.split('\n').filter(line => line.trim());
-      const rows = lines.map(line => {
-        const result: string[] = [];
-        let current = '';
-        let inQuotes = false;
-        
-        for (let i = 0; i < line.length; i++) {
-          const char = line[i];
-          if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-              current += '"';
-              i++;
-            } else {
-              inQuotes = !inQuotes;
-            }
-          } else if (char === ',' && !inQuotes) {
-            result.push(current.trim());
-            current = '';
-          } else {
-            current += char;
-          }
-        }
-        result.push(current.trim());
-        return result;
-      });
-
-      // Skip header row
-      const dataRows = rows.slice(1);
+      const rows = await parseFileData(file);
+      
+      // Skip header row and filter empty rows
+      const dataRows = rows.slice(1).filter(row => row.some(cell => cell && cell.toString().trim()));
       let success = 0;
       const errors: string[] = [];
 
       for (let i = 0; i < dataRows.length; i++) {
-        const row = dataRows[i];
+        const row = dataRows[i].map(cell => (cell || '').toString().trim());
         try {
           switch (type) {
             case 'products': {
@@ -256,14 +300,14 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             Импорт / Експорт
           </DialogTitle>
           <DialogDescription>
-            Импортирайте или експортирайте данни в CSV формат
+            Импортирайте или експортирайте данни в различни формати
           </DialogDescription>
         </DialogHeader>
 
         <input
           ref={fileInputRef}
           type="file"
-          accept=".csv,.xls,.xlsx"
+          accept={ACCEPTED_FILE_TYPES}
           className="hidden"
           onChange={(e) => {
             const type = e.target.dataset.importType as ExportType;
@@ -284,8 +328,24 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
           </TabsList>
 
           <TabsContent value="export" className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Формат на файла</Label>
+              <Select value={exportFormat} onValueChange={(v) => setExportFormat(v as FileFormat)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Изберете формат" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORTED_FORMATS.map(format => (
+                    <SelectItem key={format.value} value={format.value}>
+                      {format.label} ({format.extension})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             <p className="text-sm text-muted-foreground">
-              Изберете какво искате да експортирате в CSV формат:
+              Изберете какво искате да експортирате:
             </p>
             <div className="grid grid-cols-2 gap-3">
               {exportButtons.map(({ type, label, icon: Icon, color }) => (
@@ -293,7 +353,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
                   key={type}
                   variant="outline"
                   className="h-20 flex-col gap-2"
-                  onClick={() => exportToCSV(type)}
+                  onClick={() => exportData(type)}
                 >
                   <div className={`p-2 rounded-lg ${color} text-white`}>
                     <Icon className="w-5 h-5" />
@@ -305,8 +365,15 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
           </TabsContent>
 
           <TabsContent value="import" className="space-y-4 mt-4">
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <p className="text-sm font-medium mb-1">Разрешени формати:</p>
+              <p className="text-xs text-muted-foreground">
+                .csv, .xls, .xlsx, .xlst, .ods, .ots
+              </p>
+            </div>
+            
             <p className="text-sm text-muted-foreground">
-              Изберете тип данни за импорт. Файлът трябва да е в CSV формат със заглавен ред.
+              Изберете тип данни за импорт. Файлът трябва да има заглавен ред.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {exportButtons.filter(b => b.type !== 'documents').map(({ type, label, icon: Icon, color }) => (
