@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Package, AlertTriangle, XCircle, TrendingUp, 
-  DollarSign, Warehouse, ArrowUpRight, ArrowDownRight 
+  Euro, Warehouse, ArrowUpRight, ArrowDownRight 
 } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
 import { MOVEMENT_TYPE_LABELS } from '@/types/inventory';
@@ -83,7 +83,7 @@ export const InventoryDashboard: FC<InventoryDashboardProps> = ({ inventory }) =
                 <p className="text-sm text-muted-foreground">Продажна стойност</p>
                 <p className="text-2xl font-bold">{stats.totalSaleValue.toFixed(2)} €</p>
               </div>
-              <DollarSign className="w-8 h-8 text-primary opacity-80" />
+              <Euro className="w-8 h-8 text-primary opacity-80" />
             </div>
           </CardContent>
         </Card>
