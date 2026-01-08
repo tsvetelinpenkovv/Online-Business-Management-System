@@ -216,12 +216,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <SelectValue placeholder="Източници" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">
-                <div className="flex items-center justify-center gap-2 w-full">
-                  <Globe className="w-4 h-4 text-muted-foreground" />
-                  Източници
-                </div>
-              </SelectItem>
+              <SelectItem value="all">Източници</SelectItem>
               <SelectItem value="google">
                 <div className="flex items-center gap-2">
                   <SourceIcon source="google" className="w-4 h-4" />
