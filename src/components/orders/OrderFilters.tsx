@@ -125,7 +125,10 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[130px]">
+            <Button
+              variant="outline"
+              className="w-[130px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
+            >
               <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
               <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
             </Button>
@@ -143,7 +146,10 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[130px]">
+            <Button
+              variant="outline"
+              className="w-[130px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
+            >
               <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
               <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
             </Button>
@@ -241,7 +247,10 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           <div className="flex gap-2 w-full sm:w-auto">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm">
+                <Button
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
+                >
                   <Calendar className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
                   <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
                 </Button>
@@ -259,7 +268,10 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm">
+                <Button
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
+                >
                   <Calendar className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
                   <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
                 </Button>
