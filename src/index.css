@@ -83,7 +83,7 @@
     --accent: 221 83% 53%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --success: 142 76% 36%;
@@ -101,8 +101,8 @@
     --teal: 172 66% 40%;
     --teal-foreground: 0 0% 95%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
     --ring: 221 83% 53%;
 
     --sidebar-background: 0 0% 9%;
