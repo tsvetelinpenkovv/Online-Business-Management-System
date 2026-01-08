@@ -152,6 +152,110 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_products: {
+        Row: {
+          barcode: string | null
+          category_id: string | null
+          created_at: string
+          current_stock: number
+          description: string | null
+          id: string
+          is_active: boolean
+          min_stock_level: number | null
+          name: string
+          purchase_price: number | null
+          sale_price: number | null
+          sku: string
+          unit_id: string | null
+          updated_at: string
+          woocommerce_id: number | null
+        }
+        Insert: {
+          barcode?: string | null
+          category_id?: string | null
+          created_at?: string
+          current_stock?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_stock_level?: number | null
+          name: string
+          purchase_price?: number | null
+          sale_price?: number | null
+          sku: string
+          unit_id?: string | null
+          updated_at?: string
+          woocommerce_id?: number | null
+        }
+        Update: {
+          barcode?: string | null
+          category_id?: string | null
+          created_at?: string
+          current_stock?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_stock_level?: number | null
+          name?: string
+          purchase_price?: number | null
+          sale_price?: number | null
+          sku?: string
+          unit_id?: string | null
+          updated_at?: string
+          woocommerce_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_products_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units_of_measure"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           buyer_address: string | null
@@ -348,16 +452,273 @@ export type Database = {
           },
         ]
       }
+      stock_batches: {
+        Row: {
+          batch_number: string
+          created_at: string
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          product_id: string
+          purchase_price: number | null
+          quantity: number
+          received_date: string
+          remaining_quantity: number
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          batch_number: string
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          product_id: string
+          purchase_price?: number | null
+          quantity?: number
+          received_date?: string
+          remaining_quantity?: number
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          product_id?: string
+          purchase_price?: number | null
+          quantity?: number
+          received_date?: string
+          remaining_quantity?: number
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_batches_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_batches_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_documents: {
+        Row: {
+          counterparty_name: string | null
+          created_at: string
+          created_by: string | null
+          document_date: string
+          document_number: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id: string
+          notes: string | null
+          supplier_id: string | null
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          counterparty_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_date?: string
+          document_number: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id?: string
+          notes?: string | null
+          supplier_id?: string | null
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          counterparty_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_date?: string
+          document_number?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          id?: string
+          notes?: string | null
+          supplier_id?: string | null
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_documents_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          created_by: string | null
+          document_id: string | null
+          id: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          product_id: string
+          quantity: number
+          reason: string | null
+          stock_after: number
+          stock_before: number
+          total_price: number | null
+          unit_price: number | null
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string | null
+          id?: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          product_id: string
+          quantity: number
+          reason?: string | null
+          stock_after?: number
+          stock_before?: number
+          total_price?: number | null
+          unit_price?: number | null
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string | null
+          id?: string
+          movement_type?: Database["public"]["Enums"]["movement_type"]
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+          stock_after?: number
+          stock_before?: number
+          total_price?: number | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "stock_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "stock_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string
+          eik: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          vat_number: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          eik?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          vat_number?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          eik?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          vat_number?: string | null
+        }
+        Relationships: []
+      }
+      units_of_measure: {
+        Row: {
+          abbreviation: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          abbreviation: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          abbreviation?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_document_number: {
+        Args: { doc_type: Database["public"]["Enums"]["document_type"] }
+        Returns: string
+      }
       is_admin: { Args: { _email: string }; Returns: boolean }
       is_allowed_user: { Args: { _email: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
+      document_type:
+        | "receiving"
+        | "dispatch"
+        | "adjustment"
+        | "return"
+        | "inventory"
+      movement_type: "in" | "out" | "adjustment" | "return"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -486,6 +847,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      document_type: [
+        "receiving",
+        "dispatch",
+        "adjustment",
+        "return",
+        "inventory",
+      ],
+      movement_type: ["in", "out", "adjustment", "return"],
     },
   },
 } as const
