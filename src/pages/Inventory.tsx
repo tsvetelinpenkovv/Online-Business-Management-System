@@ -55,24 +55,54 @@ export default function Inventory() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card border-b shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="container mx-auto px-3 sm:px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => navigate('/')}
                 title="Назад към поръчки"
+                className="flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div className="flex items-center gap-2">
-                <Warehouse className="w-6 h-6 text-primary" />
-                <h1 className="text-xl font-bold">Складова програма</h1>
+              <div className="flex items-center gap-2 min-w-0">
+                <Warehouse className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+                <h1 className="text-lg sm:text-xl font-bold truncate">Склад</h1>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {/* Quick Action Buttons */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Mobile action buttons */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsScannerOpen(true)}
+                className="sm:hidden"
+                title="Сканиране на баркод"
+              >
+                <ScanBarcode className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsImportExportOpen(true)}
+                className="sm:hidden"
+                title="Импорт/Експорт"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => inventory.refresh()}
+                className="sm:hidden"
+                title="Опресни"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+              
+              {/* Desktop action buttons */}
               <Button
                 variant="outline"
                 size="sm"
@@ -109,72 +139,75 @@ export default function Inventory() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Табло</span>
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Package className="w-4 h-4" />
-              <span className="hidden sm:inline">Артикули</span>
-            </TabsTrigger>
-            <TabsTrigger value="suppliers" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">Доставчици</span>
-            </TabsTrigger>
-            <TabsTrigger value="categories" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <FolderTree className="w-4 h-4" />
-              <span className="hidden sm:inline">Категории</span>
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Документи</span>
-            </TabsTrigger>
-            <TabsTrigger value="movements" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <History className="w-4 h-4" />
-              <span className="hidden sm:inline">Движения</span>
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Отчети</span>
-            </TabsTrigger>
-            <TabsTrigger value="woocommerce" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ShoppingCart className="w-4 h-4" />
-              <span className="hidden sm:inline">WooCommerce</span>
-            </TabsTrigger>
-          </TabsList>
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          {/* Scrollable tabs for mobile */}
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+            <TabsList className="inline-flex w-max sm:w-auto sm:flex sm:flex-wrap h-auto gap-1 p-1 bg-muted/50">
+              <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Табло</span>
+              </TabsTrigger>
+              <TabsTrigger value="products" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Артикули</span>
+              </TabsTrigger>
+              <TabsTrigger value="suppliers" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Доставчици</span>
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <FolderTree className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Категории</span>
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Документи</span>
+              </TabsTrigger>
+              <TabsTrigger value="movements" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Движения</span>
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Отчети</span>
+              </TabsTrigger>
+              <TabsTrigger value="woocommerce" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>WooCommerce</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="dashboard" className="mt-6">
+          <TabsContent value="dashboard" className="mt-4 sm:mt-6">
             <InventoryDashboard inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="products" className="mt-6">
+          <TabsContent value="products" className="mt-4 sm:mt-6">
             <ProductsTab inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="suppliers" className="mt-6">
+          <TabsContent value="suppliers" className="mt-4 sm:mt-6">
             <SuppliersTab inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="categories" className="mt-6">
+          <TabsContent value="categories" className="mt-4 sm:mt-6">
             <CategoriesTab inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="documents" className="mt-6">
+          <TabsContent value="documents" className="mt-4 sm:mt-6">
             <DocumentsTab inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="movements" className="mt-6">
+          <TabsContent value="movements" className="mt-4 sm:mt-6">
             <MovementsTab inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="reports" className="mt-6">
+          <TabsContent value="reports" className="mt-4 sm:mt-6">
             <ReportsTab inventory={inventory} />
           </TabsContent>
 
-          <TabsContent value="woocommerce" className="mt-6">
+          <TabsContent value="woocommerce" className="mt-4 sm:mt-6">
             <WooCommerceSettings onSync={() => inventory.refresh()} />
           </TabsContent>
         </Tabs>

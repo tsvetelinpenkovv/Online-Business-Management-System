@@ -1,8 +1,8 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { 
   Clock, Loader2, PhoneOff, CheckCircle2, CreditCard, Building2, 
   Truck, PackageX, Package, CircleCheck, Undo2, XCircle, Ban,
-  Plus, Trash2, Pencil, Save, X
+  Plus, Trash2, Pencil, Save, X, Warehouse
 } from 'lucide-react';
 import { useOrderStatuses, OrderStatusConfig } from '@/hooks/useOrderStatuses';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const AVAILABLE_ICONS = [
   { name: 'Clock', icon: Clock },
@@ -51,12 +53,60 @@ const getColorClasses = (colorName: string) => {
 
 export const StatusSettings: FC = () => {
   const { statuses, loading, addStatus, updateStatus, deleteStatus } = useOrderStatuses();
+  const { toast } = useToast();
   const [newStatusName, setNewStatusName] = useState('');
   const [newStatusColor, setNewStatusColor] = useState('primary');
   const [newStatusIcon, setNewStatusIcon] = useState('Clock');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<OrderStatusConfig>>({});
   const [adding, setAdding] = useState(false);
+  
+  // Stock deduction status setting
+  const [stockDeductionStatus, setStockDeductionStatus] = useState<string>('Изпратена');
+  const [savingStockStatus, setSavingStockStatus] = useState(false);
+
+  useEffect(() => {
+    // Load saved stock deduction status
+    const loadStockDeductionStatus = async () => {
+      const { data } = await supabase
+        .from('api_settings')
+        .select('setting_value')
+        .eq('setting_key', 'stock_deduction_status')
+        .single();
+      
+      if (data?.setting_value) {
+        setStockDeductionStatus(data.setting_value);
+      }
+    };
+    loadStockDeductionStatus();
+  }, []);
+
+  const saveStockDeductionStatus = async (status: string) => {
+    setSavingStockStatus(true);
+    try {
+      await supabase
+        .from('api_settings')
+        .upsert({
+          setting_key: 'stock_deduction_status',
+          setting_value: status,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'setting_key' });
+      
+      setStockDeductionStatus(status);
+      toast({
+        title: 'Запазено',
+        description: `Статус за изписване от склада: "${status}"`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно запазване на настройката',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingStockStatus(false);
+    }
+  };
 
   const handleAddStatus = async () => {
     if (!newStatusName.trim()) return;
@@ -102,6 +152,53 @@ export const StatusSettings: FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Stock Deduction Status Setting */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Warehouse className="w-5 h-5" />
+            Настройка за склад
+          </CardTitle>
+          <CardDescription>
+            Изберете при кой статус да се изписва автоматично наличност от склада
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="space-y-2 flex-1">
+              <Label>Статус за изписване</Label>
+              <Select 
+                value={stockDeductionStatus} 
+                onValueChange={saveStockDeductionStatus}
+                disabled={savingStockStatus}
+              >
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder="Изберете статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statuses.map((status) => {
+                    const colorClasses = getColorClasses(status.color);
+                    const Icon = getIconComponent(status.icon);
+                    return (
+                      <SelectItem key={status.id} value={status.name}>
+                        <span className={`inline-flex items-center gap-1 ${colorClasses.textClass}`}>
+                          <Icon className="w-3 h-3" />
+                          {status.name}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Когато поръчка смени статуса си на "<strong>{stockDeductionStatus}</strong>", 
+              количеството ще бъде автоматично изписано от склада.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
