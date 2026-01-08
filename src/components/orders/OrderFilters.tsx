@@ -161,7 +161,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <Button 
           variant="outline" 
           onClick={() => navigate('/inventory')}
-          className="bg-primary/10 hover:bg-primary/20 border-primary/30"
+          className="bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
         >
           <Warehouse className="w-4 h-4 mr-2" />
           Склад

@@ -93,10 +93,30 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Всички типове</SelectItem>
-            <SelectItem value="in" className="text-green-500 focus:text-green-500">Приход</SelectItem>
-            <SelectItem value="out" className="text-red-500 focus:text-red-500">Разход</SelectItem>
-            <SelectItem value="adjustment" className="text-blue-500 focus:text-blue-500">Корекция</SelectItem>
-            <SelectItem value="return" className="text-orange-500 focus:text-orange-500">Връщане</SelectItem>
+            <SelectItem value="in" className="text-green-500 focus:text-green-500">
+              <div className="flex items-center gap-2">
+                <ArrowDownToLine className="w-4 h-4" />
+                Приход
+              </div>
+            </SelectItem>
+            <SelectItem value="out" className="text-red-500 focus:text-red-500">
+              <div className="flex items-center gap-2">
+                <ArrowUpFromLine className="w-4 h-4" />
+                Разход
+              </div>
+            </SelectItem>
+            <SelectItem value="adjustment" className="text-blue-500 focus:text-blue-500">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-4 h-4" />
+                Корекция
+              </div>
+            </SelectItem>
+            <SelectItem value="return" className="text-orange-500 focus:text-orange-500">
+              <div className="flex items-center gap-2">
+                <ArrowDownToLine className="w-4 h-4" />
+                Връщане
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
