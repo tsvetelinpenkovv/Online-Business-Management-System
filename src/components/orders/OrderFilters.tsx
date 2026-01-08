@@ -88,7 +88,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </div>
 
         <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
             <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
@@ -105,16 +105,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </Select>
 
         <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Източник" />
+          <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+            <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
+            <SelectValue placeholder="Източници" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-muted-foreground" />
-                Източници
-              </div>
-            </SelectItem>
+            <SelectItem value="all">Източници</SelectItem>
             <SelectItem value="google">
               <div className="flex items-center gap-2">
                 <SourceIcon source="google" className="w-4 h-4" />
@@ -207,7 +203,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
               <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Статус" />
             </SelectTrigger>
@@ -224,7 +220,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </Select>
 
           <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
               <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Източници" />
             </SelectTrigger>
