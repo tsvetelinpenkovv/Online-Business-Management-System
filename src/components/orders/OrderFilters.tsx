@@ -1,5 +1,6 @@
 import { FC } from 'react';
-import { Search, Filter, Calendar, X, Globe, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES } from '@/types/order';
@@ -48,6 +49,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   onToggleStatistics,
   showStatistics,
 }) => {
+  const navigate = useNavigate();
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
 
 
@@ -155,6 +157,15 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             />
           </PopoverContent>
         </Popover>
+
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/inventory')}
+          className="bg-primary/10 hover:bg-primary/20 border-primary/30"
+        >
+          <Warehouse className="w-4 h-4 mr-2" />
+          Склад
+        </Button>
 
         {hasFilters && (
           <Button variant="ghost" onClick={onClearFilters} className="text-muted-foreground">
