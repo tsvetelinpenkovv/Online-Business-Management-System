@@ -135,11 +135,26 @@
   button:focus:not(:focus-visible),
   [role="button"]:focus:not(:focus-visible),
   a:focus:not(:focus-visible),
-  [tabindex]:focus:not(:focus-visible) {
+  [tabindex]:focus:not(:focus-visible),
+  [data-state]:focus:not(:focus-visible) {
     outline: none !important;
     box-shadow: none !important;
     --tw-ring-shadow: none !important;
     --tw-ring-offset-shadow: none !important;
+  }
+
+  /* Ensure popover/select triggers don't stay highlighted after closing */
+  [data-state="closed"]:focus,
+  button[data-state="closed"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+  }
+
+  /* Remove default active state styling from popover triggers when open */
+  button[data-state="open"]:not([data-active="true"]) {
+    background-color: inherit;
   }
 
   /* Blur buttons after click to remove active/focus state */
