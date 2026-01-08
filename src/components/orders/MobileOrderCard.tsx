@@ -43,19 +43,34 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   const getCardBorderColor = (status: string) => {
     switch (status) {
       case 'Нова':
+        return 'border-l-4 border-l-primary';
       case 'В обработка':
+        return 'border-l-4 border-l-info';
+      case 'Неуспешна връзка':
         return 'border-l-4 border-l-warning';
       case 'Потвърдена':
-        return 'border-l-4 border-l-info';
-      case 'Изпратена':
+        return 'border-l-4 border-l-success';
+      case 'Платена с карта':
         return 'border-l-4 border-l-purple';
+      case 'На лизинг през TBI':
+      case 'На лизинг през BNP':
+        return 'border-l-4 border-l-teal';
+      case 'Изпратена':
+        return 'border-l-4 border-l-warning';
+      case 'Неуспешна доставка':
+        return 'border-l-4 border-l-destructive';
       case 'Доставена':
         return 'border-l-4 border-l-success';
-      case 'Отказана':
+      case 'Завършена':
+        return 'border-l-4 border-l-success';
       case 'Върната':
+        return 'border-l-4 border-l-muted-foreground';
+      case 'Отказана':
         return 'border-l-4 border-l-destructive';
+      case 'Анулирана':
+        return 'border-l-4 border-l-muted-foreground';
       default:
-        return '';
+        return 'border-l-4 border-l-muted';
     }
   };
 
