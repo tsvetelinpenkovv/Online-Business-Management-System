@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Search, Filter, Calendar, X, Globe, BarChart3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,19 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   showStatistics,
 }) => {
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
+
+  const [dateFromOpen, setDateFromOpen] = useState(false);
+  const [dateToOpen, setDateToOpen] = useState(false);
+
+  const handleDateFromOpenChange = (open: boolean) => {
+    setDateFromOpen(open);
+    if (open) setDateToOpen(false);
+  };
+
+  const handleDateToOpenChange = (open: boolean) => {
+    setDateToOpen(open);
+    if (open) setDateFromOpen(false);
+  };
 
   return (
     <div className="flex flex-col gap-3 p-3 sm:p-4 bg-card rounded-lg border">
@@ -123,12 +136,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Popover>
+        <Popover open={dateFromOpen} onOpenChange={handleDateFromOpenChange}>
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-[130px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
-            >
+            <Button variant={dateFromOpen ? "default" : "outline"} className="w-[130px]">
               <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
               <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
             </Button>
@@ -144,12 +154,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Popover>
+        <Popover open={dateToOpen} onOpenChange={handleDateToOpenChange}>
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-[130px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
-            >
+            <Button variant={dateToOpen ? "default" : "outline"} className="w-[130px]">
               <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
               <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
             </Button>
@@ -245,11 +252,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </Select>
 
           <div className="flex gap-2 w-full sm:w-auto">
-            <Popover>
+            <Popover open={dateFromOpen} onOpenChange={handleDateFromOpenChange}>
               <PopoverTrigger asChild>
                 <Button
-                  variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
+                  variant={dateFromOpen ? "default" : "outline"}
+                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm"
                 >
                   <Calendar className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
                   <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
@@ -266,11 +273,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               </PopoverContent>
             </Popover>
 
-            <Popover>
+            <Popover open={dateToOpen} onOpenChange={handleDateToOpenChange}>
               <PopoverTrigger asChild>
                 <Button
-                  variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground"
+                  variant={dateToOpen ? "default" : "outline"}
+                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm"
                 >
                   <Calendar className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
                   <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
