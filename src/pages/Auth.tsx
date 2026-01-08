@@ -156,8 +156,8 @@ const Auth = () => {
               </div>
             )}
           </div>
-          <CardTitle className="text-2xl">Управление на поръчки</CardTitle>
-          <CardDescription>Влезте в системата за управление на поръчки</CardDescription>
+          <CardTitle className="text-2xl">Управление на поръчки и склад</CardTitle>
+          <CardDescription>Влезте в системата за управление на поръчки и складова наличност</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
