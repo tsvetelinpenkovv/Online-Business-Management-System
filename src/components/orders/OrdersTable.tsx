@@ -78,7 +78,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
 
   const getRowStripClass = (status: string) => {
     // Use a pseudo-element strip so it doesn't shift table columns (no "white gutter" in the header)
-    const base = "relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:content-['']";
+    // Hide on desktop (lg:), show only on mobile/tablet
+    const base = "relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:content-[''] lg:before:hidden";
 
     switch (status) {
       case 'Нова':
