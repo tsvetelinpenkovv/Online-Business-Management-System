@@ -290,6 +290,16 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </Popover>
           </div>
 
+          {/* Warehouse button for mobile */}
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/inventory')}
+            className="w-full sm:w-auto bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
+          >
+            <Warehouse className="w-4 h-4 mr-2" />
+            Склад
+          </Button>
+
           {hasFilters && (
             <Button variant="ghost" onClick={onClearFilters} className="text-muted-foreground w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" />

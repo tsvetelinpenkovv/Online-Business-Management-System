@@ -1,15 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Order } from '@/types/order';
 import { useToast } from '@/hooks/use-toast';
 
-// Status that triggers stock deduction
-const SHIPPED_STATUS = 'Изпратена';
+// Default status that triggers stock deduction
+const DEFAULT_SHIPPED_STATUS = 'Изпратена';
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shippedStatus, setShippedStatus] = useState(DEFAULT_SHIPPED_STATUS);
   const { toast } = useToast();
+
+  // Load the stock deduction status from settings
+  const loadShippedStatus = useCallback(async () => {
+    const { data } = await supabase
+      .from('api_settings')
+      .select('setting_value')
+      .eq('setting_key', 'stock_deduction_status')
+      .single();
+    
+    if (data?.setting_value) {
+      setShippedStatus(data.setting_value);
+    }
+  }, []);
 
   const fetchOrders = async () => {
     try {
@@ -144,9 +158,9 @@ export const useOrders = () => {
 
   const updateOrder = async (order: Order) => {
     try {
-      // Check if status is changing to "Изпратена"
+      // Check if status is changing to the shipped status
       const oldOrder = orders.find(o => o.id === order.id);
-      const isBeingShipped = oldOrder && oldOrder.status !== SHIPPED_STATUS && order.status === SHIPPED_STATUS;
+      const isBeingShipped = oldOrder && oldOrder.status !== shippedStatus && order.status === shippedStatus;
 
       const { error } = await supabase
         .from('orders')
@@ -205,8 +219,8 @@ export const useOrders = () => {
   const updateOrdersStatus = async (ids: number[], status: string) => {
     try {
       // Get orders that are being shipped
-      const ordersToShip = status === SHIPPED_STATUS 
-        ? orders.filter(o => ids.includes(o.id) && o.status !== SHIPPED_STATUS)
+      const ordersToShip = status === shippedStatus 
+        ? orders.filter(o => ids.includes(o.id) && o.status !== shippedStatus)
         : [];
 
       const { error } = await supabase
@@ -248,7 +262,8 @@ export const useOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+    loadShippedStatus();
+  }, [loadShippedStatus]);
 
   return { orders, loading, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch: fetchOrders };
 };
