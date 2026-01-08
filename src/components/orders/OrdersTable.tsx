@@ -66,14 +66,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  const getRowColorByStatus = (status: string) => {
-    switch (status) {
-      case 'Нова':
-      case 'В обработка':
-        return 'bg-muted/40 hover:bg-muted/60';
-      default:
-        return 'hover:bg-muted/30';
-    }
+  const getRowColorByStatus = () => {
+    return 'hover:bg-muted/30';
   };
 
   const getRowStripClass = (status: string) => {
@@ -335,7 +329,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id} className={getRowColorByStatus(order.status)}>
+              <TableRow key={order.id} className={getRowColorByStatus()}>
                 <TableCell className={`${getRowStripClass(order.status)} pl-2 pr-0`}>
                   <Checkbox
                     checked={selectedOrders.includes(order.id)}
