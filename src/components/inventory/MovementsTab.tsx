@@ -93,10 +93,10 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Всички типове</SelectItem>
-            <SelectItem value="in">Приход</SelectItem>
-            <SelectItem value="out">Разход</SelectItem>
-            <SelectItem value="adjustment">Корекция</SelectItem>
-            <SelectItem value="return">Връщане</SelectItem>
+            <SelectItem value="in" className="text-green-500 focus:text-green-500">Приход</SelectItem>
+            <SelectItem value="out" className="text-red-500 focus:text-red-500">Разход</SelectItem>
+            <SelectItem value="adjustment" className="text-blue-500 focus:text-blue-500">Корекция</SelectItem>
+            <SelectItem value="return" className="text-orange-500 focus:text-orange-500">Връщане</SelectItem>
           </SelectContent>
         </Select>
       </div>
