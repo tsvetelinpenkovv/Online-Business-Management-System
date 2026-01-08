@@ -292,7 +292,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Цена
                 </div>
               </TableHead>
-              <TableHead className="w-[100px]">
+              <TableHead className="w-[140px]">
                 <div className="flex items-center gap-1.5">
                   <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Продукт
@@ -322,7 +322,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Статус
                 </div>
               </TableHead>
-              <TableHead className="w-[200px]">
+              <TableHead className="w-[160px]">
                 <div className="flex items-center gap-1.5">
                   <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Коментар
@@ -392,7 +392,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm line-clamp-2 max-w-[80px]" title={order.product_name}>
+                    <span className="text-sm line-clamp-2 max-w-[120px]" title={order.product_name}>
                       {order.product_name}
                     </span>
                     <InfoPopover 
