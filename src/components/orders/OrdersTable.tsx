@@ -106,7 +106,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
       case 'Анулирана':
         return 'border-l-4 border-l-muted-foreground';
       default:
-        return 'border-l-4 border-l-muted';
+        return 'border-l-4 border-l-primary';
     }
   };
 
@@ -245,7 +245,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
       <div className="rounded-lg border border-border/50 bg-card">
         <Table className="w-full table-fixed">
           <TableHeader>
-            <TableRow className="bg-muted/50">
+            <TableRow className="bg-muted/50 border-l-0">
               <TableHead className="w-[40px]">
                 <Checkbox
                   checked={isAllSelected}
