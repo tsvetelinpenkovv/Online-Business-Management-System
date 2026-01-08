@@ -136,9 +136,16 @@
   [role="button"]:focus:not(:focus-visible),
   a:focus:not(:focus-visible),
   [tabindex]:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+  }
+
+  /* Blur buttons after click to remove active/focus state */
+  button:active,
+  [role="button"]:active {
     outline: none;
-    box-shadow: none;
-    ring: none;
   }
 }
 
