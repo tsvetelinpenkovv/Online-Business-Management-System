@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
-  BarChart3, History, RefreshCw, Plus, Warehouse
+  BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
+  FileSpreadsheet, ShoppingCart
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -17,12 +18,17 @@ import { CategoriesTab } from '@/components/inventory/CategoriesTab';
 import { DocumentsTab } from '@/components/inventory/DocumentsTab';
 import { MovementsTab } from '@/components/inventory/MovementsTab';
 import { ReportsTab } from '@/components/inventory/ReportsTab';
+import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
+import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
+import { WooCommerceSettings } from '@/components/inventory/WooCommerceSettings';
 
 export default function Inventory() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const inventory = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isImportExportOpen, setIsImportExportOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -66,6 +72,27 @@ export default function Inventory() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Quick Action Buttons */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsScannerOpen(true)}
+                className="hidden sm:flex"
+                title="Сканиране на баркод"
+              >
+                <ScanBarcode className="w-4 h-4 mr-2" />
+                Сканирай
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsImportExportOpen(true)}
+                className="hidden sm:flex"
+                title="Импорт/Експорт"
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Импорт/Експорт
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -113,6 +140,10 @@ export default function Inventory() {
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Отчети</span>
             </TabsTrigger>
+            <TabsTrigger value="woocommerce" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ShoppingCart className="w-4 h-4" />
+              <span className="hidden sm:inline">WooCommerce</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-6">
@@ -142,8 +173,26 @@ export default function Inventory() {
           <TabsContent value="reports" className="mt-6">
             <ReportsTab inventory={inventory} />
           </TabsContent>
+
+          <TabsContent value="woocommerce" className="mt-6">
+            <WooCommerceSettings onSync={() => inventory.refresh()} />
+          </TabsContent>
         </Tabs>
       </main>
+
+      {/* Barcode Scanner Dialog */}
+      <BarcodeScannerDialog
+        open={isScannerOpen}
+        onOpenChange={setIsScannerOpen}
+        inventory={inventory}
+      />
+
+      {/* Import/Export Dialog */}
+      <ImportExportDialog
+        open={isImportExportOpen}
+        onOpenChange={setIsImportExportOpen}
+        inventory={inventory}
+      />
     </div>
   );
 }
