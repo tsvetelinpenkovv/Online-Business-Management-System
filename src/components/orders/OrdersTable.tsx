@@ -76,37 +76,38 @@ export const OrdersTable: FC<OrdersTableProps> = ({
     }
   };
 
-  const getRowBorderColor = (status: string) => {
+  const getRowStripClass = (status: string) => {
+    // Use a pseudo-element strip so it doesn't shift table columns (no "white gutter" in the header)
+    const base = "relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:content-['']";
+
     switch (status) {
       case 'Нова':
-        return 'border-l-4 border-l-primary';
+        return `${base} before:bg-primary`;
       case 'В обработка':
-        return 'border-l-4 border-l-info';
+        return `${base} before:bg-info`;
       case 'Неуспешна връзка':
-        return 'border-l-4 border-l-warning';
+        return `${base} before:bg-warning`;
       case 'Потвърдена':
-        return 'border-l-4 border-l-success';
+        return `${base} before:bg-success`;
       case 'Платена с карта':
-        return 'border-l-4 border-l-purple';
+        return `${base} before:bg-purple`;
       case 'На лизинг през TBI':
       case 'На лизинг през BNP':
-        return 'border-l-4 border-l-teal';
+        return `${base} before:bg-teal`;
       case 'Изпратена':
-        return 'border-l-4 border-l-warning';
+        return `${base} before:bg-warning`;
       case 'Неуспешна доставка':
-        return 'border-l-4 border-l-destructive';
+        return `${base} before:bg-destructive`;
       case 'Доставена':
-        return 'border-l-4 border-l-success';
       case 'Завършена':
-        return 'border-l-4 border-l-success';
+        return `${base} before:bg-success`;
       case 'Върната':
-        return 'border-l-4 border-l-muted-foreground';
-      case 'Отказана':
-        return 'border-l-4 border-l-destructive';
       case 'Анулирана':
-        return 'border-l-4 border-l-muted-foreground';
+        return `${base} before:bg-muted-foreground`;
+      case 'Отказана':
+        return `${base} before:bg-destructive`;
       default:
-        return 'border-l-4 border-l-primary';
+        return `${base} before:bg-primary`;
     }
   };
 
@@ -246,7 +247,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
         <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="bg-muted/50 border-l-0">
-              <TableHead className="w-[40px]">
+              <TableHead className="w-[40px] pl-2 pr-0">
                 <Checkbox
                   checked={isAllSelected}
                   onCheckedChange={handleSelectAll}
@@ -333,8 +334,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id} className={`${getRowColorByStatus(order.status)} ${getRowBorderColor(order.status)}`}>
-                <TableCell>
+              <TableRow key={order.id} className={getRowColorByStatus(order.status)}>
+                <TableCell className={`${getRowStripClass(order.status)} pl-2 pr-0`}>
                   <Checkbox
                     checked={selectedOrders.includes(order.id)}
                     onCheckedChange={(checked) => handleSelectOne(order.id, checked as boolean)}
