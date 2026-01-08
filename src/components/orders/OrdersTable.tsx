@@ -68,8 +68,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
 
   const getRowColorByStatus = (status: string) => {
     switch (status) {
-      case 'Нова':
-        return 'bg-success/5 hover:bg-success/10';
       case 'В обработка':
         return 'bg-muted/40 hover:bg-muted/60';
       default:
@@ -248,13 +246,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
         <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="bg-muted/50 border-l-0">
-              <TableHead className="w-[40px] pl-2 pr-0">
-                <Checkbox
-                  checked={isAllSelected}
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Избери всички"
-                  className={isSomeSelected ? 'opacity-50' : ''}
-                />
+              <TableHead className="w-[40px] pl-3 pr-0">
+                <div className="flex items-center justify-center w-8 h-8 border rounded-md bg-background">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Избери всички"
+                    className={isSomeSelected ? 'opacity-50' : ''}
+                  />
+                </div>
               </TableHead>
               <TableHead className="w-[50px]">
                 <div className="flex items-center gap-1.5">
