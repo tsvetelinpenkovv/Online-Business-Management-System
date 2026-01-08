@@ -69,7 +69,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const getRowColorByStatus = (status: string) => {
     switch (status) {
       case 'Нова':
-        return 'bg-success/10 hover:bg-success/20';
+        return 'bg-success/5 hover:bg-success/10';
       case 'В обработка':
         return 'bg-muted/40 hover:bg-muted/60';
       default:
