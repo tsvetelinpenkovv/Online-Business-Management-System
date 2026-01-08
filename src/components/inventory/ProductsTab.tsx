@@ -49,12 +49,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductsTabProps {
   inventory: ReturnType<typeof useInventory>;
 }
 
 export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -171,87 +173,165 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
         </Button>
       </div>
 
-      {/* Products Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">Код</TableHead>
-                  <TableHead>Наименование</TableHead>
-                  <TableHead>Категория</TableHead>
-                  <TableHead className="text-right">Наличност</TableHead>
-                  <TableHead className="text-right">Покупна цена</TableHead>
-                  <TableHead className="text-right">Продажна цена</TableHead>
-                  <TableHead className="text-right">Марж</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.length === 0 ? (
+      {/* Products - Mobile Cards */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {filteredProducts.length === 0 ? (
+            <Card className="py-8">
+              <CardContent className="text-center text-muted-foreground">
+                <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Няма намерени артикули</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredProducts.map((product) => (
+              <Card key={product.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          {product.sku}
+                        </span>
+                        {getStockStatus(product)}
+                      </div>
+                      <p className="font-medium truncate">{product.name}</p>
+                      {product.barcode && (
+                        <p className="text-xs text-muted-foreground">{product.barcode}</p>
+                      )}
+                      {product.category?.name && (
+                        <p className="text-xs text-muted-foreground mt-1">{product.category.name}</p>
+                      )}
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(product)}>
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Редактирай
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => setDeleteId(product.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Изтрий
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Наличност</p>
+                      <p className={`font-medium ${product.current_stock <= product.min_stock_level ? 'text-warning' : ''}`}>
+                        {product.current_stock} {product.unit?.abbreviation || 'бр.'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Марж</p>
+                      <p className="font-medium text-success">{margin(product)}%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Покупна</p>
+                      <p className="font-medium">{product.purchase_price.toFixed(2)} €</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Продажна</p>
+                      <p className="font-medium">{product.sale_price.toFixed(2)} €</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Products Table - Desktop */
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                      <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Няма намерени артикули</p>
-                    </TableCell>
+                    <TableHead className="w-[100px]">Код</TableHead>
+                    <TableHead>Наименование</TableHead>
+                    <TableHead>Категория</TableHead>
+                    <TableHead className="text-right">Наличност</TableHead>
+                    <TableHead className="text-right">Покупна цена</TableHead>
+                    <TableHead className="text-right">Продажна цена</TableHead>
+                    <TableHead className="text-right">Марж</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
-                ) : (
-                  filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-mono text-sm">{product.sku}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          {product.barcode && (
-                            <p className="text-xs text-muted-foreground">{product.barcode}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{product.category?.name || '-'}</TableCell>
-                      <TableCell className="text-right">
-                        <span className={product.current_stock <= product.min_stock_level ? 'text-warning font-bold' : ''}>
-                          {product.current_stock}
-                        </span>
-                        <span className="text-muted-foreground text-xs ml-1">
-                          {product.unit?.abbreviation || 'бр.'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">{product.purchase_price.toFixed(2)} €</TableCell>
-                      <TableCell className="text-right">{product.sale_price.toFixed(2)} €</TableCell>
-                      <TableCell className="text-right text-success">{margin(product)}%</TableCell>
-                      <TableCell>{getStockStatus(product)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(product)}>
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Редактирай
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => setDeleteId(product.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Изтрий
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                        <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>Няма намерени артикули</p>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  ) : (
+                    filteredProducts.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{product.name}</p>
+                            {product.barcode && (
+                              <p className="text-xs text-muted-foreground">{product.barcode}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{product.category?.name || '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <span className={product.current_stock <= product.min_stock_level ? 'text-warning font-bold' : ''}>
+                            {product.current_stock}
+                          </span>
+                          <span className="text-muted-foreground text-xs ml-1">
+                            {product.unit?.abbreviation || 'бр.'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">{product.purchase_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right">{product.sale_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-success">{margin(product)}%</TableCell>
+                        <TableCell>{getStockStatus(product)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditDialog(product)}>
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Редактирай
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => setDeleteId(product.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Изтрий
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

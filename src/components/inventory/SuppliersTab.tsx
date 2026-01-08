@@ -34,7 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { 
-  Plus, Search, Pencil, Trash2, Users, Phone, Mail, MapPin
+  Plus, Search, Pencil, Trash2, Users, Phone, Mail, MapPin, MoreHorizontal
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -42,13 +42,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SuppliersTabProps {
   inventory: ReturnType<typeof useInventory>;
 }
 
 export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -138,99 +139,180 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
         </Button>
       </div>
 
-      {/* Suppliers Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Наименование</TableHead>
-                  <TableHead>Контактно лице</TableHead>
-                  <TableHead>Телефон</TableHead>
-                  <TableHead>Имейл</TableHead>
-                  <TableHead>ЕИК</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSuppliers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Няма намерени доставчици</p>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredSuppliers.map((supplier) => (
-                    <TableRow key={supplier.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{supplier.name}</p>
-                          {supplier.address && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {supplier.address}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{supplier.contact_person || '-'}</TableCell>
-                      <TableCell>
-                        {supplier.phone && (
-                          <a href={`tel:${supplier.phone}`} className="flex items-center gap-1 text-sm hover:text-primary">
-                            <Phone className="w-3 h-3" />
-                            {supplier.phone}
-                          </a>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {supplier.email && (
-                          <a href={`mailto:${supplier.email}`} className="flex items-center gap-1 text-sm hover:text-primary">
-                            <Mail className="w-3 h-3" />
-                            {supplier.email}
-                          </a>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">{supplier.eik || '-'}</TableCell>
-                      <TableCell>
+      {/* Suppliers - Mobile Cards */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {filteredSuppliers.length === 0 ? (
+            <Card className="py-8">
+              <CardContent className="text-center text-muted-foreground">
+                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Няма намерени доставчици</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredSuppliers.map((supplier) => (
+              <Card key={supplier.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium truncate">{supplier.name}</p>
                         {supplier.is_active ? (
-                          <Badge className="bg-success text-success-foreground">Активен</Badge>
+                          <Badge className="bg-success text-success-foreground shrink-0">Активен</Badge>
                         ) : (
-                          <Badge variant="secondary">Неактивен</Badge>
+                          <Badge variant="secondary" className="shrink-0">Неактивен</Badge>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(supplier)}>
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Редактирай
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => setDeleteId(supplier.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Изтрий
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      </div>
+                      {supplier.contact_person && (
+                        <p className="text-sm text-muted-foreground">{supplier.contact_person}</p>
+                      )}
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(supplier)}>
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Редактирай
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => setDeleteId(supplier.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Изтрий
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="space-y-2 mt-3 pt-3 border-t">
+                    {supplier.phone && (
+                      <a href={`tel:${supplier.phone}`} className="flex items-center gap-2 text-sm hover:text-primary">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        {supplier.phone}
+                      </a>
+                    )}
+                    {supplier.email && (
+                      <a href={`mailto:${supplier.email}`} className="flex items-center gap-2 text-sm hover:text-primary">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        {supplier.email}
+                      </a>
+                    )}
+                    {supplier.address && (
+                      <p className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                        {supplier.address}
+                      </p>
+                    )}
+                    {supplier.eik && (
+                      <p className="text-xs text-muted-foreground">
+                        ЕИК: <span className="font-mono">{supplier.eik}</span>
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Suppliers Table - Desktop */
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Наименование</TableHead>
+                    <TableHead>Контактно лице</TableHead>
+                    <TableHead>Телефон</TableHead>
+                    <TableHead>Имейл</TableHead>
+                    <TableHead>ЕИК</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSuppliers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>Няма намерени доставчици</p>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  ) : (
+                    filteredSuppliers.map((supplier) => (
+                      <TableRow key={supplier.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{supplier.name}</p>
+                            {supplier.address && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {supplier.address}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{supplier.contact_person || '-'}</TableCell>
+                        <TableCell>
+                          {supplier.phone && (
+                            <a href={`tel:${supplier.phone}`} className="flex items-center gap-1 text-sm hover:text-primary">
+                              <Phone className="w-3 h-3" />
+                              {supplier.phone}
+                            </a>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {supplier.email && (
+                            <a href={`mailto:${supplier.email}`} className="flex items-center gap-1 text-sm hover:text-primary">
+                              <Mail className="w-3 h-3" />
+                              {supplier.email}
+                            </a>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{supplier.eik || '-'}</TableCell>
+                        <TableCell>
+                          {supplier.is_active ? (
+                            <Badge className="bg-success text-success-foreground">Активен</Badge>
+                          ) : (
+                            <Badge variant="secondary">Неактивен</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditDialog(supplier)}>
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Редактирай
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => setDeleteId(supplier.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Изтрий
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
