@@ -1,18 +1,17 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES } from '@/types/order';
 import { StatusBadge } from './StatusBadge';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
@@ -51,10 +50,22 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 }) => {
   const navigate = useNavigate();
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
-  
-  const [statusOpen, setStatusOpen] = useState(false);
-  const [sourceOpen, setSourceOpen] = useState(false);
 
+  const getStatusLabel = () => {
+    if (statusFilter === 'all') return 'Статуси';
+    return statusFilter;
+  };
+
+  const getSourceLabel = () => {
+    if (sourceFilter === 'all') return 'Източници';
+    const sourceLabels: Record<string, string> = {
+      google: 'Google',
+      facebook: 'Facebook',
+      woocommerce: 'WooCommerce',
+      phone: 'Телефон',
+    };
+    return sourceLabels[sourceFilter] || sourceFilter;
+  };
 
   return (
     <div className="flex flex-col gap-3 p-3 sm:p-4 bg-card rounded-lg border">
@@ -80,56 +91,60 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={(val) => { onStatusFilterChange(val); setStatusOpen(false); }} open={statusOpen} onOpenChange={setStatusOpen}>
-          <SelectTrigger 
-            className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
-            onClick={(e) => { if (statusOpen) { e.preventDefault(); setStatusOpen(false); } }}
-          >
-            <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-            <SelectValue placeholder="Статус" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Статуси</SelectItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-[160px] justify-between">
+              <div className="flex items-center">
+                <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{getStatusLabel()}</span>
+              </div>
+              <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[200px]">
+            <DropdownMenuItem onClick={() => onStatusFilterChange('all')}>
+              Всички статуси
+            </DropdownMenuItem>
             {ORDER_STATUSES.map((status) => (
-              <SelectItem key={status} value={status}>
-                <div className="flex items-center gap-2">
-                  <StatusBadge status={status} />
-                </div>
-              </SelectItem>
+              <DropdownMenuItem key={status} onClick={() => onStatusFilterChange(status)}>
+                <StatusBadge status={status} />
+              </DropdownMenuItem>
             ))}
-          </SelectContent>
-        </Select>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <Select value={sourceFilter} onValueChange={(val) => { onSourceFilterChange(val); setSourceOpen(false); }} open={sourceOpen} onOpenChange={setSourceOpen}>
-          <SelectTrigger 
-            className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
-            onClick={(e) => { if (sourceOpen) { e.preventDefault(); setSourceOpen(false); } }}
-          >
-            <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-            <SelectValue placeholder="Източници" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Източници</SelectItem>
-            <SelectItem value="google">
-              <div className="flex items-center gap-2">
-                <SourceIcon source="google" className="w-4 h-4" />
-                Google
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-[160px] justify-between">
+              <div className="flex items-center">
+                <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{getSourceLabel()}</span>
               </div>
-            </SelectItem>
-            <SelectItem value="facebook">
-              <div className="flex items-center gap-2">
-                <SourceIcon source="facebook" className="w-4 h-4" />
-                Facebook
-              </div>
-            </SelectItem>
-            <SelectItem value="woocommerce">
-              <div className="flex items-center gap-2">
-                <SourceIcon source="woocommerce" className="w-4 h-4" />
-                WooCommerce
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+              <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[200px]">
+            <DropdownMenuItem onClick={() => onSourceFilterChange('all')}>
+              Всички източници
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSourceFilterChange('google')}>
+              <SourceIcon source="google" className="w-4 h-4 mr-2" />
+              Google
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSourceFilterChange('facebook')}>
+              <SourceIcon source="facebook" className="w-4 h-4 mr-2" />
+              Facebook
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSourceFilterChange('woocommerce')}>
+              <SourceIcon source="woocommerce" className="w-4 h-4 mr-2" />
+              WooCommerce
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSourceFilterChange('phone')}>
+              <SourceIcon source="phone" className="w-4 h-4 mr-2" />
+              Телефон
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -210,56 +225,60 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={statusFilter} onValueChange={(val) => { onStatusFilterChange(val); setStatusOpen(false); }} open={statusOpen} onOpenChange={setStatusOpen}>
-            <SelectTrigger 
-              className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
-              onClick={(e) => { if (statusOpen) { e.preventDefault(); setStatusOpen(false); } }}
-            >
-              <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-              <SelectValue placeholder="Статус" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Статуси</SelectItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-[180px] justify-between">
+                <div className="flex items-center">
+                  <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{getStatusLabel()}</span>
+                </div>
+                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
+              <DropdownMenuItem onClick={() => onStatusFilterChange('all')}>
+                Всички статуси
+              </DropdownMenuItem>
               {ORDER_STATUSES.map((status) => (
-                <SelectItem key={status} value={status}>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={status} />
-                  </div>
-                </SelectItem>
+                <DropdownMenuItem key={status} onClick={() => onStatusFilterChange(status)}>
+                  <StatusBadge status={status} />
+                </DropdownMenuItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Select value={sourceFilter} onValueChange={(val) => { onSourceFilterChange(val); setSourceOpen(false); }} open={sourceOpen} onOpenChange={setSourceOpen}>
-            <SelectTrigger 
-              className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
-              onClick={(e) => { if (sourceOpen) { e.preventDefault(); setSourceOpen(false); } }}
-            >
-              <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-              <SelectValue placeholder="Източници" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Източници</SelectItem>
-              <SelectItem value="google">
-                <div className="flex items-center gap-2">
-                  <SourceIcon source="google" className="w-4 h-4" />
-                  Google
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-[180px] justify-between">
+                <div className="flex items-center">
+                  <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{getSourceLabel()}</span>
                 </div>
-              </SelectItem>
-              <SelectItem value="facebook">
-                <div className="flex items-center gap-2">
-                  <SourceIcon source="facebook" className="w-4 h-4" />
-                  Facebook
-                </div>
-              </SelectItem>
-              <SelectItem value="woocommerce">
-                <div className="flex items-center gap-2">
-                  <SourceIcon source="woocommerce" className="w-4 h-4" />
-                  WooCommerce
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
+              <DropdownMenuItem onClick={() => onSourceFilterChange('all')}>
+                Всички източници
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSourceFilterChange('google')}>
+                <SourceIcon source="google" className="w-4 h-4 mr-2" />
+                Google
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSourceFilterChange('facebook')}>
+                <SourceIcon source="facebook" className="w-4 h-4 mr-2" />
+                Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSourceFilterChange('woocommerce')}>
+                <SourceIcon source="woocommerce" className="w-4 h-4 mr-2" />
+                WooCommerce
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSourceFilterChange('phone')}>
+                <SourceIcon source="phone" className="w-4 h-4 mr-2" />
+                Телефон
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="flex gap-2 w-full sm:w-auto">
             <Popover>
