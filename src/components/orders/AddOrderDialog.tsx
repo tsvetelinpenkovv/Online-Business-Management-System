@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Order, ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusBadge } from './StatusBadge';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AddOrderDialogProps {
   open: boolean;
@@ -28,8 +29,8 @@ interface AddOrderDialogProps {
 
 export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, onCreateOrder }) => {
   const [formData, setFormData] = useState({
-    code: '',
-    customer_name: '',
+    first_name: '',
+    last_name: '',
     customer_email: '',
     phone: '',
     product_name: '',
@@ -41,24 +42,40 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     status: 'Нова' as OrderStatus,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState(0);
 
-  const generateCode = () => {
-    const prefix = 'ORD';
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `${prefix}-${timestamp}-${random}`;
-  };
+  useEffect(() => {
+    if (open) {
+      // Fetch the last order ID when dialog opens
+      const fetchLastOrderId = async () => {
+        const { data } = await supabase
+          .from('orders')
+          .select('id')
+          .order('id', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (data) {
+          setLastOrderId(data.id);
+        }
+      };
+      fetchLastOrderId();
+    }
+  }, [open]);
 
   const handleSubmit = async () => {
-    if (!formData.customer_name || !formData.phone || !formData.product_name) {
+    if (!formData.first_name || !formData.phone || !formData.product_name) {
       return;
     }
 
     setIsSubmitting(true);
     try {
+      const customerName = `${formData.first_name} ${formData.last_name}`.trim();
+      const newCode = String(lastOrderId + 1);
+      
       const order = await onCreateOrder({
-        code: formData.code || generateCode(),
-        customer_name: formData.customer_name,
+        code: newCode,
+        customer_name: customerName,
         customer_email: formData.customer_email || null,
         phone: formData.phone,
         product_name: formData.product_name,
@@ -76,8 +93,8 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
 
       if (order) {
         setFormData({
-          code: '',
-          customer_name: '',
+          first_name: '',
+          last_name: '',
           customer_email: '',
           phone: '',
           product_name: '',
@@ -103,15 +120,6 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="code">Код на поръчка</Label>
-            <Input
-              id="code"
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              placeholder="Автоматично генериране ако е празно"
-            />
-          </div>
-          <div className="space-y-2">
             <Label>Статус</Label>
             <Select
               value={formData.status}
@@ -130,13 +138,22 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="customer_name">Име на клиент *</Label>
+            <Label htmlFor="first_name">Име *</Label>
             <Input
-              id="customer_name"
-              value={formData.customer_name}
-              onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-              placeholder="Пълно име на клиента"
+              id="first_name"
+              value={formData.first_name}
+              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+              placeholder="Име на клиента"
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="last_name">Фамилия</Label>
+            <Input
+              id="last_name"
+              value={formData.last_name}
+              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+              placeholder="Фамилия на клиента"
             />
           </div>
           <div className="space-y-2">
@@ -226,7 +243,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={isSubmitting || !formData.customer_name || !formData.phone || !formData.product_name}
+            disabled={isSubmitting || !formData.first_name || !formData.phone || !formData.product_name}
           >
             {isSubmitting ? 'Създаване...' : 'Създай поръчка'}
           </Button>
