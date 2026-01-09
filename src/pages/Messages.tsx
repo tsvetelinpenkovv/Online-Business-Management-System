@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  MessageCircle, Smartphone, ArrowLeft, Search, Filter, 
+  MessageCircle, Smartphone, ArrowLeft, Search, 
   Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -53,6 +54,7 @@ const Messages = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [messages, setMessages] = useState<ConnectixMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -175,72 +177,116 @@ const Messages = () => {
     );
   }
 
+  // Mobile message card component
+  const MobileMessageCard = ({ msg }: { msg: ConnectixMessage }) => (
+    <Card className={`overflow-hidden ${msg.channel === 'viber' ? 'border-l-4 border-l-purple' : 'border-l-4 border-l-info'}`}>
+      <CardContent className="p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {getChannelIcon(msg.channel)}
+            <span className="font-medium text-sm">{msg.channel === 'viber' ? 'Viber' : 'SMS'}</span>
+            {msg.order_id && (
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-xs text-primary"
+                onClick={() => navigate(`/?search=${msg.order_id}`)}
+              >
+                #{msg.order_id}
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {getStatusIcon(msg.status)}
+            {getStatusBadge(msg.status)}
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium">{msg.customer_name || '—'}</span>
+          <span className="font-mono text-xs text-muted-foreground">{msg.phone}</span>
+        </div>
+        
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-1">
+            {msg.template_name || msg.trigger_status || '—'}
+            {msg.is_sandbox && (
+              <Badge variant="outline" className="text-[10px] text-warning border-warning px-1">
+                Sandbox
+              </Badge>
+            )}
+          </div>
+          <span>{format(new Date(msg.sent_at), 'dd.MM.yy HH:mm', { locale: bg })}</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <MessageCircle className="w-6 h-6 text-purple" />
-                Изпратени съобщения
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-purple shrink-0" />
+                <span className="truncate">Съобщения</span>
               </h1>
-              <p className="text-muted-foreground text-sm">
-                История на Viber и SMS съобщенията към клиенти
+              <p className="text-muted-foreground text-xs md:text-sm hidden sm:block">
+                История на Viber и SMS съобщенията
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={refreshMessages} disabled={refreshing}>
+          <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
             {refreshing ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4" />
             )}
-            Обнови
+            {!isMobile && <span className="ml-2">Обнови</span>}
           </Button>
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <Card className="p-3">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-xs text-muted-foreground">Общо</div>
+        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3">
+          <Card className="p-2 md:p-3">
+            <div className="text-lg md:text-2xl font-bold">{stats.total}</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground">Общо</div>
           </Card>
-          <Card className="p-3 border-purple/30">
-            <div className="text-2xl font-bold text-purple">{stats.viber}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <MessageCircle className="w-3 h-3" /> Viber
+          <Card className="p-2 md:p-3 border-purple/30">
+            <div className="text-lg md:text-2xl font-bold text-purple">{stats.viber}</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+              <MessageCircle className="w-2.5 h-2.5 md:w-3 md:h-3" /> Viber
             </div>
           </Card>
-          <Card className="p-3 border-info/30">
-            <div className="text-2xl font-bold text-info">{stats.sms}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Smartphone className="w-3 h-3" /> SMS
+          <Card className="p-2 md:p-3 border-info/30">
+            <div className="text-lg md:text-2xl font-bold text-info">{stats.sms}</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+              <Smartphone className="w-2.5 h-2.5 md:w-3 md:h-3" /> SMS
             </div>
           </Card>
-          <Card className="p-3">
+          <Card className="p-2 md:p-3">
+            <div className="text-lg md:text-2xl font-bold text-success">{stats.delivered + stats.read}</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+              <Check className="w-2.5 h-2.5 md:w-3 md:h-3" /> Достав.
+            </div>
+          </Card>
+          <Card className="p-2 md:p-3 hidden lg:block">
             <div className="text-2xl font-bold text-info">{stats.read}</div>
             <div className="text-xs text-muted-foreground flex items-center gap-1">
               <CheckCheck className="w-3 h-3" /> Прочетени
             </div>
           </Card>
-          <Card className="p-3">
-            <div className="text-2xl font-bold text-success">{stats.delivered}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Check className="w-3 h-3" /> Доставени
-            </div>
-          </Card>
-          <Card className="p-3">
+          <Card className="p-2 md:p-3 hidden lg:block">
             <div className="text-2xl font-bold text-muted-foreground">{stats.sent}</div>
             <div className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock className="w-3 h-3" /> Изпратени
             </div>
           </Card>
-          <Card className="p-3">
+          <Card className="p-2 md:p-3 hidden lg:block">
             <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
             <div className="text-xs text-muted-foreground flex items-center gap-1">
               <XCircle className="w-3 h-3" /> Грешки
@@ -250,23 +296,23 @@ const Messages = () => {
 
         {/* Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="relative flex-1 min-w-[200px]">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Търси по телефон, клиент или поръчка..."
+                  placeholder="Търси..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="Статус" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всички статуси</SelectItem>
+                  <SelectItem value="all">Всички</SelectItem>
                   <SelectItem value="read">Прочетени</SelectItem>
                   <SelectItem value="delivered">Доставени</SelectItem>
                   <SelectItem value="sent">Изпратени</SelectItem>
@@ -277,36 +323,46 @@ const Messages = () => {
           </CardContent>
         </Card>
 
-        {/* Messages Table */}
-        <Card>
-          <CardHeader className="pb-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all" className="gap-1.5">
-                  Всички
-                  <Badge variant="secondary" className="text-xs">{messages.length}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="viber" className="gap-1.5">
-                  <MessageCircle className="w-3.5 h-3.5 text-purple" />
-                  Viber
-                  <Badge variant="secondary" className="text-xs">{stats.viber}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="sms" className="gap-1.5">
-                  <Smartphone className="w-3.5 h-3.5 text-info" />
-                  SMS
-                  <Badge variant="secondary" className="text-xs">{stats.sms}</Badge>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {filteredMessages.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="font-medium">Няма намерени съобщения</p>
-                <p className="text-sm">Съобщенията ще се появят тук след като изпратите първото</p>
-              </div>
-            ) : (
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="all" className="gap-1 text-xs md:text-sm">
+              Всички
+              <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{messages.length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="viber" className="gap-1 text-xs md:text-sm">
+              <MessageCircle className="w-3 h-3 md:w-3.5 md:h-3.5 text-purple" />
+              Viber
+              <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{stats.viber}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="sms" className="gap-1 text-xs md:text-sm">
+              <Smartphone className="w-3 h-3 md:w-3.5 md:h-3.5 text-info" />
+              SMS
+              <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{stats.sms}</Badge>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Messages Content */}
+        {filteredMessages.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Няма намерени съобщения</p>
+              <p className="text-sm">Съобщенията ще се появят тук след като изпратите първото</p>
+            </CardContent>
+          </Card>
+        ) : isMobile ? (
+          // Mobile view - cards
+          <div className="space-y-2">
+            {filteredMessages.map((msg) => (
+              <MobileMessageCard key={msg.id} msg={msg} />
+            ))}
+          </div>
+        ) : (
+          // Desktop view - table
+          <Card>
+            <CardContent className="p-0">
               <div className="rounded-lg border overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -374,9 +430,9 @@ const Messages = () => {
                   </TableBody>
                 </Table>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
