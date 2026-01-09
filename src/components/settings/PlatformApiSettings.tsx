@@ -218,8 +218,8 @@ export const PlatformApiSettings: FC = () => {
                 
                 <div className="space-y-4">
                   {/* Platform Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <EditableSourceLogo
                         sourceId={platform.id}
                         sourceName={platform.display_name}
@@ -227,13 +227,13 @@ export const PlatformApiSettings: FC = () => {
                         logoUrl={platform.logo_url}
                         size="lg"
                       />
-                      <div>
-                        <h3 className="font-medium">{platform.display_name}</h3>
-                        <p className="text-xs text-muted-foreground">{labels.description}</p>
+                      <div className="min-w-0">
+                        <h3 className="font-medium truncate">{platform.display_name}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{labels.description}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge variant={platform.is_enabled ? 'default' : 'secondary'} className={platform.is_enabled ? 'bg-success' : ''}>
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <Badge variant={platform.is_enabled ? 'default' : 'secondary'} className={`text-xs ${platform.is_enabled ? 'bg-success' : ''}`}>
                         {platform.is_enabled ? 'Активен' : 'Неактивен'}
                       </Badge>
                       <Switch
@@ -244,7 +244,7 @@ export const PlatformApiSettings: FC = () => {
                   </div>
 
                   {/* API Settings */}
-                  <div className="grid gap-4 sm:grid-cols-3 pl-9">
+                  <div className="grid gap-4 sm:grid-cols-3 sm:pl-9">
                     <div className="space-y-2">
                       <Label>URL на магазина</Label>
                       <Input
@@ -274,7 +274,7 @@ export const PlatformApiSettings: FC = () => {
 
                   {/* Webhook URL */}
                   {webhookUrl && (
-                    <div className="pl-9 space-y-2">
+                    <div className="sm:pl-9 space-y-2">
                       <Label className="text-muted-foreground">Webhook URL (за автоматични поръчки)</Label>
                       <div className="flex gap-2">
                         <Input
@@ -286,6 +286,7 @@ export const PlatformApiSettings: FC = () => {
                           variant="outline"
                           size="icon"
                           onClick={() => copyWebhookUrl(platform.name)}
+                          className="shrink-0"
                         >
                           {copiedWebhook === platform.name ? (
                             <Check className="w-4 h-4 text-success" />
@@ -301,7 +302,7 @@ export const PlatformApiSettings: FC = () => {
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-2 pl-9">
+                  <div className="flex flex-wrap gap-2 sm:pl-9">
                     <Button
                       variant="outline"
                       size="sm"
