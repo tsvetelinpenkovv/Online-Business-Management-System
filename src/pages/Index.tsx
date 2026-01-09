@@ -340,7 +340,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* Desktop actions (hidden on mobile and tablet) */}
+          {/* Desktop actions - bulk actions and new order button (only on large screens) */}
           <div className="hidden lg:flex items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
@@ -395,6 +395,10 @@ const Index = () => {
               <Plus className="w-4 h-4" />
               Нова поръчка
             </Button>
+          </div>
+
+          {/* Tablet and Desktop common actions */}
+          <div className="hidden sm:flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
