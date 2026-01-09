@@ -28,9 +28,9 @@ export function SortableHeader<T extends string>({
       className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${alignClass} ${className}`}
       onClick={() => onSort(columnKey)}
     >
-      <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : ''}`}>
+      <div className={`flex items-center gap-1.5 ${align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : ''}`}>
         {children}
-        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+        <ArrowUpDown className={`w-4 h-4 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
       </div>
     </TableHead>
   );
