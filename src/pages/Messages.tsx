@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MessageCircle, Smartphone, ArrowLeft, Search, 
-  Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2
+  Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2, List
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -314,7 +314,7 @@ const Messages = () => {
                 <SelectContent>
                   <SelectItem value="all">
                     <span className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4 text-purple" />
+                      <List className="w-4 h-4 text-primary" />
                       Всички
                     </span>
                   </SelectItem>
@@ -352,6 +352,7 @@ const Messages = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="all" className="gap-1 text-xs md:text-sm">
+              <List className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" />
               Всички
               <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{messages.length}</Badge>
             </TabsTrigger>
