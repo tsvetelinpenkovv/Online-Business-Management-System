@@ -241,10 +241,16 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
-  if (authLoading) {
+  if (authLoading || ordersLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background animate-fade-in">
+        <div className="relative">
+          <Package className="w-12 h-12 text-primary animate-pulse" />
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Зареждане на поръчки...</p>
+        </div>
       </div>
     );
   }
@@ -254,7 +260,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full flex flex-col">
+    <div className="min-h-screen bg-background w-full flex flex-col animate-fade-in">
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3">
