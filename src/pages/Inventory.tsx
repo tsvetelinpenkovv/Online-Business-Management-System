@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -69,10 +69,13 @@ export default function Inventory() {
 
   if (authLoading || inventory.loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background animate-fade-in">
+        <div className="relative">
           <Warehouse className="w-12 h-12 text-primary animate-pulse" />
-          <p className="text-muted-foreground">Зареждане на складова програма...</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Зареждане на складова програма...</p>
         </div>
       </div>
     );

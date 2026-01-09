@@ -17,6 +17,10 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
+
 interface OrderFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
@@ -148,9 +152,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[130px]">
+            <Button variant="outline" className="w-[140px]">
               <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
+              <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -166,9 +170,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[130px]">
+            <Button variant="outline" className="w-[140px]">
               <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
+              <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -288,7 +292,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                   className="flex-1 sm:flex-none sm:min-w-[140px] h-10 text-sm"
                 >
                   <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
+                  <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -309,7 +313,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                   className="flex-1 sm:flex-none sm:min-w-[140px] h-10 text-sm"
                 >
                   <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
+                  <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
