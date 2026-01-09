@@ -35,6 +35,12 @@ interface MagentoOrder {
         };
       };
     }>;
+    // UTM tracking from Magento extensions
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    marketing_source?: string;
+    referrer?: string;
   };
   items: Array<{
     item_id: number;
@@ -43,6 +49,51 @@ interface MagentoOrder {
     qty_ordered: number;
     price: number;
   }>;
+  // Direct UTM fields
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  // Custom attributes array
+  custom_attributes?: Array<{
+    attribute_code: string;
+    value: string;
+  }>;
+}
+
+// Detect marketing source from UTM data
+function detectMarketingSource(order: MagentoOrder): string | null {
+  // Check direct UTM fields
+  let utmSource = order.utm_source || '';
+  
+  // Check extension attributes (Magento 2 style)
+  if (order.extension_attributes) {
+    utmSource = order.extension_attributes.utm_source || 
+                order.extension_attributes.marketing_source || 
+                utmSource;
+  }
+  
+  // Check custom attributes
+  if (order.custom_attributes) {
+    for (const attr of order.custom_attributes) {
+      if (attr.attribute_code === 'utm_source' || attr.attribute_code === 'marketing_source') {
+        utmSource = attr.value || utmSource;
+      }
+    }
+  }
+  
+  // Normalize and detect source
+  const source = utmSource.toLowerCase();
+  
+  if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
+    return 'facebook';
+  }
+  
+  if (source.includes('google') || source.includes('gclid') || source.includes('adwords') || source.includes('ppc') || source.includes('cpc')) {
+    return 'google';
+  }
+  
+  // Return null to use default platform source
+  return null;
 }
 
 function mapMagentoStatus(status: string): string {
@@ -94,6 +145,11 @@ Deno.serve(async (req) => {
     const catalogNumbers = order.items?.map(item => item.sku).filter(Boolean).join(', ') || null;
     const totalQuantity = order.items?.reduce((sum, item) => sum + (item.qty_ordered || 0), 0) || 1;
 
+    // Detect marketing source from UTM data
+    const marketingSource = detectMarketingSource(order);
+    const orderSource = marketingSource || 'magento';
+    console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
+
     const orderCode = `MG-${order.increment_id || order.entity_id}`;
     const { data: existingOrder } = await supabase
       .from('orders')
@@ -112,9 +168,9 @@ Deno.serve(async (req) => {
       quantity: totalQuantity,
       delivery_address: deliveryAddress,
       status: mapMagentoStatus(order.status),
-      source: 'magento',
+      source: orderSource,
       is_correct: true,
-      comment: `Magento Order #${order.increment_id || order.entity_id}`,
+      comment: `Magento Order #${order.increment_id || order.entity_id}${marketingSource ? ` (via ${marketingSource})` : ''}`,
     };
 
     if (existingOrder) {

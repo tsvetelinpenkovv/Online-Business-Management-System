@@ -49,6 +49,63 @@ interface ShopifyOrder {
     quantity: number;
     price: string;
   }>;
+  // UTM tracking fields (Shopify native)
+  landing_site?: string;
+  referring_site?: string;
+  source_name?: string;
+  // Note attributes (can contain UTM data)
+  note_attributes?: Array<{
+    name: string;
+    value: string;
+  }>;
+  // Marketing consent and attribution
+  buyer_accepts_marketing?: boolean;
+  source_identifier?: string;
+  source_url?: string;
+}
+
+// Detect marketing source from UTM data
+function detectMarketingSource(order: ShopifyOrder): string | null {
+  // Check Shopify's native tracking fields
+  let utmSource = order.source_name || '';
+  const referringSite = order.referring_site || '';
+  const landingSite = order.landing_site || '';
+  
+  // Check note attributes for UTM data
+  if (order.note_attributes) {
+    for (const attr of order.note_attributes) {
+      if (attr.name.toLowerCase() === 'utm_source' || attr.name.toLowerCase() === 'source') {
+        utmSource = attr.value || utmSource;
+      }
+    }
+  }
+  
+  // Parse landing site URL for UTM parameters
+  if (landingSite) {
+    try {
+      const url = new URL(landingSite.startsWith('http') ? landingSite : `https://example.com${landingSite}`);
+      const urlUtmSource = url.searchParams.get('utm_source');
+      if (urlUtmSource) {
+        utmSource = urlUtmSource;
+      }
+    } catch {
+      // Invalid URL, continue with other checks
+    }
+  }
+  
+  // Combine sources for detection
+  const allSources = `${utmSource} ${referringSite} ${landingSite}`.toLowerCase();
+  
+  if (allSources.includes('facebook') || allSources.includes('fb.') || allSources.includes('instagram') || allSources.includes('ig.') || allSources.includes('meta')) {
+    return 'facebook';
+  }
+  
+  if (allSources.includes('google') || allSources.includes('gclid') || allSources.includes('adwords') || allSources.includes('googleads')) {
+    return 'google';
+  }
+  
+  // Return null to use default platform source
+  return null;
 }
 
 function mapShopifyStatus(financialStatus: string, fulfillmentStatus: string | null): string {
@@ -110,6 +167,11 @@ Deno.serve(async (req) => {
     const catalogNumbers = order.line_items?.map(item => item.sku).filter(Boolean).join(', ') || null;
     const totalQuantity = order.line_items?.reduce((sum, item) => sum + item.quantity, 0) || 1;
 
+    // Detect marketing source from UTM data
+    const marketingSource = detectMarketingSource(order);
+    const orderSource = marketingSource || 'shopify';
+    console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
+
     const orderCode = `SH-${order.order_number || order.id}`;
     const { data: existingOrder } = await supabase
       .from('orders')
@@ -119,7 +181,7 @@ Deno.serve(async (req) => {
 
     const orderData = {
       code: orderCode,
-      customer_name: customerName,
+      customer_name: customerName || 'Без име',
       customer_email: order.email || order.customer?.email || null,
       phone: order.phone || order.customer?.phone || order.billing_address?.phone || 'Няма',
       total_price: parseFloat(order.total_price) || 0,
@@ -128,9 +190,9 @@ Deno.serve(async (req) => {
       quantity: totalQuantity,
       delivery_address: deliveryAddress,
       status: mapShopifyStatus(order.financial_status, order.fulfillment_status),
-      source: 'shopify',
+      source: orderSource,
       is_correct: true,
-      comment: `Shopify Order ${order.name || '#' + order.order_number}`,
+      comment: `Shopify Order ${order.name || '#' + order.order_number}${marketingSource ? ` (via ${marketingSource})` : ''}`,
     };
 
     if (existingOrder) {
