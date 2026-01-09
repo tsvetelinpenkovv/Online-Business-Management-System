@@ -273,7 +273,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Мин.</p>
-                        <Badge variant="outline" className="mt-0.5 pointer-events-none">
+                        <Badge variant="secondary" className="mt-0.5 pointer-events-none bg-purple/15 text-purple">
                           {product.min_stock_level} бр.
                         </Badge>
                       </div>
@@ -324,6 +324,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                           Наличност
                         </SortableHeader>
                         <SortableHeader columnKey="min_stock_level" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
+                          <ArrowDownToLine className="w-4 h-4 text-muted-foreground" />
                           Мин. наличност
                         </SortableHeader>
                         <SortableHeader columnKey="purchase_price" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
@@ -331,6 +332,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                           Покупна цена
                         </SortableHeader>
                         <SortableHeader columnKey="value" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
+                          <Warehouse className="w-4 h-4 text-muted-foreground" />
                           Стойност
                         </SortableHeader>
                       </TableRow>
@@ -371,7 +373,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Badge variant="outline" className="pointer-events-none">
+                            <Badge variant="secondary" className="pointer-events-none bg-purple/15 text-purple">
                               {product.min_stock_level} бр.
                             </Badge>
                           </TableCell>
