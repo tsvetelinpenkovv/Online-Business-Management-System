@@ -16,7 +16,7 @@ interface ConnectixConfig {
 }
 
 interface SendMessageRequest {
-  action?: 'test' | 'send';
+  action?: 'test' | 'send' | 'fetch_templates';
   api_token?: string;
   sandbox_mode?: boolean;
   order_id?: number;
@@ -77,6 +77,70 @@ serve(async (req) => {
           console.error('Connectix API error:', errorText);
           return new Response(
             JSON.stringify({ success: false, error: 'Invalid API token or connection failed' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (fetchError) {
+        console.error('Connectix fetch error:', fetchError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to connect to Connectix API' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Fetch templates action
+    if (action === 'fetch_templates') {
+      if (!api_token) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'API token is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // In sandbox mode, return demo templates
+      if (sandbox_mode) {
+        console.log('Sandbox mode: Returning demo templates');
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            templates: [],
+            message: 'Sandbox mode - use demo templates' 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      try {
+        const templatesResponse = await fetch('https://api.connectix.bg/v2/templates', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${api_token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (templatesResponse.ok) {
+          const templatesData = await templatesResponse.json();
+          console.log('Templates fetched:', templatesData);
+          
+          // Transform to our format
+          const templates = (templatesData.data || templatesData || []).map((t: any) => ({
+            id: t.id || t.template_id,
+            name: t.name || t.title,
+            type: t.channel || 'viber',
+            status: t.status || 'approved',
+          }));
+
+          return new Response(
+            JSON.stringify({ success: true, templates }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          const errorText = await templatesResponse.text();
+          console.error('Connectix templates error:', errorText);
+          return new Response(
+            JSON.stringify({ success: false, error: 'Failed to fetch templates' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
