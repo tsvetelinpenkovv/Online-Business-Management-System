@@ -194,8 +194,8 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col gap-4">
+        <div className="relative flex-1 sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Търси документ..."
@@ -204,18 +204,18 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => openCreateDialog('receiving')} className="bg-success hover:bg-success/90">
-            <ArrowDownToLine className="w-4 h-4 mr-2" />
-            Приход
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => openCreateDialog('receiving')} size="sm" className="bg-success hover:bg-success/90 flex-1 sm:flex-none">
+            <ArrowDownToLine className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Приход</span>
           </Button>
-          <Button onClick={() => openCreateDialog('dispatch')} variant="destructive">
-            <ArrowUpFromLine className="w-4 h-4 mr-2" />
-            Разход
+          <Button onClick={() => openCreateDialog('dispatch')} size="sm" variant="destructive" className="flex-1 sm:flex-none">
+            <ArrowUpFromLine className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Разход</span>
           </Button>
-          <Button onClick={() => openCreateDialog('adjustment')} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Корекция
+          <Button onClick={() => openCreateDialog('adjustment')} size="sm" variant="outline" className="flex-1 sm:flex-none">
+            <RefreshCw className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Корекция</span>
           </Button>
         </div>
       </div>
