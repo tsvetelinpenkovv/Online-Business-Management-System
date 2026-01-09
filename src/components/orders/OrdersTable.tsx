@@ -2,7 +2,8 @@ import { FC, useState, useMemo } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown,
+  Send, Loader2
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -16,6 +17,7 @@ import { InvoiceDialog } from './InvoiceDialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Table,
@@ -65,10 +67,50 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [sendingMessage, setSendingMessage] = useState<number | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [sortKey, setSortKey] = useState<OrderSortKey>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleSendMessage = async (order: Order) => {
+    setSendingMessage(order.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('connectix-send', {
+        body: {
+          action: 'send',
+          order: {
+            id: order.id,
+            code: order.code,
+            customer_name: order.customer_name,
+            phone: order.phone,
+            product_name: order.product_name,
+            total_price: order.total_price,
+            courier_tracking_url: order.courier_tracking_url,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: 'Успех',
+          description: data.sandbox ? 'Тестово съобщение (sandbox режим)' : 'Съобщението е изпратено успешно!',
+        });
+      } else {
+        throw new Error(data?.error || 'Неуспешно изпращане');
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Грешка',
+        description: err.message || 'Неуспешно изпращане на съобщение',
+        variant: 'destructive',
+      });
+    } finally {
+      setSendingMessage(null);
+    }
+  };
 
   const handleSort = (key: OrderSortKey) => {
     if (sortKey === key) {
@@ -638,6 +680,17 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       >
                         <FileBox className="w-4 h-4 mr-2" />
                         Печат на товарителница
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleSendMessage(order)}
+                        disabled={sendingMessage === order.id}
+                      >
+                        {sendingMessage === order.id ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4 mr-2" />
+                        )}
+                        Изпрати Viber/SMS
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setDeleteId(order.id)}
