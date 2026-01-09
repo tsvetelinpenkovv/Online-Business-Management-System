@@ -21,7 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
-  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check
+  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check, Package
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -274,12 +274,14 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
                 <TableHeader>
                   <TableRow>
                     <SortableHeader columnKey="created_at" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      <History className="w-4 h-4 text-muted-foreground" />
                       Дата/Час
                     </SortableHeader>
                     <SortableHeader columnKey="movement_type" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
                       Тип
                     </SortableHeader>
                     <SortableHeader columnKey="product" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      <Package className="w-4 h-4 text-muted-foreground" />
                       Артикул
                     </SortableHeader>
                     <SortableHeader columnKey="quantity" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">

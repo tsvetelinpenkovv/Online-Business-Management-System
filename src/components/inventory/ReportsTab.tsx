@@ -21,15 +21,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
   Package, TrendingUp, Warehouse, Download, FileSpreadsheet,
-  ArrowDownToLine, ArrowUpFromLine, Copy, Check
+  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { MOVEMENT_TYPE_LABELS } from '@/types/inventory';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+type StockSortKey = 'sku' | 'name' | 'category' | 'current_stock' | 'min_stock_level' | 'purchase_price' | 'value';
+type MovementReportSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'total_price';
 
 interface ReportsTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -40,6 +44,10 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [stockSortKey, setStockSortKey] = useState<StockSortKey>('name');
+  const [stockSortDirection, setStockSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [movementSortKey, setMovementSortKey] = useState<MovementReportSortKey>('created_at');
+  const [movementSortDirection, setMovementSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const stats = inventory.getInventoryStats();
 
@@ -76,11 +84,82 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
     };
   }, [filteredMovements]);
 
-  // Filter products by category
+  // Filter products by category with sorting
   const filteredProducts = useMemo(() => {
-    if (categoryFilter === 'all') return inventory.products;
-    return inventory.products.filter(p => p.category_id === categoryFilter);
-  }, [inventory.products, categoryFilter]);
+    const filtered = categoryFilter === 'all' 
+      ? inventory.products 
+      : inventory.products.filter(p => p.category_id === categoryFilter);
+    
+    return [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (stockSortKey) {
+        case 'sku':
+          comparison = a.sku.localeCompare(b.sku);
+          break;
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'category':
+          comparison = (a.category?.name || '').localeCompare(b.category?.name || '');
+          break;
+        case 'current_stock':
+          comparison = a.current_stock - b.current_stock;
+          break;
+        case 'min_stock_level':
+          comparison = a.min_stock_level - b.min_stock_level;
+          break;
+        case 'purchase_price':
+          comparison = a.purchase_price - b.purchase_price;
+          break;
+        case 'value':
+          comparison = (a.current_stock * a.purchase_price) - (b.current_stock * b.purchase_price);
+          break;
+      }
+      return stockSortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.products, categoryFilter, stockSortKey, stockSortDirection]);
+
+  const handleStockSort = (key: StockSortKey) => {
+    if (stockSortKey === key) {
+      setStockSortDirection(stockSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setStockSortKey(key);
+      setStockSortDirection('asc');
+    }
+  };
+
+  const handleMovementSort = (key: MovementReportSortKey) => {
+    if (movementSortKey === key) {
+      setMovementSortDirection(movementSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setMovementSortKey(key);
+      setMovementSortDirection('asc');
+    }
+  };
+
+  const sortedMovements = useMemo(() => {
+    return [...filteredMovements].sort((a, b) => {
+      let comparison = 0;
+      switch (movementSortKey) {
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'movement_type':
+          comparison = a.movement_type.localeCompare(b.movement_type);
+          break;
+        case 'product':
+          comparison = (a.product?.name || '').localeCompare(b.product?.name || '');
+          break;
+        case 'quantity':
+          comparison = a.quantity - b.quantity;
+          break;
+        case 'total_price':
+          comparison = a.total_price - b.total_price;
+          break;
+      }
+      return movementSortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredMovements, movementSortKey, movementSortDirection]);
 
   // Export to CSV
   const exportToCSV = (type: 'stock' | 'movements') => {
@@ -228,13 +307,32 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Код</TableHead>
-                        <TableHead>Наименование</TableHead>
-                        <TableHead>Категория</TableHead>
-                        <TableHead className="text-right">Наличност</TableHead>
-                        <TableHead className="text-right">Мин. наличност</TableHead>
-                        <TableHead className="text-right">Покупна цена</TableHead>
-                        <TableHead className="text-right">Стойност</TableHead>
+                        <SortableHeader columnKey="sku" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort}>
+                          <Barcode className="w-4 h-4 text-muted-foreground" />
+                          Код
+                        </SortableHeader>
+                        <SortableHeader columnKey="name" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort}>
+                          <Package className="w-4 h-4 text-muted-foreground" />
+                          Наименование
+                        </SortableHeader>
+                        <SortableHeader columnKey="category" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort}>
+                          <FolderTree className="w-4 h-4 text-muted-foreground" />
+                          Категория
+                        </SortableHeader>
+                        <SortableHeader columnKey="current_stock" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
+                          <Boxes className="w-4 h-4 text-muted-foreground" />
+                          Наличност
+                        </SortableHeader>
+                        <SortableHeader columnKey="min_stock_level" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
+                          Мин. наличност
+                        </SortableHeader>
+                        <SortableHeader columnKey="purchase_price" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
+                          <Euro className="w-4 h-4 text-muted-foreground" />
+                          Покупна цена
+                        </SortableHeader>
+                        <SortableHeader columnKey="value" sortKey={stockSortKey} sortDirection={stockSortDirection} onSort={handleStockSort} align="right">
+                          Стойност
+                        </SortableHeader>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -402,15 +500,28 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Тип</TableHead>
-                        <TableHead>Артикул</TableHead>
-                        <TableHead className="text-right">Количество</TableHead>
-                        <TableHead className="text-right">Сума</TableHead>
+                        <SortableHeader columnKey="created_at" sortKey={movementSortKey} sortDirection={movementSortDirection} onSort={handleMovementSort}>
+                          <History className="w-4 h-4 text-muted-foreground" />
+                          Дата
+                        </SortableHeader>
+                        <SortableHeader columnKey="movement_type" sortKey={movementSortKey} sortDirection={movementSortDirection} onSort={handleMovementSort}>
+                          Тип
+                        </SortableHeader>
+                        <SortableHeader columnKey="product" sortKey={movementSortKey} sortDirection={movementSortDirection} onSort={handleMovementSort}>
+                          <Package className="w-4 h-4 text-muted-foreground" />
+                          Артикул
+                        </SortableHeader>
+                        <SortableHeader columnKey="quantity" sortKey={movementSortKey} sortDirection={movementSortDirection} onSort={handleMovementSort} align="right">
+                          Количество
+                        </SortableHeader>
+                        <SortableHeader columnKey="total_price" sortKey={movementSortKey} sortDirection={movementSortDirection} onSort={handleMovementSort} align="right">
+                          <Euro className="w-4 h-4 text-muted-foreground" />
+                          Сума
+                        </SortableHeader>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredMovements.slice(0, 50).map((m) => (
+                      {sortedMovements.slice(0, 50).map((m) => (
                         <TableRow key={m.id}>
                           <TableCell className="text-sm">
                             {format(new Date(m.created_at), 'dd.MM.yyyy HH:mm', { locale: bg })}

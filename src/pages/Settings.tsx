@@ -42,6 +42,8 @@ interface CompanySettings {
   bank_bic: string | null;
   next_invoice_number: number;
   website_url: string | null;
+  orders_page_title: string | null;
+  inventory_page_title: string | null;
 }
 
 const Settings = () => {
@@ -161,6 +163,8 @@ const Settings = () => {
           bank_bic: companySettings.bank_bic,
           next_invoice_number: companySettings.next_invoice_number,
           website_url: companySettings.website_url,
+          orders_page_title: companySettings.orders_page_title,
+          inventory_page_title: companySettings.inventory_page_title,
         })
         .eq('id', companySettings.id);
 
@@ -668,6 +672,32 @@ const Settings = () => {
                             placeholder="BG12ABCD12345678901234"
                             value={companySettings.bank_iban || ''}
                             onChange={(e) => setCompanySettings({...companySettings, bank_iban: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Имена на страници</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="orders-page-title">Заглавие на страницата с поръчки</Label>
+                          <Input
+                            id="orders-page-title"
+                            placeholder="Управление на поръчки"
+                            value={companySettings.orders_page_title || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, orders_page_title: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="inventory-page-title">Заглавие на складовата програма</Label>
+                          <Input
+                            id="inventory-page-title"
+                            placeholder="Склад"
+                            value={companySettings.inventory_page_title || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, inventory_page_title: e.target.value})}
                           />
                         </div>
                       </div>

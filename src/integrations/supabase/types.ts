@@ -76,8 +76,10 @@ export type Database = {
           eik: string | null
           email: string | null
           id: string
+          inventory_page_title: string | null
           manager_name: string | null
           next_invoice_number: number | null
+          orders_page_title: string | null
           phone: string | null
           registered_address: string | null
           updated_at: string
@@ -95,8 +97,10 @@ export type Database = {
           eik?: string | null
           email?: string | null
           id?: string
+          inventory_page_title?: string | null
           manager_name?: string | null
           next_invoice_number?: number | null
+          orders_page_title?: string | null
           phone?: string | null
           registered_address?: string | null
           updated_at?: string
@@ -114,8 +118,10 @@ export type Database = {
           eik?: string | null
           email?: string | null
           id?: string
+          inventory_page_title?: string | null
           manager_name?: string | null
           next_invoice_number?: number | null
+          orders_page_title?: string | null
           phone?: string | null
           registered_address?: string | null
           updated_at?: string

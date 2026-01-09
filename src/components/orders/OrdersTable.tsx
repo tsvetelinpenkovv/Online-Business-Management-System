@@ -333,19 +333,25 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
               <SortableHead columnKey="created_at" className="w-[90px]">
-                <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Дата
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Дата
+                </div>
               </SortableHead>
               <SortableHead columnKey="customer_name" className="w-[110px]">
-                <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Клиент
+                <div className="flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Клиент
+                </div>
               </SortableHead>
               <TableHead className="w-[50px] text-center" title="Коректност на клиента">
                 <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
               <SortableHead columnKey="phone" className="w-[130px]">
-                <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Телефон
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Телефон
+                </div>
               </SortableHead>
               <SortableHead columnKey="total_price" className="w-[80px]">
                 <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -356,12 +362,14 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 Продукт
               </SortableHead>
               <SortableHead columnKey="catalog_number" className="w-[100px]">
-                <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Кат.№
+                <div className="flex items-center gap-1.5">
+                  <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Кат.№
+                </div>
               </SortableHead>
-              <SortableHead columnKey="quantity" className="w-[50px]" align="center">
-                <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              </SortableHead>
+              <TableHead className="w-[50px] text-center" title="Количество">
+                <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+              </TableHead>
               <TableHead className="w-[120px]">
                 <div className="flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
