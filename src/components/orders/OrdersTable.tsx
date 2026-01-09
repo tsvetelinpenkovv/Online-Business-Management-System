@@ -1,9 +1,8 @@
-import { FC, useState, useMemo } from 'react';
+import { FC, useState } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox,
-  ArrowUpDown, ArrowUp, ArrowDown
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -64,23 +63,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
-
-  const sortedOrders = useMemo(() => {
-    if (!sortOrder) return orders;
-    return [...orders].sort((a, b) => {
-      if (sortOrder === 'asc') return a.id - b.id;
-      return b.id - a.id;
-    });
-  }, [orders, sortOrder]);
-
-  const toggleSort = () => {
-    if (sortOrder === null) setSortOrder('asc');
-    else if (sortOrder === 'asc') setSortOrder('desc');
-    else setSortOrder(null);
-  };
 
   const getRowColorByStatus = () => {
     return 'hover:bg-muted/30';
@@ -200,7 +184,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             </span>
           </div>
 
-          {sortedOrders.map((order) => (
+          {orders.map((order) => (
             <MobileOrderCard
               key={order.id}
               order={order}
@@ -267,16 +251,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 />
               </TableHead>
               <TableHead className="w-[50px]">
-                <button 
-                  onClick={toggleSort}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
-                >
-                  ID
-                  <div className="flex flex-col -space-y-1">
-                    <ArrowUp className={`w-3 h-3 ${sortOrder === 'asc' ? 'text-primary' : 'text-muted-foreground/50'}`} />
-                    <ArrowDown className={`w-3 h-3 ${sortOrder === 'desc' ? 'text-primary' : 'text-muted-foreground/50'}`} />
-                  </div>
-                </button>
+                ID
               </TableHead>
               <TableHead className="w-[50px] text-center" title="Източник">
                 <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
@@ -350,7 +325,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedOrders.map((order) => (
+            {orders.map((order) => (
               <TableRow key={order.id} className={getRowColorByStatus()}>
                 <TableCell className={`${getRowStripClass(order.status)} pl-2 pr-0`}>
                   <Checkbox
