@@ -37,12 +37,13 @@ export default function Inventory() {
   const [inventoryPageTitle, setInventoryPageTitle] = useState<string>('Склад');
   const [footerText, setFooterText] = useState<string>('Разработен от Цветелин Пенков');
   const [footerWebsite, setFooterWebsite] = useState<string>('');
+  const [footerLink, setFooterLink] = useState<string>('');
 
   useEffect(() => {
     const fetchSettings = async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('inventory_page_title, footer_text, footer_website')
+        .select('inventory_page_title, footer_text, footer_website, footer_link')
         .limit(1)
         .maybeSingle();
       if (data?.inventory_page_title) {
@@ -53,6 +54,9 @@ export default function Inventory() {
       }
       if (data?.footer_website) {
         setFooterWebsite(data.footer_website);
+      }
+      if (data?.footer_link) {
+        setFooterLink(data.footer_link);
       }
     };
     fetchSettings();
@@ -337,14 +341,18 @@ export default function Inventory() {
       {/* Футер */}
       <footer className="mt-auto border-t bg-card py-4">
         <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
-          <a 
-            href="https://www.linkedin.com/in/tsvetelinpenkov/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            {footerText}
-          </a>
+          {footerLink ? (
+            <a 
+              href={footerLink} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              {footerText}
+            </a>
+          ) : (
+            <span className="font-medium">{footerText}</span>
+          )}
           {footerWebsite && (
             <div className="mt-1">
               <a 

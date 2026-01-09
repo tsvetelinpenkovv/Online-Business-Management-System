@@ -75,6 +75,7 @@ export type Database = {
           created_at: string
           eik: string | null
           email: string | null
+          footer_link: string | null
           footer_text: string | null
           footer_website: string | null
           id: string
@@ -98,6 +99,7 @@ export type Database = {
           created_at?: string
           eik?: string | null
           email?: string | null
+          footer_link?: string | null
           footer_text?: string | null
           footer_website?: string | null
           id?: string
@@ -121,6 +123,7 @@ export type Database = {
           created_at?: string
           eik?: string | null
           email?: string | null
+          footer_link?: string | null
           footer_text?: string | null
           footer_website?: string | null
           id?: string

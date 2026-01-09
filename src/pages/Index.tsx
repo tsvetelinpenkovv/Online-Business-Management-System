@@ -64,6 +64,7 @@ const Index = () => {
     inventory_page_title: string | null;
     footer_text: string | null;
     footer_website: string | null;
+    footer_link: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -96,6 +97,7 @@ const Index = () => {
             inventory_page_title: data.inventory_page_title,
             footer_text: data.footer_text,
             footer_website: data.footer_website,
+            footer_link: data.footer_link,
           });
         }
       } catch (error) {
@@ -611,14 +613,20 @@ const Index = () => {
 
       <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card mt-auto">
         <div className="text-center text-xs sm:text-sm text-muted-foreground">
-          <a
-            href="https://www.linkedin.com/in/tsvetelinpenkov/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline font-medium"
-          >
-            {companySettings?.footer_text || 'Разработен от Цветелин Пенков'}
-          </a>
+          {companySettings?.footer_link ? (
+            <a
+              href={companySettings.footer_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              {companySettings?.footer_text || 'Разработен от Цветелин Пенков'}
+            </a>
+          ) : (
+            <span className="font-medium">
+              {companySettings?.footer_text || 'Разработен от Цветелин Пенков'}
+            </span>
+          )}
           {companySettings?.footer_website && (
             <div className="mt-1">
               <a
