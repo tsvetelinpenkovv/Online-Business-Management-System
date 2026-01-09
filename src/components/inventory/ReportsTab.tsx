@@ -274,16 +274,16 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                       <div>
                         <p className="text-xs text-muted-foreground">Мин.</p>
                         <Badge variant="outline" className="mt-0.5 pointer-events-none">
-                          {product.min_stock_level}
+                          {product.min_stock_level} бр.
                         </Badge>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Покупна</p>
-                        <p className="text-sm">{product.purchase_price.toFixed(2)} €</p>
+                        <p className="text-sm text-success">{product.purchase_price.toFixed(2)} €</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Стойност</p>
-                        <p className="font-medium">{(product.current_stock * product.purchase_price).toFixed(2)} €</p>
+                        <p className="font-medium text-success">{(product.current_stock * product.purchase_price).toFixed(2)} €</p>
                       </div>
                     </div>
                   </CardContent>
@@ -372,11 +372,11 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                           </TableCell>
                           <TableCell className="text-right">
                             <Badge variant="outline" className="pointer-events-none">
-                              {product.min_stock_level}
+                              {product.min_stock_level} бр.
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">{product.purchase_price.toFixed(2)} €</TableCell>
-                          <TableCell className="text-right font-medium">
+                          <TableCell className="text-right text-success">{product.purchase_price.toFixed(2)} €</TableCell>
+                          <TableCell className="text-right font-medium text-success">
                             {(product.current_stock * product.purchase_price).toFixed(2)} €
                           </TableCell>
                         </TableRow>
