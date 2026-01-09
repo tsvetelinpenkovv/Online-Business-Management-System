@@ -1,7 +1,7 @@
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, useEffect } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { InventoryProduct } from '@/types/inventory';
-
+import { supabase } from '@/integrations/supabase/client';
 type SortKey = 'name' | 'sku' | 'current_stock' | 'purchase_price' | 'sale_price' | 'category';
 type SortDirection = 'asc' | 'desc';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Pencil, Trash2, Package, 
-  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy, Check
+  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy, Check, Layers, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -65,6 +65,18 @@ interface ProductsTabProps {
   inventory: ReturnType<typeof useInventory>;
 }
 
+interface BundleComponent {
+  id: string;
+  component_product_id: string;
+  component_quantity: number;
+  product: {
+    id: string;
+    name: string;
+    sku: string;
+    current_stock: number;
+  } | null;
+}
+
 export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -72,6 +84,9 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editProduct, setEditProduct] = useState<InventoryProduct | null>(null);
+  const [bundleViewProduct, setBundleViewProduct] = useState<InventoryProduct | null>(null);
+  const [bundleComponents, setBundleComponents] = useState<BundleComponent[]>([]);
+  const [loadingComponents, setLoadingComponents] = useState(false);
   const [formData, setFormData] = useState({
     sku: '',
     name: '',
@@ -250,6 +265,68 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
     toast.success(`${type} копиран!`);
   };
 
+  const openBundleView = async (product: InventoryProduct) => {
+    setBundleViewProduct(product);
+    setLoadingComponents(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('product_bundles')
+        .select(`
+          id,
+          component_product_id,
+          component_quantity,
+          component:inventory_products!product_bundles_component_product_id_fkey (
+            id,
+            name,
+            sku,
+            current_stock
+          )
+        `)
+        .eq('parent_product_id', product.id);
+      
+      if (error) throw error;
+      
+      // Transform data to match our interface
+      const components: BundleComponent[] = (data || []).map((item: any) => ({
+        id: item.id,
+        component_product_id: item.component_product_id,
+        component_quantity: item.component_quantity,
+        product: item.component
+      }));
+      
+      setBundleComponents(components);
+    } catch (err) {
+      console.error('Error fetching bundle components:', err);
+      toast.error('Грешка при зареждане на компонентите');
+    } finally {
+      setLoadingComponents(false);
+    }
+  };
+
+  const getBundleTypeBadge = (product: InventoryProduct) => {
+    if (!product.is_bundle) return null;
+    
+    const typeLabels: Record<string, string> = {
+      'grouped': 'Групиран',
+      'bundle': 'Комплект',
+      'composite': 'Композитен',
+      'pack': 'Пакет',
+    };
+    
+    const label = typeLabels[product.external_bundle_type || ''] || 'Комплект';
+    
+    return (
+      <Badge 
+        variant="outline" 
+        className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700 gap-1"
+      >
+        <Layers className="w-3 h-3" />
+        {label}
+      </Badge>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -301,6 +378,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                           )}
                         </button>
                         {getStockStatus(product)}
+                        {getBundleTypeBadge(product)}
                       </div>
                       <TooltipProvider>
                         <Tooltip>
@@ -340,6 +418,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {product.is_bundle && (
+                          <DropdownMenuItem onClick={() => openBundleView(product)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Виж компоненти
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={() => openEditDialog(product)}>
                           <Pencil className="w-4 h-4 mr-2" />
                           Редактирай
@@ -436,16 +520,19 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <p className="font-medium max-w-[200px] truncate cursor-pointer">{product.name}</p>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-[300px]">
-                                  <p>{product.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <p className="font-medium max-w-[200px] truncate cursor-pointer">{product.name}</p>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[300px]">
+                                    <p>{product.name}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              {getBundleTypeBadge(product)}
+                            </div>
                             {product.barcode && (
                               <div className="flex items-center gap-1">
                                 <Barcode className="w-3 h-3 text-muted-foreground" />
@@ -492,6 +579,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {product.is_bundle && (
+                                <DropdownMenuItem onClick={() => openBundleView(product)}>
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Виж компоненти
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem onClick={() => openEditDialog(product)}>
                                 <Pencil className="w-4 h-4 mr-2" />
                                 Редактирай
@@ -670,6 +763,78 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Bundle Components Dialog */}
+      <Dialog open={bundleViewProduct !== null} onOpenChange={() => setBundleViewProduct(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-purple-600" />
+              Компоненти на комплект
+            </DialogTitle>
+          </DialogHeader>
+          {bundleViewProduct && (
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium">{bundleViewProduct.name}</p>
+                <p className="text-sm text-muted-foreground font-mono">{bundleViewProduct.sku}</p>
+                {bundleViewProduct.external_bundle_type && (
+                  <Badge variant="outline" className="mt-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                    {bundleViewProduct.external_bundle_type}
+                  </Badge>
+                )}
+              </div>
+              
+              {loadingComponents ? (
+                <div className="flex items-center justify-center py-8">
+                  <Package className="w-6 h-6 animate-pulse text-muted-foreground" />
+                </div>
+              ) : bundleComponents.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Няма намерени компоненти</p>
+                  <p className="text-xs mt-1">Синхронизирайте продуктите от e-commerce платформата</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Съдържа {bundleComponents.length} компонент{bundleComponents.length !== 1 ? 'а' : ''}:
+                  </p>
+                  <div className="border rounded-lg divide-y">
+                    {bundleComponents.map((component) => (
+                      <div key={component.id} className="flex items-center justify-between p-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{component.product?.name || 'Неизвестен продукт'}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{component.product?.sku || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <Badge variant="secondary" className="font-mono">
+                            x{component.component_quantity}
+                          </Badge>
+                          <Badge 
+                            variant="outline"
+                            className={
+                              (component.product?.current_stock || 0) <= 0 
+                                ? 'bg-destructive/15 text-destructive border-destructive/30' 
+                                : 'bg-success/15 text-success border-success/30'
+                            }
+                          >
+                            {component.product?.current_stock || 0} бр.
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBundleViewProduct(null)}>
+              Затвори
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
