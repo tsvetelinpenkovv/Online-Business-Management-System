@@ -36,6 +36,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -231,7 +237,16 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </span>
                         {getStockStatus(product)}
                       </div>
-                      <p className="font-medium truncate">{product.name}</p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="font-medium truncate cursor-pointer">{product.name}</p>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[250px]">
+                            <p>{product.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       {product.barcode && (
                         <p 
                           className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
@@ -270,9 +285,18 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                   <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t">
                     <div>
                       <p className="text-xs text-muted-foreground">Наличност</p>
-                      <p className={`font-medium ${product.current_stock <= product.min_stock_level ? 'text-warning' : ''}`}>
+                      <Badge 
+                        variant="secondary" 
+                        className={`mt-0.5 ${
+                          product.current_stock <= 0 
+                            ? 'bg-destructive/15 text-destructive' 
+                            : product.current_stock <= product.min_stock_level 
+                              ? 'bg-warning/15 text-warning' 
+                              : 'bg-info/15 text-info'
+                        }`}
+                      >
                         {product.current_stock} {product.unit?.abbreviation || 'бр.'}
-                      </p>
+                      </Badge>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Марж</p>
@@ -331,7 +355,16 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{product.name}</p>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className="font-medium max-w-[200px] truncate cursor-pointer">{product.name}</p>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-[300px]">
+                                  <p>{product.name}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                             {product.barcode && (
                               <p 
                                 className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
@@ -346,12 +379,18 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </TableCell>
                         <TableCell>{product.category?.name || '-'}</TableCell>
                         <TableCell className="text-right">
-                          <span className={product.current_stock <= product.min_stock_level ? 'text-warning font-bold' : ''}>
-                            {product.current_stock}
-                          </span>
-                          <span className="text-muted-foreground text-xs ml-1">
-                            {product.unit?.abbreviation || 'бр.'}
-                          </span>
+                          <Badge 
+                            variant="secondary" 
+                            className={`${
+                              product.current_stock <= 0 
+                                ? 'bg-destructive/15 text-destructive' 
+                                : product.current_stock <= product.min_stock_level 
+                                  ? 'bg-warning/15 text-warning' 
+                                  : 'bg-info/15 text-info'
+                            }`}
+                          >
+                            {product.current_stock} {product.unit?.abbreviation || 'бр.'}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">{product.purchase_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right">{product.sale_price.toFixed(2)} €</TableCell>

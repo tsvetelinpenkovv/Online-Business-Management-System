@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -29,6 +29,37 @@ export default function Inventory() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+
+  const checkScrollPosition = () => {
+    const container = tabsContainerRef.current;
+    if (container) {
+      setShowLeftArrow(container.scrollLeft > 10);
+      setShowRightArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+    }
+  };
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    const container = tabsContainerRef.current;
+    if (container) {
+      const scrollAmount = 150;
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    const container = tabsContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      checkScrollPosition();
+      return () => container.removeEventListener('scroll', checkScrollPosition);
+    }
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -141,42 +172,79 @@ export default function Inventory() {
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          {/* Scrollable tabs for mobile - hidden scrollbar */}
-          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <TabsList className="inline-flex w-max sm:w-auto sm:flex sm:flex-wrap h-auto gap-1 p-1 bg-muted/50 [&::-webkit-scrollbar]:hidden">
-              <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Табло</span>
-              </TabsTrigger>
-              <TabsTrigger value="products" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Артикули</span>
-              </TabsTrigger>
-              <TabsTrigger value="suppliers" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Доставчици</span>
-              </TabsTrigger>
-              <TabsTrigger value="categories" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <FolderTree className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Категории</span>
-              </TabsTrigger>
-              <TabsTrigger value="documents" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Документи</span>
-              </TabsTrigger>
-              <TabsTrigger value="movements" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Движения</span>
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Отчети</span>
-              </TabsTrigger>
-              <TabsTrigger value="woocommerce" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>WooCommerce</span>
-              </TabsTrigger>
-            </TabsList>
+          {/* Scrollable tabs with fade indicators */}
+          <div className="relative">
+            {/* Left fade & arrow */}
+            {showLeftArrow && (
+              <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center sm:hidden">
+                <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm shadow-sm border"
+                  onClick={() => scrollTabs('left')}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+            
+            {/* Right fade & arrow */}
+            {showRightArrow && (
+              <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center sm:hidden">
+                <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm shadow-sm border"
+                  onClick={() => scrollTabs('right')}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            <div 
+              ref={tabsContainerRef}
+              className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0" 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              onScroll={checkScrollPosition}
+            >
+              <TabsList className="inline-flex w-max sm:w-auto sm:flex sm:flex-wrap h-auto gap-1 p-1.5 bg-muted dark:bg-muted/70 rounded-lg [&::-webkit-scrollbar]:hidden">
+                <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Табло</span>
+                </TabsTrigger>
+                <TabsTrigger value="products" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Артикули</span>
+                </TabsTrigger>
+                <TabsTrigger value="suppliers" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Доставчици</span>
+                </TabsTrigger>
+                <TabsTrigger value="categories" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <FolderTree className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Категории</span>
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Документи</span>
+                </TabsTrigger>
+                <TabsTrigger value="movements" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Движения</span>
+                </TabsTrigger>
+                <TabsTrigger value="reports" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Отчети</span>
+                </TabsTrigger>
+                <TabsTrigger value="woocommerce" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>WooCommerce</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           <TabsContent value="dashboard" className="mt-4 sm:mt-6">
