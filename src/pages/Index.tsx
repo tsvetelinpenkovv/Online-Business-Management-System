@@ -342,8 +342,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* Desktop actions */}
-          <div className="hidden sm:flex items-center gap-2">
+          {/* Desktop actions (hidden on mobile and tablet) */}
+          <div className="hidden lg:flex items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
                 <DropdownMenu>

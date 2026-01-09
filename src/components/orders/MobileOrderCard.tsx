@@ -86,42 +86,44 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               aria-label={`Избери поръчка ${order.id}`}
             />
             <span className="text-xs text-muted-foreground font-medium whitespace-nowrap inline-flex items-center gap-1 min-w-[70px]">№ {order.id}</span>
+          </div>
+          <div className="flex items-center gap-2">
             <SourceIcon source={order.source} className="w-5 h-5" />
             <CorrectStatusIcon isCorrect={order.is_correct} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onEdit}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Редактирай
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onPrint}>
+                  <Printer className="w-4 h-4 mr-2" />
+                  Печат на поръчка
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (order.courier_tracking_url) {
+                      window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
+                    }
+                  }}
+                  disabled={!order.courier_tracking_url}
+                  className={!order.courier_tracking_url ? 'opacity-50' : ''}
+                >
+                  <FileBox className="w-4 h-4 mr-2" />
+                  Печат на товарителница
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Изтрий
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onEdit}>
-                <Pencil className="w-4 h-4 mr-2" />
-                Редактирай
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onPrint}>
-                <Printer className="w-4 h-4 mr-2" />
-                Печат на поръчка
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => {
-                  if (order.courier_tracking_url) {
-                    window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
-                  }
-                }}
-                disabled={!order.courier_tracking_url}
-                className={!order.courier_tracking_url ? 'opacity-50' : ''}
-              >
-                <FileBox className="w-4 h-4 mr-2" />
-                Печат на товарителница
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Изтрий
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Date and Status */}
