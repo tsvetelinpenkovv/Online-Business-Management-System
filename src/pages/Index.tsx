@@ -358,6 +358,59 @@ const Index = () => {
             </div>
           )}
 
+          {/* Tablet/Desktop actions - bulk actions (md and up) */}
+          <div className="hidden md:flex lg:hidden items-center gap-2">
+            {selectedOrders.length > 0 && (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <Tags className="w-4 h-4" />
+                      <span className="hidden lg:inline">Смени статус</span>
+                      <span className="lg:hidden">({selectedOrders.length})</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
+                    {ORDER_STATUSES.map((status) => (
+                      <DropdownMenuItem
+                        key={status}
+                        onClick={() => handleBulkStatusChange(status)}
+                        className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
+                      >
+                        <StatusBadge status={status} />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <Printer className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
+                      <Printer className="w-4 h-4 mr-2" />
+                      Печат на поръчки
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
+                      <FileBox className="w-4 h-4 mr-2" />
+                      Печат на товарителници
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button 
+                  onClick={() => setShowBulkDeleteDialog(true)} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+          </div>
+
           {/* Desktop actions - bulk actions and new order button (only on large screens) */}
           <div className="hidden lg:flex items-center gap-2">
             {selectedOrders.length > 0 && (
@@ -412,7 +465,7 @@ const Index = () => {
           </div>
 
           {/* Tablet and Desktop common actions */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <Button onClick={() => setShowAddOrderDialog(true)} className="hidden lg:flex gap-2">
               <Plus className="w-4 h-4" />
               Нова поръчка
@@ -493,8 +546,8 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Mobile menu */}
-          <div className="flex sm:hidden items-center gap-1">
+          {/* Mobile menu (show up to md breakpoint) */}
+          <div className="flex md:hidden items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8" title="Обнови">
