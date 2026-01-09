@@ -52,7 +52,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card border-b shadow-sm">
         <div className="container mx-auto px-3 sm:px-4 py-3">
@@ -97,7 +97,7 @@ export default function Inventory() {
                 size="icon"
                 onClick={() => inventory.refresh()}
                 className="sm:hidden"
-                title="Опресни"
+                title="Обнови"
               >
                 <RefreshCw className="w-4 h-4" />
               </Button>
@@ -130,7 +130,7 @@ export default function Inventory() {
                 className="hidden sm:flex"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Опресни
+                Обнови
               </Button>
               <ThemeToggle />
             </div>
@@ -226,6 +226,21 @@ export default function Inventory() {
         onOpenChange={setIsImportExportOpen}
         inventory={inventory}
       />
+
+      {/* Footer */}
+      <footer className="mt-auto border-t bg-card py-4">
+        <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
+          Разработен от{' '}
+          <a 
+            href="https://www.linkedin.com/in/tsvetelinpenkov/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            Цветелин Пенков
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

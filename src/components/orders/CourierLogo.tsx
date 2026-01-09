@@ -23,8 +23,11 @@ export const CourierLogo: FC<CourierLogoProps> = ({
     courier = getCourierByUrl(trackingUrl);
   }
 
-  // If no courier found and no tracking URL, show nothing
-  if (!courier && !trackingUrl) return null;
+  // If no courier found and no tracking URL, show dash
+  if (!courier && !trackingUrl) return <span className="text-muted-foreground">-</span>;
+  
+  // If no tracking URL, don't show courier logo (show dash instead)
+  if (!trackingUrl) return <span className="text-muted-foreground">-</span>;
 
   const content = courier?.logo_url ? (
     <img 
