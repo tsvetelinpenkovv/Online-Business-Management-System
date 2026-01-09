@@ -308,15 +308,40 @@ const Messages = () => {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectTrigger className="w-full sm:w-[160px]">
                   <SelectValue placeholder="Статус" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всички</SelectItem>
-                  <SelectItem value="read">Прочетени</SelectItem>
-                  <SelectItem value="delivered">Доставени</SelectItem>
-                  <SelectItem value="sent">Изпратени</SelectItem>
-                  <SelectItem value="failed">Грешки</SelectItem>
+                  <SelectItem value="all">
+                    <span className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-purple" />
+                      Всички
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="read">
+                    <span className="flex items-center gap-2">
+                      <CheckCheck className="w-4 h-4 text-info" />
+                      <span className="text-info">Прочетени</span>
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="delivered">
+                    <span className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-success" />
+                      <span className="text-success">Доставени</span>
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="sent">
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Изпратени</span>
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="failed">
+                    <span className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-destructive" />
+                      <span className="text-destructive">Грешки</span>
+                    </span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
