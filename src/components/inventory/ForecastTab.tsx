@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, subDays, differenceInDays, addDays } from 'date-fns';
 import { bg } from 'date-fns/locale';
-import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -9,7 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useInventory } from '@/hooks/useInventory';
+import { useToast } from '@/hooks/use-toast';
 
 interface ForecastTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -21,6 +23,15 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
   const [historyDateTo, setHistoryDateTo] = useState<Date>(today);
   const [forecastDate, setForecastDate] = useState<Date>(addDays(today, 30));
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedSku, setCopiedSku] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const copyToClipboard = async (sku: string) => {
+    await navigator.clipboard.writeText(sku);
+    setCopiedSku(sku);
+    toast({ title: 'Копирано', description: `SKU ${sku} е копиран` });
+    setTimeout(() => setCopiedSku(null), 2000);
+  };
 
   const formatDateWithYear = (date: Date) => {
     return format(date, "d MMM yyyy", { locale: bg }) + " г.";
@@ -257,10 +268,26 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                 <TableRow>
                   <TableHead>Артикул</TableHead>
                   <TableHead>Категория</TableHead>
-                  <TableHead className="text-right">Продадени ({historyDays} дни)</TableHead>
-                  <TableHead className="text-right">Налични</TableHead>
-                  <TableHead className="text-right">Прогноза ({forecastDays} дни)</TableHead>
-                  <TableHead className="text-right">За поръчка</TableHead>
+                  <TableHead className="text-right">
+                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
+                      Продадени ({historyDays} дни)
+                    </Badge>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <Badge variant="outline" className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700">
+                      Налични
+                    </Badge>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700">
+                      Прогноза ({forecastDays} дни)
+                    </Badge>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <Badge variant="outline" className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700">
+                      За поръчка
+                    </Badge>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -276,20 +303,30 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                       <TableCell>
                         <div>
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-muted-foreground">{item.sku}</div>
+                          <button
+                            onClick={() => copyToClipboard(item.sku)}
+                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                          >
+                            {item.sku}
+                            {copiedSku === item.sku ? (
+                              <Check className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
                         </div>
                       </TableCell>
                       <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">{item.soldQuantity}</TableCell>
+                      <TableCell className="text-right">{item.soldQuantity} бр.</TableCell>
                       <TableCell className="text-right">
                         <span className={item.currentStock <= 0 ? 'text-red-500 font-medium' : ''}>
-                          {item.currentStock}
+                          {item.currentStock} бр.
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">{item.projectedSales}</TableCell>
+                      <TableCell className="text-right">{item.projectedSales} бр.</TableCell>
                       <TableCell className="text-right">
                         <span className={item.neededQuantity > 0 ? 'text-orange-600 dark:text-orange-400 font-bold' : ''}>
-                          {item.neededQuantity}
+                          {item.neededQuantity} бр.
                         </span>
                       </TableCell>
                     </TableRow>
@@ -316,7 +353,18 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-medium">{item.name}</div>
-                    <div className="text-xs text-muted-foreground">{item.sku} • {item.category}</div>
+                    <button
+                      onClick={() => copyToClipboard(item.sku)}
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                    >
+                      {item.sku}
+                      {copiedSku === item.sku ? (
+                        <Check className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                    </button>
+                    <div className="text-xs text-muted-foreground mt-0.5">{item.category}</div>
                   </div>
                   {item.neededQuantity > 0 && (
                     <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
@@ -326,19 +374,25 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <div>
-                    <div className="text-muted-foreground text-xs">Продадени</div>
-                    <div className="font-medium">{item.soldQuantity}</div>
+                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 text-xs mb-1">
+                      Продадени
+                    </Badge>
+                    <div className="font-medium">{item.soldQuantity} бр.</div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-xs">Налични</div>
+                    <Badge variant="outline" className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 text-xs mb-1">
+                      Налични
+                    </Badge>
                     <div className={`font-medium ${item.currentStock <= 0 ? 'text-red-500' : ''}`}>
-                      {item.currentStock}
+                      {item.currentStock} бр.
                     </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-xs">За поръчка</div>
+                    <Badge variant="outline" className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 text-xs mb-1">
+                      За поръчка
+                    </Badge>
                     <div className={`font-medium ${item.neededQuantity > 0 ? 'text-orange-600 dark:text-orange-400' : ''}`}>
-                      {item.neededQuantity}
+                      {item.neededQuantity} бр.
                     </div>
                   </div>
                 </div>
