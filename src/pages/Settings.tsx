@@ -44,6 +44,8 @@ interface CompanySettings {
   website_url: string | null;
   orders_page_title: string | null;
   inventory_page_title: string | null;
+  footer_text: string | null;
+  footer_website: string | null;
 }
 
 const Settings = () => {
@@ -165,6 +167,8 @@ const Settings = () => {
           website_url: companySettings.website_url,
           orders_page_title: companySettings.orders_page_title,
           inventory_page_title: companySettings.inventory_page_title,
+          footer_text: companySettings.footer_text,
+          footer_website: companySettings.footer_website,
         })
         .eq('id', companySettings.id);
 
@@ -679,32 +683,6 @@ const Settings = () => {
 
                     <Separator />
 
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Имена на страници</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="orders-page-title">Заглавие на страницата с поръчки</Label>
-                          <Input
-                            id="orders-page-title"
-                            placeholder="Управление на поръчки"
-                            value={companySettings.orders_page_title || ''}
-                            onChange={(e) => setCompanySettings({...companySettings, orders_page_title: e.target.value})}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="inventory-page-title">Заглавие на складовата програма</Label>
-                          <Input
-                            id="inventory-page-title"
-                            placeholder="Склад"
-                            value={companySettings.inventory_page_title || ''}
-                            onChange={(e) => setCompanySettings({...companySettings, inventory_page_title: e.target.value})}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
                     <div className="space-y-2">
                       <Label htmlFor="next-invoice">Следващ номер на фактура</Label>
                       <Input
@@ -738,6 +716,99 @@ const Settings = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Персонализация - moved to bottom with reddish background */}
+            <Card className="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-300">
+                  <FileText className="w-5 h-5" />
+                  Персонализация
+                </CardTitle>
+                <CardDescription className="text-red-600/80 dark:text-red-400/80">
+                  Персонализирайте имената на страниците и footer текста
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {companySettings && (
+                  <>
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-red-800 dark:text-red-300">Имена на страници</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="orders-page-title" className="text-red-700 dark:text-red-300">Заглавие на страницата с поръчки</Label>
+                          <Input
+                            id="orders-page-title"
+                            placeholder="Управление на поръчки"
+                            value={companySettings.orders_page_title || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, orders_page_title: e.target.value})}
+                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="inventory-page-title" className="text-red-700 dark:text-red-300">Заглавие на складовата програма</Label>
+                          <Input
+                            id="inventory-page-title"
+                            placeholder="Склад"
+                            value={companySettings.inventory_page_title || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, inventory_page_title: e.target.value})}
+                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator className="bg-red-200 dark:bg-red-800" />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-red-800 dark:text-red-300">Footer настройки</h3>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="footer-text" className="text-red-700 dark:text-red-300">Текст във Footer</Label>
+                          <Input
+                            id="footer-text"
+                            placeholder="Разработен от Цветелин Пенков"
+                            value={companySettings.footer_text || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, footer_text: e.target.value})}
+                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                          />
+                          <p className="text-xs text-red-600/70 dark:text-red-400/70">
+                            Основният текст който се показва във footer-a
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="footer-website" className="text-red-700 dark:text-red-300">Уебсайт във Footer</Label>
+                          <Input
+                            id="footer-website"
+                            placeholder="www.penkovstudio.eu"
+                            value={companySettings.footer_website || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, footer_website: e.target.value})}
+                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                          />
+                          <p className="text-xs text-red-600/70 dark:text-red-400/70">
+                            Уебсайтът който се показва под основния текст (центриран)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button onClick={handleSaveCompanySettings} disabled={savingCompany} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white">
+                      {savingCompany ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Запазване...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Запази персонализация
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
           </TabsContent>
 
           {isAdmin && (

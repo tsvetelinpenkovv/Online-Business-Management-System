@@ -35,16 +35,24 @@ export default function Inventory() {
   const [showRightArrow, setShowRightArrow] = useState(true);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const [inventoryPageTitle, setInventoryPageTitle] = useState<string>('Склад');
+  const [footerText, setFooterText] = useState<string>('Разработен от Цветелин Пенков');
+  const [footerWebsite, setFooterWebsite] = useState<string>('');
 
   useEffect(() => {
     const fetchSettings = async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('inventory_page_title')
+        .select('inventory_page_title, footer_text, footer_website')
         .limit(1)
         .maybeSingle();
       if (data?.inventory_page_title) {
         setInventoryPageTitle(data.inventory_page_title);
+      }
+      if (data?.footer_text) {
+        setFooterText(data.footer_text);
+      }
+      if (data?.footer_website) {
+        setFooterWebsite(data.footer_website);
       }
     };
     fetchSettings();
@@ -329,15 +337,26 @@ export default function Inventory() {
       {/* Footer */}
       <footer className="mt-auto border-t bg-card py-4">
         <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
-          Разработен от{' '}
           <a 
             href="https://www.linkedin.com/in/tsvetelinpenkov/" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-primary hover:underline"
           >
-            Цветелин Пенков
+            {footerText}
           </a>
+          {footerWebsite && (
+            <div className="mt-1">
+              website: <a 
+                href={footerWebsite.startsWith('http') ? footerWebsite : `https://${footerWebsite}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {footerWebsite}
+              </a>
+            </div>
+          )}
         </div>
       </footer>
     </div>
