@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -165,13 +166,24 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                     <div className="grid grid-cols-2 gap-3 pt-3 border-t">
                       <div>
                         <p className="text-xs text-muted-foreground">Наличност</p>
-                        <p className={`font-medium ${product.current_stock <= product.min_stock_level ? 'text-warning' : ''}`}>
+                        <Badge 
+                          variant="secondary" 
+                          className={`mt-0.5 pointer-events-none ${
+                            product.current_stock <= 0 
+                              ? 'bg-destructive/15 text-destructive' 
+                              : product.current_stock <= product.min_stock_level 
+                                ? 'bg-warning/15 text-warning' 
+                                : 'bg-info/15 text-info'
+                          }`}
+                        >
                           {product.current_stock} {product.unit?.abbreviation || 'бр.'}
-                        </p>
+                        </Badge>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Мин.</p>
-                        <p className="text-sm text-muted-foreground">{product.min_stock_level}</p>
+                        <Badge variant="outline" className="mt-0.5 pointer-events-none">
+                          {product.min_stock_level}
+                        </Badge>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Покупна</p>
@@ -225,10 +237,23 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.category?.name || '-'}</TableCell>
                           <TableCell className="text-right">
-                            {product.current_stock} {product.unit?.abbreviation || 'бр.'}
+                            <Badge 
+                              variant="secondary" 
+                              className={`pointer-events-none ${
+                                product.current_stock <= 0 
+                                  ? 'bg-destructive/15 text-destructive' 
+                                  : product.current_stock <= product.min_stock_level 
+                                    ? 'bg-warning/15 text-warning' 
+                                    : 'bg-info/15 text-info'
+                              }`}
+                            >
+                              {product.current_stock} {product.unit?.abbreviation || 'бр.'}
+                            </Badge>
                           </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {product.min_stock_level}
+                          <TableCell className="text-right">
+                            <Badge variant="outline" className="pointer-events-none">
+                              {product.min_stock_level}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">{product.purchase_price.toFixed(2)} €</TableCell>
                           <TableCell className="text-right font-medium">
