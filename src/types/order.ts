@@ -14,6 +14,12 @@ export type OrderStatus =
   | 'Отказана' 
   | 'Анулирана';
 
+// E-commerce platforms that can be sources
+export type EcommercePlatformSource = 'woocommerce' | 'prestashop' | 'opencart' | 'magento' | 'shopify';
+
+// All possible order sources
+export type OrderSource = 'google' | 'facebook' | 'phone' | EcommercePlatformSource | null;
+
 export interface Order {
   id: number;
   code: string;
@@ -31,7 +37,7 @@ export interface Order {
   courier_id: string | null;
   status: OrderStatus;
   comment: string | null;
-  source: 'google' | 'facebook' | 'woocommerce' | 'phone' | null;
+  source: OrderSource;
   user_id: string | null;
 }
 

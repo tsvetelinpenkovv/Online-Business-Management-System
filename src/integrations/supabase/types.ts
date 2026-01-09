@@ -179,6 +179,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ecommerce_platforms: {
+        Row: {
+          config: Json | null
+          created_at: string
+          display_name: string
+          id: string
+          is_enabled: boolean
+          logo_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_enabled?: boolean
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventory_categories: {
         Row: {
           created_at: string
