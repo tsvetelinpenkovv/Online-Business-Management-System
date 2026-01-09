@@ -515,22 +515,29 @@ const Settings = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         <Tabs defaultValue="api" className="w-full">
-          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'}`}>
-            <TabsTrigger value="api">API</TabsTrigger>
-            <TabsTrigger value="platforms">Платформи</TabsTrigger>
-            <TabsTrigger value="sources">Източници</TabsTrigger>
-            <TabsTrigger value="branding">Лого</TabsTrigger>
-            <TabsTrigger value="couriers">Куриери</TabsTrigger>
-            <TabsTrigger value="statuses">Статуси</TabsTrigger>
-            <TabsTrigger value="company">Фирма</TabsTrigger>
-            {isAdmin && <TabsTrigger value="users">Потребители</TabsTrigger>}
-          </TabsList>
+          <div className="relative mb-6">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 gap-1">
+                <TabsTrigger value="api" className="whitespace-nowrap">API</TabsTrigger>
+                <TabsTrigger value="platforms" className="whitespace-nowrap">Платформи</TabsTrigger>
+                <TabsTrigger value="sources" className="whitespace-nowrap border-l-2 border-primary/30 ml-1 pl-2">Източници</TabsTrigger>
+                <TabsTrigger value="branding" className="whitespace-nowrap">Лого</TabsTrigger>
+                <TabsTrigger value="couriers" className="whitespace-nowrap">Куриери</TabsTrigger>
+                <TabsTrigger value="statuses" className="whitespace-nowrap">Статуси</TabsTrigger>
+                <TabsTrigger value="company" className="whitespace-nowrap">Фирма</TabsTrigger>
+                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap">Потребители</TabsTrigger>}
+              </TabsList>
+            </div>
+            {/* Gradient indicators for scroll on mobile */}
+            <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none md:hidden" />
+            <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none md:hidden" />
+          </div>
 
           <TabsContent value="platforms" className="space-y-6">
             <PlatformApiSettings />
           </TabsContent>
 
-          <TabsContent value="sources" className="space-y-6">
+          <TabsContent value="sources" className="space-y-6 mt-4">
             <SourceSettings />
           </TabsContent>
 

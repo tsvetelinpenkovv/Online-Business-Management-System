@@ -229,4 +229,13 @@
   .status-voided {
     @apply bg-muted text-muted-foreground;
   }
+  
+  /* Hide scrollbar for horizontal scroll containers */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

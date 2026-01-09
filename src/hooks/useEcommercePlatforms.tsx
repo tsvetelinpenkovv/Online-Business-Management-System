@@ -31,10 +31,14 @@ export const useEcommercePlatforms = () => {
         config: (platform.config || {}) as Record<string, any>
       }));
       
-      // Sort: WooCommerce first, then alphabetically by display_name
+      // Sort: WooCommerce, OpenCart, Shopify, PrestaShop, Magento
+      const platformOrder = ['woocommerce', 'opencart', 'shopify', 'prestashop', 'magento'];
       typedData.sort((a, b) => {
-        if (a.name === 'woocommerce') return -1;
-        if (b.name === 'woocommerce') return 1;
+        const aIndex = platformOrder.indexOf(a.name);
+        const bIndex = platformOrder.indexOf(b.name);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
         return a.display_name.localeCompare(b.display_name);
       });
       
