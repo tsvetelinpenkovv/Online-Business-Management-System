@@ -384,6 +384,7 @@ export const DocumentationTab = () => {
       });
 
       // Add logo if available
+      let startY = 25;
       if (logoUrl) {
         try {
           const img = new Image();
@@ -394,34 +395,53 @@ export const DocumentationTab = () => {
             img.src = logoUrl;
           });
           doc.addImage(img, 'PNG', 15, 10, 40, 20);
+          startY = 45;
         } catch (e) {
-          console.log('Logo could not be added to PDF');
+          console.log('Логото не може да бъде добавено към PDF');
         }
       }
 
-      // Title
-      doc.setFontSize(20);
+      // Title - using Unicode text rendering
+      doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
-      doc.text('СИСТЕМА ЗА УПРАВЛЕНИЕ НА', 105, logoUrl ? 45 : 25, { align: 'center' });
-      doc.text('ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО', 105, logoUrl ? 55 : 35, { align: 'center' });
+      doc.text('SISTEMA ZA UPRAVLENIE NA', 105, startY, { align: 'center' });
+      doc.text('PORACHKI I SKLADOVO STOPANSTVO', 105, startY + 8, { align: 'center' });
       
-      doc.setFontSize(14);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text('Пълна документация v1.0', 105, logoUrl ? 65 : 45, { align: 'center' });
+      doc.text('Palna dokumentaciya v1.0', 105, startY + 18, { align: 'center' });
 
       // Date
       doc.setFontSize(10);
-      doc.text(`Генерирана на: ${new Date().toLocaleDateString('bg-BG')}`, 105, logoUrl ? 75 : 55, { align: 'center' });
+      const dateStr = new Date().toLocaleDateString('bg-BG');
+      doc.text('Generirana na: ' + dateStr, 105, startY + 26, { align: 'center' });
 
       // Separator line
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, logoUrl ? 80 : 60, 195, logoUrl ? 80 : 60);
+      doc.line(15, startY + 32, 195, startY + 32);
 
-      let yPosition = logoUrl ? 90 : 70;
+      let yPosition = startY + 42;
       const pageHeight = 280;
       const lineHeight = 6;
       const marginLeft = 15;
       const maxWidth = 180;
+
+      // Bulgarian to Latin transliteration map
+      const transliterate = (text: string): string => {
+        const map: { [key: string]: string } = {
+          'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'zh',
+          'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+          'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f',
+          'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sht', 'ъ': 'a', 'ь': '',
+          'ю': 'yu', 'я': 'ya',
+          'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ж': 'Zh',
+          'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
+          'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F',
+          'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sht', 'Ъ': 'A', 'Ь': '',
+          'Ю': 'Yu', 'Я': 'Ya'
+        };
+        return text.split('').map(char => map[char] || char).join('');
+      };
 
       // Process content
       const lines = documentationContent.split('\n');
@@ -433,40 +453,41 @@ export const DocumentationTab = () => {
         }
 
         const trimmedLine = line.trim();
+        const latinLine = transliterate(trimmedLine);
         
         if (trimmedLine.startsWith('# ')) {
           doc.setFontSize(16);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(180, 50, 50);
-          const text = trimmedLine.replace('# ', '');
+          const text = latinLine.replace('# ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight * 1.5;
         } else if (trimmedLine.startsWith('## ')) {
           doc.setFontSize(14);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(60, 60, 60);
-          const text = trimmedLine.replace('## ', '');
+          const text = latinLine.replace('## ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight * 1.3;
         } else if (trimmedLine.startsWith('### ')) {
           doc.setFontSize(12);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(80, 80, 80);
-          const text = trimmedLine.replace('### ', '');
+          const text = latinLine.replace('### ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight * 1.2;
         } else if (trimmedLine.startsWith('#### ')) {
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(100, 100, 100);
-          const text = trimmedLine.replace('#### ', '');
+          const text = latinLine.replace('#### ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight;
         } else if (trimmedLine.startsWith('- **')) {
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(40, 40, 40);
-          const text = '• ' + trimmedLine.replace('- **', '').replace('**:', ':').replace('**', '');
+          const text = '* ' + latinLine.replace('- **', '').replace('**:', ':').replace('**', '');
           const splitText = doc.splitTextToSize(text, maxWidth);
           doc.text(splitText, marginLeft + 5, yPosition);
           yPosition += lineHeight * splitText.length;
@@ -474,13 +495,19 @@ export const DocumentationTab = () => {
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(40, 40, 40);
-          const text = '• ' + trimmedLine.replace('- ', '');
+          const text = '* ' + latinLine.replace('- ', '');
           const splitText = doc.splitTextToSize(text, maxWidth);
           doc.text(splitText, marginLeft + 5, yPosition);
           yPosition += lineHeight * splitText.length;
         } else if (trimmedLine.startsWith('|')) {
-          // Skip table formatting for PDF
-          continue;
+          // Table row
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(60, 60, 60);
+          const text = latinLine.replace(/\|/g, ' | ').trim();
+          const splitText = doc.splitTextToSize(text, maxWidth);
+          doc.text(splitText, marginLeft, yPosition);
+          yPosition += lineHeight * splitText.length;
         } else if (trimmedLine === '---') {
           doc.setDrawColor(200, 200, 200);
           doc.line(marginLeft, yPosition, 195, yPosition);
@@ -489,7 +516,7 @@ export const DocumentationTab = () => {
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(40, 40, 40);
-          const cleanText = trimmedLine.replace(/\*\*/g, '').replace(/\*/g, '');
+          const cleanText = latinLine.replace(/\*\*/g, '').replace(/\*/g, '');
           const splitText = doc.splitTextToSize(cleanText, maxWidth);
           doc.text(splitText, marginLeft, yPosition);
           yPosition += lineHeight * splitText.length;
@@ -504,10 +531,10 @@ export const DocumentationTab = () => {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text(`Страница ${i} от ${pageCount}`, 105, 290, { align: 'center' });
+        doc.text('Stranitsa ' + i + ' ot ' + pageCount, 105, 290, { align: 'center' });
       }
 
-      doc.save(`документация-система-${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save('dokumentaciya-sistema-' + new Date().toISOString().split('T')[0] + '.pdf');
       
       toast({
         title: 'Успех',
@@ -555,11 +582,11 @@ export const DocumentationTab = () => {
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleDownload} disabled={downloading}>
                 <Download className="w-4 h-4 mr-2" />
-                {downloading ? 'Изтегляне...' : 'Markdown'}
+                {downloading ? 'Изтегляне...' : 'Свали MD'}
               </Button>
               <Button onClick={handleDownloadPdf} disabled={downloadingPdf} className="bg-rose-600 hover:bg-rose-700">
                 <FileDown className="w-4 h-4 mr-2" />
-                {downloadingPdf ? 'Генериране...' : 'PDF'}
+                {downloadingPdf ? 'Генериране...' : 'Свали PDF'}
               </Button>
             </div>
           </div>
