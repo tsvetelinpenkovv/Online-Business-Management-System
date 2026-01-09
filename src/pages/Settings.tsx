@@ -539,37 +539,37 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-xl font-semibold">Настройки</h1>
+            <h1 className="text-lg sm:text-xl font-semibold truncate">Настройки</h1>
           </div>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving} size="sm" className="shrink-0">
             {saving ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Запазване...
+                <Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
+                <span className="hidden sm:inline">Запазване...</span>
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
-                Запази
+                <Save className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Запази</span>
               </>
             )}
           </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl space-y-4 sm:space-y-6">
         <Tabs defaultValue={initialTab} className="w-full">
-          <div className="relative mb-6">
-            {/* Left scroll button - mobile only */}
+          <div className="relative mb-4 sm:mb-6">
+            {/* Left scroll button - mobile and tablet */}
             {canScrollLeft && (
               <button
                 onClick={() => scrollTabs('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md md:hidden"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md lg:hidden"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -577,26 +577,27 @@ const Settings = () => {
             
             <div 
               ref={tabsListRef}
-              className="overflow-x-auto scrollbar-hide mx-7 md:mx-0"
+              className="overflow-x-auto scrollbar-hide mx-7 lg:mx-0"
               onScroll={checkScrollButtons}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 gap-1">
-                <TabsTrigger value="api" className="whitespace-nowrap">API</TabsTrigger>
-                <TabsTrigger value="platforms" className="whitespace-nowrap">Платформи</TabsTrigger>
-                <TabsTrigger value="sources" className="whitespace-nowrap">Източници</TabsTrigger>
-                <TabsTrigger value="branding" className="whitespace-nowrap">Лого</TabsTrigger>
-                <TabsTrigger value="couriers" className="whitespace-nowrap">Куриери</TabsTrigger>
-                <TabsTrigger value="statuses" className="whitespace-nowrap">Статуси</TabsTrigger>
-                <TabsTrigger value="company" className="whitespace-nowrap">Фирма</TabsTrigger>
-                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap">Потребители</TabsTrigger>}
+              <TabsList className="inline-flex w-max lg:w-full lg:grid lg:grid-cols-8 gap-1 p-1">
+                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">API</TabsTrigger>
+                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Платформи</TabsTrigger>
+                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Източници</TabsTrigger>
+                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Лого</TabsTrigger>
+                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Куриери</TabsTrigger>
+                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Статуси</TabsTrigger>
+                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Фирма</TabsTrigger>
+                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Потребители</TabsTrigger>}
               </TabsList>
             </div>
             
-            {/* Right scroll button - mobile only */}
+            {/* Right scroll button - mobile and tablet */}
             {canScrollRight && (
               <button
                 onClick={() => scrollTabs('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md md:hidden"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md lg:hidden"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
