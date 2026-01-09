@@ -207,11 +207,10 @@ export const PlatformApiSettings: FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {platforms.filter(p => p.name !== 'woocommerce').map((platform, index) => {
+          {platforms.map((platform, index) => {
             const config = configs[platform.name] || { store_url: '', api_key: '', api_secret: '' };
             const labels = platformApiLabels[platform.name] || { apiKey: 'API Key', apiSecret: 'API Secret', description: '' };
             const webhookUrl = getWebhookUrl(platform.name);
-            const filteredPlatforms = platforms.filter(p => p.name !== 'woocommerce');
 
             return (
               <div key={platform.id}>
