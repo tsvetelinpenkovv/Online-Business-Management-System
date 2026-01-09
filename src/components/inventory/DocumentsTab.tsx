@@ -272,6 +272,7 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
                 <TableHeader>
                   <TableRow>
                     <SortableHeader columnKey="document_number" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      <FileText className="w-4 h-4 text-muted-foreground" />
                       Документ №
                     </SortableHeader>
                     <SortableHeader columnKey="document_type" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>

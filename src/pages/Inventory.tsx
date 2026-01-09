@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
+import { supabase } from '@/integrations/supabase/client';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,6 +34,21 @@ export default function Inventory() {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const [inventoryPageTitle, setInventoryPageTitle] = useState<string>('Склад');
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from('company_settings')
+        .select('inventory_page_title')
+        .limit(1)
+        .maybeSingle();
+      if (data?.inventory_page_title) {
+        setInventoryPageTitle(data.inventory_page_title);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const checkScrollPosition = () => {
     const container = tabsContainerRef.current;
@@ -104,7 +120,7 @@ export default function Inventory() {
               </Button>
               <div className="flex items-center gap-2 min-w-0">
                 <Warehouse className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-                <h1 className="text-lg sm:text-xl font-bold truncate">Склад</h1>
+                <h1 className="text-lg sm:text-xl font-bold truncate">{inventoryPageTitle}</h1>
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">

@@ -60,6 +60,8 @@ const Index = () => {
     phone: string | null;
     email: string | null;
     manager_name: string | null;
+    orders_page_title: string | null;
+    inventory_page_title: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -88,6 +90,8 @@ const Index = () => {
             phone: data.phone,
             email: data.email,
             manager_name: data.manager_name,
+            orders_page_title: data.orders_page_title,
+            inventory_page_title: data.inventory_page_title,
           });
         }
       } catch (error) {
@@ -276,7 +280,7 @@ const Index = () => {
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-base sm:text-xl font-semibold truncate">Управление на поръчки</h1>
+              <h1 className="text-base sm:text-xl font-semibold truncate">{companySettings?.orders_page_title || 'Управление на поръчки'}</h1>
               <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                 <span>{filteredOrders.length} поръчки</span>
                 {websiteUrl && (
