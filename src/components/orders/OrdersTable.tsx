@@ -79,15 +79,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
       const { data, error } = await supabase.functions.invoke('connectix-send', {
         body: {
           action: 'send',
-          order: {
-            id: order.id,
-            code: order.code,
-            customer_name: order.customer_name,
-            phone: order.phone,
-            product_name: order.product_name,
-            total_price: order.total_price,
-            courier_tracking_url: order.courier_tracking_url,
-          }
+          order_id: order.id,
+          phone: order.phone,
+          customer_name: order.customer_name,
+          product_name: order.product_name,
+          total_price: order.total_price,
+          tracking_number: order.courier_tracking_url,
         }
       });
 
