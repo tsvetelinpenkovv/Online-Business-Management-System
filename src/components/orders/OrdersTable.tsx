@@ -250,7 +250,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   className={isSomeSelected ? 'opacity-50' : ''}
                 />
               </TableHead>
-              <TableHead className="w-[50px]">
+              <TableHead className="w-[80px]">
                 ID
               </TableHead>
               <TableHead className="w-[50px] text-center" title="Източник">
