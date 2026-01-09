@@ -135,9 +135,9 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
       className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'text-right' : ''}`}
       onClick={() => handleSort(columnKey)}
     >
-      <div className={`flex items-center gap-1 ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'justify-end' : ''}`}>
+      <div className={`flex items-center gap-1.5 ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'justify-end' : ''}`}>
         {children}
-        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+        <ArrowUpDown className={`w-4 h-4 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
       </div>
     </TableHead>
   );
