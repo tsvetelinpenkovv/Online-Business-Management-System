@@ -48,6 +48,8 @@ interface CompanySettings {
   footer_link_text: string | null;
   footer_link: string | null;
   footer_website: string | null;
+  login_title: string | null;
+  login_description: string | null;
 }
 
 const Settings = () => {
@@ -755,6 +757,34 @@ const Settings = () => {
                             placeholder="Склад"
                             value={companySettings.inventory_page_title || ''}
                             onChange={(e) => setCompanySettings({...companySettings, inventory_page_title: e.target.value})}
+                            className="bg-background"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Настройки на Login страницата</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="login-title">Заглавие</Label>
+                          <Input
+                            id="login-title"
+                            placeholder="Управление на поръчки и складови наличности"
+                            value={companySettings.login_title || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, login_title: e.target.value})}
+                            className="bg-background"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-description">Описание</Label>
+                          <Input
+                            id="login-description"
+                            placeholder="Влезте в системата за управление на поръчки и склад"
+                            value={companySettings.login_description || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, login_description: e.target.value})}
                             className="bg-background"
                           />
                         </div>
