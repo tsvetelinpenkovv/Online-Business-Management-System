@@ -581,15 +581,15 @@ const Settings = () => {
               onScroll={checkScrollButtons}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <TabsList className="inline-flex w-max lg:w-full lg:grid lg:grid-cols-8 gap-1 p-1">
-                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">API</TabsTrigger>
-                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Платформи</TabsTrigger>
-                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Източници</TabsTrigger>
-                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Лого</TabsTrigger>
-                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Куриери</TabsTrigger>
-                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Статуси</TabsTrigger>
-                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Фирма</TabsTrigger>
-                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Потребители</TabsTrigger>}
+              <TabsList className={`inline-flex w-max lg:w-full lg:grid gap-1 p-1 ${isAdmin ? 'lg:grid-cols-8' : 'lg:grid-cols-7'}`}>
+                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-1">API</TabsTrigger>
+                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-2">Платформи</TabsTrigger>
+                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-3">Източници</TabsTrigger>
+                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-4">Лого</TabsTrigger>
+                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-5">Куриери</TabsTrigger>
+                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-6">Статуси</TabsTrigger>
+                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-7">Фирма</TabsTrigger>
+                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8">Потребители</TabsTrigger>}
               </TabsList>
             </div>
             

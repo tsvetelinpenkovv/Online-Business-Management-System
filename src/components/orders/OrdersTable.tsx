@@ -409,19 +409,17 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Телефон
                 </div>
               </SortableHead>
-              <SortableHead columnKey="total_price" className="w-[80px]">
+              <SortableHead columnKey="total_price" className="w-[80px]" align="center">
                 <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 Цена
               </SortableHead>
-              <SortableHead columnKey="product_name" className="w-[140px]">
+              <SortableHead columnKey="product_name" className="w-[140px]" align="center">
                 <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 Продукт
               </SortableHead>
-              <SortableHead columnKey="catalog_number" className="w-[100px]">
-                <div className="flex items-center gap-1.5">
-                  <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Кат.№
-                </div>
+              <SortableHead columnKey="catalog_number" className="w-[100px]" align="center">
+                <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Кат.№
               </SortableHead>
               <TableHead className="w-[50px] text-center" title="Количество">
                 <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
@@ -521,9 +519,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     </button>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
+                <TableCell className="text-sm font-medium text-success whitespace-nowrap text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-1">
                     <span className="text-sm line-clamp-2 max-w-[120px]" title={order.product_name}>
                       {order.product_name}
                     </span>
@@ -562,9 +560,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap text-center">
                   {order.catalog_number ? (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-center gap-1">
                       <span>{order.catalog_number}</span>
                       <button
                         onClick={() => handleCopyCatalog(order.catalog_number!)}
@@ -663,7 +661,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <span className="text-muted-foreground text-sm">-</span>
                   )}
                 </TableCell>
-                <TableCell title="Действия с поръчката">
+                <TableCell>
                   <div className="flex flex-col items-center gap-0.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
