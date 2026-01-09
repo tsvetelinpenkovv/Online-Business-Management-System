@@ -8,10 +8,33 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, TestTube, MessageCircle, Smartphone, Check, Info, ExternalLink } from 'lucide-react';
+import { 
+  Loader2, Save, TestTube, MessageCircle, Smartphone, Check, Info, ExternalLink,
+  Clock, PhoneOff, CheckCircle2, CreditCard, Building2, Truck, PackageX, Package, 
+  CircleCheck, Undo2, XCircle, Ban
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useOrderStatuses } from '@/hooks/useOrderStatuses';
+
+const AVAILABLE_ICONS: Record<string, any> = {
+  Clock, Loader2, PhoneOff, CheckCircle2, CreditCard, Building2,
+  Truck, PackageX, Package, CircleCheck, Undo2, XCircle, Ban
+};
+
+const AVAILABLE_COLORS: Record<string, { bgClass: string; textClass: string }> = {
+  primary: { bgClass: 'bg-primary/10', textClass: 'text-primary' },
+  info: { bgClass: 'bg-info/10', textClass: 'text-info' },
+  success: { bgClass: 'bg-success/10', textClass: 'text-success' },
+  warning: { bgClass: 'bg-warning/10', textClass: 'text-warning' },
+  destructive: { bgClass: 'bg-destructive/10', textClass: 'text-destructive' },
+  purple: { bgClass: 'bg-purple/10', textClass: 'text-purple' },
+  teal: { bgClass: 'bg-teal/10', textClass: 'text-teal' },
+  muted: { bgClass: 'bg-muted', textClass: 'text-muted-foreground' },
+};
+
+const getIconComponent = (iconName: string) => AVAILABLE_ICONS[iconName] || Clock;
+const getColorClasses = (colorName: string) => AVAILABLE_COLORS[colorName] || AVAILABLE_COLORS.primary;
 
 interface ConnectixConfig {
   api_token: string;
@@ -256,11 +279,18 @@ export const ConnectixSettings: FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">— Без автоматично изпращане —</SelectItem>
-                {statuses.map((status) => (
-                  <SelectItem key={status.id} value={status.name}>
-                    {status.name}
-                  </SelectItem>
-                ))}
+                {statuses.map((status) => {
+                  const colorClasses = getColorClasses(status.color);
+                  const Icon = getIconComponent(status.icon);
+                  return (
+                    <SelectItem key={status.id} value={status.name}>
+                      <span className={`inline-flex items-center gap-1.5 ${colorClasses.textClass}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                        {status.name}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
