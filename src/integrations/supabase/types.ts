@@ -75,6 +75,8 @@ export type Database = {
           created_at: string
           eik: string | null
           email: string | null
+          footer_text: string | null
+          footer_website: string | null
           id: string
           inventory_page_title: string | null
           manager_name: string | null
@@ -96,6 +98,8 @@ export type Database = {
           created_at?: string
           eik?: string | null
           email?: string | null
+          footer_text?: string | null
+          footer_website?: string | null
           id?: string
           inventory_page_title?: string | null
           manager_name?: string | null
@@ -117,6 +121,8 @@ export type Database = {
           created_at?: string
           eik?: string | null
           email?: string | null
+          footer_text?: string | null
+          footer_website?: string | null
           id?: string
           inventory_page_title?: string | null
           manager_name?: string | null
