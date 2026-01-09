@@ -85,7 +85,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               onCheckedChange={onSelect}
               aria-label={`Избери поръчка ${order.id}`}
             />
-            <span className="font-semibold text-lg">#{order.id}</span>
+            <span className="font-semibold text-lg">№{order.id}</span>
             <SourceIcon source={order.source} className="w-5 h-5" />
             <CorrectStatusIcon isCorrect={order.is_correct} />
           </div>

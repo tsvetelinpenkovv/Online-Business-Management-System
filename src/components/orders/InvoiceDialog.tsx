@@ -220,7 +220,7 @@ export const InvoiceDialog: FC<InvoiceDialogProps> = ({ order, open, onOpenChang
         <DialogHeader>
           <DialogTitle>Издаване на фактура</DialogTitle>
           <DialogDescription>
-            Поръчка #{order.id} - {order.customer_name}
+            Поръчка №{order.id} - {order.customer_name}
           </DialogDescription>
         </DialogHeader>
 

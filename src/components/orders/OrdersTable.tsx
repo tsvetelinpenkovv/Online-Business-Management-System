@@ -120,7 +120,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
       printWindow.document.write(`
         <html>
           <head>
-            <title>Поръчка #${order.id}</title>
+            <title>Поръчка №${order.id}</title>
             <style>
               body { font-family: Arial, sans-serif; padding: 20px; }
               h1 { color: #333; }
@@ -129,7 +129,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             </style>
           </head>
           <body>
-            <h1>Поръчка #${order.id} - ${order.code}</h1>
+            <h1>Поръчка №${order.id} - ${order.code}</h1>
             <div class="info"><span class="label">Клиент:</span> ${order.customer_name}</div>
             <div class="info"><span class="label">Телефон:</span> ${order.phone}</div>
             <div class="info"><span class="label">Продукт:</span> ${order.product_name}</div>
@@ -337,7 +337,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     aria-label={`Избери поръчка ${order.id}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium" title={`Поръчка номер ${order.id}`}>{order.id}</TableCell>
+                <TableCell className="font-medium" title={`Поръчка номер ${order.id}`}>№{order.id}</TableCell>
                 <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
                   <SourceIcon source={order.source} className="w-5 h-5" />
                 </TableCell>
