@@ -245,7 +245,7 @@ export default function Inventory() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="forecast" 
-                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/50 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
                 >
                   <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Прогнози</span>

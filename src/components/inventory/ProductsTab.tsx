@@ -281,13 +281,14 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span 
-                          className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                        <button 
+                          className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors flex items-center gap-1"
                           onClick={() => copyToClipboard(product.sku, 'Код')}
                           title="Натисни за копиране"
                         >
                           {product.sku}
-                        </span>
+                          <Copy className="w-3 h-3" />
+                        </button>
                         {getStockStatus(product)}
                       </div>
                       <TooltipProvider>
@@ -301,14 +302,15 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </Tooltip>
                       </TooltipProvider>
                       {product.barcode && (
-                        <p 
+                        <button 
                           className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
                           onClick={() => copyToClipboard(product.barcode!, 'Баркод')}
                           title="Натисни за копиране"
                         >
                           <Barcode className="w-3 h-3" />
                           {product.barcode}
-                        </p>
+                          <Copy className="w-3 h-3" />
+                        </button>
                       )}
                       {product.category?.name && (
                         <p className="text-xs text-muted-foreground mt-1">{product.category.name}</p>
@@ -399,12 +401,15 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                   ) : (
                     filteredAndSortedProducts.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell 
-                          className="font-mono text-sm cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => copyToClipboard(product.sku, 'Код')}
-                          title="Натисни за копиране"
-                        >
-                          {product.sku}
+                        <TableCell>
+                          <button 
+                            className="font-mono text-sm flex items-center gap-1 hover:text-primary transition-colors"
+                            onClick={() => copyToClipboard(product.sku, 'Код')}
+                            title="Натисни за копиране"
+                          >
+                            {product.sku}
+                            <Copy className="w-3 h-3 text-muted-foreground" />
+                          </button>
                         </TableCell>
                         <TableCell>
                           <div>
@@ -419,14 +424,15 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                               </Tooltip>
                             </TooltipProvider>
                             {product.barcode && (
-                              <p 
+                              <button 
                                 className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
                                 onClick={() => copyToClipboard(product.barcode!, 'Баркод')}
                                 title="Натисни за копиране"
                               >
                                 <Barcode className="w-3 h-3" />
                                 {product.barcode}
-                              </p>
+                                <Copy className="w-3 h-3" />
+                              </button>
                             )}
                           </div>
                         </TableCell>
