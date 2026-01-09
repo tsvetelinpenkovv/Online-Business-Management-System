@@ -81,6 +81,8 @@ export type Database = {
           footer_website: string | null
           id: string
           inventory_page_title: string | null
+          login_description: string | null
+          login_title: string | null
           manager_name: string | null
           next_invoice_number: number | null
           orders_page_title: string | null
@@ -106,6 +108,8 @@ export type Database = {
           footer_website?: string | null
           id?: string
           inventory_page_title?: string | null
+          login_description?: string | null
+          login_title?: string | null
           manager_name?: string | null
           next_invoice_number?: number | null
           orders_page_title?: string | null
@@ -131,6 +135,8 @@ export type Database = {
           footer_website?: string | null
           id?: string
           inventory_page_title?: string | null
+          login_description?: string | null
+          login_title?: string | null
           manager_name?: string | null
           next_invoice_number?: number | null
           orders_page_title?: string | null

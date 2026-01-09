@@ -10,6 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface CompanySettings {
+  login_title?: string;
+  login_description?: string;
+  footer_text?: string;
+  footer_link?: string;
+  footer_link_text?: string;
+}
+
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,10 +25,25 @@ const Auth = () => {
   const [isResetting, setIsResetting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
   const { signIn, signOut, user } = useAuth();
   const { logoUrl, loading: logoLoading } = useCompanyLogo();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchCompanySettings = async () => {
+      const { data } = await supabase
+        .from('company_settings')
+        .select('login_title, login_description, footer_text, footer_link, footer_link_text')
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setCompanySettings(data);
+      }
+    };
+    fetchCompanySettings();
+  }, []);
 
   useEffect(() => {
     const checkUserAccess = async () => {
@@ -156,8 +179,8 @@ const Auth = () => {
               </div>
             )}
           </div>
-          <CardTitle className="text-2xl">Управление на поръчки и складови наличности</CardTitle>
-          <CardDescription>Влезте в системата за управление на поръчки и склад</CardDescription>
+          <CardTitle className="text-2xl">{companySettings?.login_title || 'Управление на поръчки и складови наличности'}</CardTitle>
+          <CardDescription>{companySettings?.login_description || 'Влезте в системата за управление на поръчки и склад'}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
@@ -279,15 +302,21 @@ const Auth = () => {
       </Card>
       
       <div className="mt-6 text-center text-xs text-muted-foreground">
-        Разработен от{' '}
-        <a 
-          href="https://www.linkedin.com/in/tsvetelinpenkov/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-primary hover:underline"
-        >
-          Цветелин Пенков
-        </a>
+        <span>
+          {companySettings?.footer_text || 'Разработен от'}{' '}
+          {companySettings?.footer_link && companySettings?.footer_link_text ? (
+            <a 
+              href={companySettings.footer_link} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              {companySettings.footer_link_text}
+            </a>
+          ) : (
+            <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
+          )}
+        </span>
       </div>
     </div>
   );
