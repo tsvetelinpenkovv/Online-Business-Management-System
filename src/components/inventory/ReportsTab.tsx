@@ -395,12 +395,11 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
           )}
         </TabsContent>
 
-        {/* Movements Report */}
         <TabsContent value="movements" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
-            <div className="flex gap-4 items-end">
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>От дата</Label>
+                <Label className="text-sm">От дата</Label>
                 <Input
                   type="date"
                   value={dateFrom}
@@ -408,7 +407,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                 />
               </div>
               <div className="space-y-1">
-                <Label>До дата</Label>
+                <Label className="text-sm">До дата</Label>
                 <Input
                   type="date"
                   value={dateTo}
@@ -416,7 +415,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                 />
               </div>
             </div>
-            <Button variant="outline" onClick={() => exportToCSV('movements')}>
+            <Button variant="outline" onClick={() => exportToCSV('movements')} className="w-full sm:w-auto sm:self-end">
               <Download className="w-4 h-4 mr-2" />
               Експорт CSV
             </Button>
