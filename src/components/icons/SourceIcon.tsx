@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Phone } from 'lucide-react';
 import woocommerceLogo from '@/assets/woocommerce-logo.png';
+import { PrestaShopLogo, OpenCartLogo, MagentoLogo, ShopifyLogo } from './PlatformLogos';
 
 interface SourceIconProps {
   source: string | null;
@@ -28,6 +29,14 @@ export const SourceIcon: FC<SourceIconProps> = ({ source, className = "w-5 h-5" 
       return (
         <img src={woocommerceLogo} alt="WooCommerce" className={className} />
       );
+    case 'prestashop':
+      return <PrestaShopLogo className={className} />;
+    case 'opencart':
+      return <OpenCartLogo className={className} />;
+    case 'magento':
+      return <MagentoLogo className={className} />;
+    case 'shopify':
+      return <ShopifyLogo className={className} />;
     case 'phone':
       return (
         <Phone className={`${className} text-green-600`} />

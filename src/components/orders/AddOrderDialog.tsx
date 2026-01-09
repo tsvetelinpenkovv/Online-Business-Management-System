@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react';
-import { Order, ORDER_STATUSES, OrderStatus } from '@/types/order';
+import { Order, ORDER_STATUSES, OrderStatus, OrderSource } from '@/types/order';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusBadge } from './StatusBadge';
+import { SourceIcon } from '@/components/icons/SourceIcon';
 import { supabase } from '@/integrations/supabase/client';
+import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
 
 interface AddOrderDialogProps {
   open: boolean;
@@ -28,6 +30,7 @@ interface AddOrderDialogProps {
 }
 
 export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, onCreateOrder }) => {
+  const { platforms } = useEcommercePlatforms();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -40,6 +43,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     delivery_address: '',
     comment: '',
     status: 'Нова' as OrderStatus,
+    source: 'phone' as OrderSource,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(0);
@@ -85,7 +89,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         delivery_address: formData.delivery_address || null,
         comment: formData.comment || null,
         status: formData.status,
-        source: 'phone',
+        source: formData.source,
         is_correct: true,
         courier_tracking_url: null,
         courier_id: null,
@@ -104,6 +108,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           delivery_address: '',
           comment: '',
           status: 'Нова',
+          source: 'phone',
         });
         onOpenChange(false);
       }
@@ -132,6 +137,45 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                 {ORDER_STATUSES.map((status) => (
                   <SelectItem key={status} value={status}>
                     <StatusBadge status={status} />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Източник</Label>
+            <Select
+              value={formData.source || 'phone'}
+              onValueChange={(value) => setFormData({ ...formData, source: value as OrderSource })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="phone">
+                  <div className="flex items-center gap-2">
+                    <SourceIcon source="phone" className="w-4 h-4" />
+                    <span>Телефон</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="google">
+                  <div className="flex items-center gap-2">
+                    <SourceIcon source="google" className="w-4 h-4" />
+                    <span>Google</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="facebook">
+                  <div className="flex items-center gap-2">
+                    <SourceIcon source="facebook" className="w-4 h-4" />
+                    <span>Facebook</span>
+                  </div>
+                </SelectItem>
+                {platforms.filter(p => p.is_enabled).map((platform) => (
+                  <SelectItem key={platform.name} value={platform.name}>
+                    <div className="flex items-center gap-2">
+                      <SourceIcon source={platform.name} className="w-4 h-4" />
+                      <span>{platform.display_name}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

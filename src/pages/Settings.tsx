@@ -12,9 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store } from 'lucide-react';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
+import { SourceSettings } from '@/components/settings/SourceSettings';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -513,14 +514,19 @@ const Settings = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         <Tabs defaultValue="api" className="w-full">
-          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-6' : 'grid-cols-5'}`}>
+          <TabsList className={`grid w-full mb-6 ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'}`}>
             <TabsTrigger value="api">API</TabsTrigger>
             <TabsTrigger value="branding">Лого</TabsTrigger>
             <TabsTrigger value="couriers">Куриери</TabsTrigger>
             <TabsTrigger value="statuses">Статуси</TabsTrigger>
+            <TabsTrigger value="sources">Източници</TabsTrigger>
             <TabsTrigger value="company">Фирма</TabsTrigger>
             {isAdmin && <TabsTrigger value="users">Потребители</TabsTrigger>}
           </TabsList>
+
+          <TabsContent value="sources" className="space-y-6">
+            <SourceSettings />
+          </TabsContent>
 
           <TabsContent value="statuses" className="space-y-6">
             <StatusSettings />
