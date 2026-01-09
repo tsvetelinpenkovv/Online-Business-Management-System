@@ -251,10 +251,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 />
               </TableHead>
               <TableHead className="w-[50px]">
-                <div className="flex items-center gap-1.5">
-                  <Hash className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  ID
-                </div>
+                ID
               </TableHead>
               <TableHead className="w-[50px] text-center" title="Източник">
                 <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
