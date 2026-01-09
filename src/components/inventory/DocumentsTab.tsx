@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { StockDocument, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
@@ -29,12 +29,15 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
   Plus, Search, FileText, Trash2, ArrowDownToLine, ArrowUpFromLine, RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+type DocumentSortKey = 'document_number' | 'document_type' | 'document_date' | 'counterparty' | 'total_amount' | 'notes';
 
 interface DocumentsTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -57,12 +60,50 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
     notes: '',
   });
   const [items, setItems] = useState<DocumentItem[]>([{ productId: '', quantity: 1, unitPrice: 0 }]);
+  const [sortKey, setSortKey] = useState<DocumentSortKey>('document_date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  const filteredDocuments = inventory.documents.filter(d => 
-    d.document_number.toLowerCase().includes(search.toLowerCase()) ||
-    d.counterparty_name?.toLowerCase().includes(search.toLowerCase()) ||
-    d.supplier?.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleSort = (key: DocumentSortKey) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const filteredAndSortedDocuments = useMemo(() => {
+    const filtered = inventory.documents.filter(d => 
+      d.document_number.toLowerCase().includes(search.toLowerCase()) ||
+      d.counterparty_name?.toLowerCase().includes(search.toLowerCase()) ||
+      d.supplier?.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'document_number':
+          comparison = a.document_number.localeCompare(b.document_number);
+          break;
+        case 'document_type':
+          comparison = a.document_type.localeCompare(b.document_type);
+          break;
+        case 'document_date':
+          comparison = new Date(a.document_date).getTime() - new Date(b.document_date).getTime();
+          break;
+        case 'counterparty':
+          comparison = (a.supplier?.name || a.counterparty_name || '').localeCompare(b.supplier?.name || b.counterparty_name || '');
+          break;
+        case 'total_amount':
+          comparison = a.total_amount - b.total_amount;
+          break;
+        case 'notes':
+          comparison = (a.notes || '').localeCompare(b.notes || '');
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.documents, search, sortKey, sortDirection]);
 
   const openCreateDialog = (type: DocumentType) => {
     setFormData({
@@ -182,7 +223,7 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
       {/* Documents - Mobile Cards */}
       {isMobile ? (
         <div className="space-y-3">
-          {filteredDocuments.length === 0 ? (
+          {filteredAndSortedDocuments.length === 0 ? (
             <Card className="py-8">
               <CardContent className="text-center text-muted-foreground">
                 <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -190,7 +231,7 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
               </CardContent>
             </Card>
           ) : (
-            filteredDocuments.map((doc) => (
+            filteredAndSortedDocuments.map((doc) => (
               <Card key={doc.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3 mb-3">
@@ -230,16 +271,28 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Документ №</TableHead>
-                    <TableHead>Тип</TableHead>
-                    <TableHead>Дата</TableHead>
-                    <TableHead>Контрагент</TableHead>
-                    <TableHead className="text-right">Сума</TableHead>
-                    <TableHead>Бележки</TableHead>
+                    <SortableHeader columnKey="document_number" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Документ №
+                    </SortableHeader>
+                    <SortableHeader columnKey="document_type" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Тип
+                    </SortableHeader>
+                    <SortableHeader columnKey="document_date" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Дата
+                    </SortableHeader>
+                    <SortableHeader columnKey="counterparty" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Контрагент
+                    </SortableHeader>
+                    <SortableHeader columnKey="total_amount" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                      Сума
+                    </SortableHeader>
+                    <SortableHeader columnKey="notes" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Бележки
+                    </SortableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredDocuments.length === 0 ? (
+                  {filteredAndSortedDocuments.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -247,7 +300,7 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredDocuments.map((doc) => (
+                    filteredAndSortedDocuments.map((doc) => (
                       <TableRow key={doc.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">

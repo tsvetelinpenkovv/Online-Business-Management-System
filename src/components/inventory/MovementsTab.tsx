@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { MOVEMENT_TYPE_LABELS, MovementType } from '@/types/inventory';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
   Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check
 } from 'lucide-react';
@@ -26,6 +27,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+type MovementSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'stock_before' | 'stock_after' | 'unit_price' | 'total_price' | 'reason';
 
 interface MovementsTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -36,6 +39,17 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<MovementSortKey>('created_at');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (key: MovementSortKey) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -44,16 +58,52 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
     toast.success('Код копиран!');
   };
 
-  const filteredMovements = inventory.movements.filter(m => {
-    const matchesSearch = 
-      m.product?.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.product?.sku.toLowerCase().includes(search.toLowerCase()) ||
-      m.reason?.toLowerCase().includes(search.toLowerCase());
-    
-    const matchesType = typeFilter === 'all' || m.movement_type === typeFilter;
-    
-    return matchesSearch && matchesType;
-  });
+  const filteredAndSortedMovements = useMemo(() => {
+    const filtered = inventory.movements.filter(m => {
+      const matchesSearch = 
+        m.product?.name.toLowerCase().includes(search.toLowerCase()) ||
+        m.product?.sku.toLowerCase().includes(search.toLowerCase()) ||
+        m.reason?.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesType = typeFilter === 'all' || m.movement_type === typeFilter;
+      
+      return matchesSearch && matchesType;
+    });
+
+    return [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'movement_type':
+          comparison = a.movement_type.localeCompare(b.movement_type);
+          break;
+        case 'product':
+          comparison = (a.product?.name || '').localeCompare(b.product?.name || '');
+          break;
+        case 'quantity':
+          comparison = a.quantity - b.quantity;
+          break;
+        case 'stock_before':
+          comparison = a.stock_before - b.stock_before;
+          break;
+        case 'stock_after':
+          comparison = a.stock_after - b.stock_after;
+          break;
+        case 'unit_price':
+          comparison = a.unit_price - b.unit_price;
+          break;
+        case 'total_price':
+          comparison = a.total_price - b.total_price;
+          break;
+        case 'reason':
+          comparison = (a.reason || '').localeCompare(b.reason || '');
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.movements, search, typeFilter, sortKey, sortDirection]);
 
   const getMovementIcon = (type: MovementType) => {
     switch (type) {
@@ -135,7 +185,7 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
       {/* Movements - Mobile Cards */}
       {isMobile ? (
         <div className="space-y-3">
-          {filteredMovements.length === 0 ? (
+          {filteredAndSortedMovements.length === 0 ? (
             <Card className="py-8">
               <CardContent className="text-center text-muted-foreground">
                 <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -143,7 +193,7 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
               </CardContent>
             </Card>
           ) : (
-            filteredMovements.map((movement) => (
+            filteredAndSortedMovements.map((movement) => (
               <Card key={movement.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3 mb-3">
@@ -223,19 +273,37 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Дата/Час</TableHead>
-                    <TableHead>Тип</TableHead>
-                    <TableHead>Артикул</TableHead>
-                    <TableHead className="text-right">Количество</TableHead>
-                    <TableHead className="text-right">Преди</TableHead>
-                    <TableHead className="text-right">След</TableHead>
-                    <TableHead className="text-right">Ед. цена</TableHead>
-                    <TableHead className="text-right">Сума</TableHead>
-                    <TableHead>Причина</TableHead>
+                    <SortableHeader columnKey="created_at" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Дата/Час
+                    </SortableHeader>
+                    <SortableHeader columnKey="movement_type" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Тип
+                    </SortableHeader>
+                    <SortableHeader columnKey="product" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Артикул
+                    </SortableHeader>
+                    <SortableHeader columnKey="quantity" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                      Количество
+                    </SortableHeader>
+                    <SortableHeader columnKey="stock_before" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                      Преди
+                    </SortableHeader>
+                    <SortableHeader columnKey="stock_after" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                      След
+                    </SortableHeader>
+                    <SortableHeader columnKey="unit_price" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                      Ед. цена
+                    </SortableHeader>
+                    <SortableHeader columnKey="total_price" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                      Сума
+                    </SortableHeader>
+                    <SortableHeader columnKey="reason" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                      Причина
+                    </SortableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredMovements.length === 0 ? (
+                  {filteredAndSortedMovements.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                         <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -243,7 +311,7 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredMovements.map((movement) => (
+                    filteredAndSortedMovements.map((movement) => (
                       <TableRow key={movement.id}>
                         <TableCell className="text-sm">
                           <div className="flex flex-col">
