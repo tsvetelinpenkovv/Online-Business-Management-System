@@ -262,15 +262,15 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[180px] h-10">
-                <div className="flex items-center justify-center w-full">
+              <Button variant="outline" className="h-9 justify-between">
+                <div className="flex items-center">
                   <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="flex-1 text-center">{getStatusLabel()}</span>
-                  <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+                  <span className="truncate text-sm">{getStatusLabel()}</span>
                 </div>
+                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
@@ -287,12 +287,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[180px] h-10">
-                <div className="flex items-center justify-center w-full">
+              <Button variant="outline" className="h-9 justify-between">
+                <div className="flex items-center">
                   <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="flex-1 text-center">{getSourceLabel()}</span>
-                  <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+                  <span className="truncate text-sm">{getSourceLabel()}</span>
                 </div>
+                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
@@ -318,96 +318,94 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[160px] h-10 text-sm justify-between"
-                >
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {dateFrom && (
-                      <span
-                        role="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDateFromChange(undefined);
-                        }}
-                        className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
-                      >
-                        <X className="h-3 w-3" />
-                      </span>
-                    )}
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={dateFrom}
-                  onSelect={onDateFromChange}
-                  initialFocus
-                  locale={bg}
-                />
-              </PopoverContent>
-            </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-9 text-sm justify-between"
+              >
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {dateFrom && (
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDateFromChange(undefined);
+                      }}
+                      className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </span>
+                  )}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={dateFrom}
+                onSelect={onDateFromChange}
+                initialFocus
+                locale={bg}
+              />
+            </PopoverContent>
+          </Popover>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[160px] h-10 text-sm justify-between"
-                >
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {dateTo && (
-                      <span
-                        role="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDateToChange(undefined);
-                        }}
-                        className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
-                      >
-                        <X className="h-3 w-3" />
-                      </span>
-                    )}
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={dateTo}
-                  onSelect={onDateToChange}
-                  initialFocus
-                  locale={bg}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-9 text-sm justify-between"
+              >
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {dateTo && (
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDateToChange(undefined);
+                      }}
+                      className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </span>
+                  )}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={dateTo}
+                onSelect={onDateToChange}
+                initialFocus
+                locale={bg}
+              />
+            </PopoverContent>
+          </Popover>
 
           {/* Warehouse button for mobile */}
           <Button 
             variant="outline" 
             onClick={() => navigate('/inventory')}
-            className="w-full sm:w-auto bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
+            className="col-span-2 sm:col-span-1 sm:w-auto h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
           >
             <Warehouse className="w-4 h-4 mr-2" />
             Склад
           </Button>
 
           {hasFilters && (
-            <Button variant="ghost" onClick={onClearFilters} className="text-muted-foreground w-full sm:w-auto">
+            <Button variant="ghost" onClick={onClearFilters} className="col-span-2 sm:col-span-1 h-9 text-muted-foreground">
               <X className="w-4 h-4 mr-2" />
               Изчисти
             </Button>
