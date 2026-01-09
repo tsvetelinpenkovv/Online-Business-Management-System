@@ -232,9 +232,9 @@ export default function Inventory() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           {/* Scrollable tabs with fade indicators */}
           <div className="relative">
-            {/* Left fade & arrow */}
+            {/* Left fade & arrow (show on mobile and tablet) */}
             {showLeftArrow && (
-              <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center sm:hidden">
+              <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center lg:hidden">
                 <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none" />
                 <Button
                   variant="ghost"
@@ -247,9 +247,9 @@ export default function Inventory() {
               </div>
             )}
             
-            {/* Right fade & arrow */}
+            {/* Right fade & arrow (show on mobile and tablet) */}
             {showRightArrow && (
-              <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center sm:hidden">
+              <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center lg:hidden">
                 <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
                 <Button
                   variant="ghost"
@@ -264,11 +264,11 @@ export default function Inventory() {
 
             <div 
               ref={tabsContainerRef}
-              className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0" 
+              className="overflow-x-auto -mx-3 lg:mx-0 px-3 lg:px-0" 
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               onScroll={checkScrollPosition}
             >
-              <TabsList className="inline-flex w-max sm:w-auto sm:flex sm:flex-wrap h-auto gap-1 p-1.5 bg-muted dark:bg-muted/70 rounded-lg [&::-webkit-scrollbar]:hidden">
+              <TabsList className="inline-flex w-max lg:w-auto lg:flex lg:flex-wrap h-auto gap-1 p-1.5 bg-muted dark:bg-muted/70 rounded-lg [&::-webkit-scrollbar]:hidden">
                 <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
                   <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Табло</span>
