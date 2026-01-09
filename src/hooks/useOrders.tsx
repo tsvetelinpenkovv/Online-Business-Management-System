@@ -260,10 +260,52 @@ export const useOrders = () => {
     }
   };
 
+  const createOrder = async (orderData: Omit<Order, 'id' | 'created_at' | 'user_id'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .insert({
+          code: orderData.code,
+          customer_name: orderData.customer_name,
+          customer_email: orderData.customer_email,
+          phone: orderData.phone,
+          total_price: orderData.total_price,
+          product_name: orderData.product_name,
+          catalog_number: orderData.catalog_number,
+          quantity: orderData.quantity,
+          delivery_address: orderData.delivery_address,
+          courier_tracking_url: orderData.courier_tracking_url,
+          courier_id: orderData.courier_id,
+          status: orderData.status,
+          comment: orderData.comment,
+          source: orderData.source || 'phone',
+          is_correct: orderData.is_correct,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setOrders([data as Order, ...orders]);
+      toast({
+        title: 'Успех',
+        description: 'Поръчката беше създадена',
+      });
+      return data as Order;
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно създаване на поръчката',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
     loadShippedStatus();
   }, [loadShippedStatus]);
 
-  return { orders, loading, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch: fetchOrders };
+  return { orders, loading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch: fetchOrders };
 };
