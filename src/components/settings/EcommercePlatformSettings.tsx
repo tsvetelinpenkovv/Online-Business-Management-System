@@ -79,8 +79,16 @@ export const EcommercePlatformSettings: FC<EcommercePlatformSettingsProps> = ({
 
       if (data && !error && data.setting_value) {
         try {
-          const settings = JSON.parse(data.setting_value) as PlatformConfig;
-          setConfig(settings);
+          const settings = JSON.parse(data.setting_value);
+          // Map both old and new field names for compatibility
+          setConfig({
+            store_url: settings.store_url || '',
+            api_key: settings.api_key || settings.consumer_key || '',
+            api_secret: settings.api_secret || settings.consumer_secret || '',
+            is_enabled: settings.is_enabled ?? false,
+            auto_sync: settings.auto_sync ?? false,
+            last_sync: settings.last_sync || null,
+          });
         } catch {
           // Invalid JSON, use defaults
         }
