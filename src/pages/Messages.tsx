@@ -177,9 +177,12 @@ const Messages = () => {
     );
   }
 
-  // Mobile message card component
-  const MobileMessageCard = ({ msg }: { msg: ConnectixMessage }) => (
-    <Card className={`overflow-hidden ${msg.channel === 'viber' ? 'border-l-4 border-l-purple' : 'border-l-4 border-l-info'}`}>
+  // Render mobile message card
+  const renderMobileMessageCard = (msg: ConnectixMessage) => (
+    <Card 
+      key={msg.id} 
+      className={`overflow-hidden ${msg.channel === 'viber' ? 'border-l-4 border-l-purple' : 'border-l-4 border-l-info'}`}
+    >
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -210,9 +213,9 @@ const Messages = () => {
           <div className="flex items-center gap-1">
             {msg.template_name || msg.trigger_status || '—'}
             {msg.is_sandbox && (
-              <Badge variant="outline" className="text-[10px] text-warning border-warning px-1">
+              <span className="text-[10px] text-warning border border-warning rounded px-1">
                 Sandbox
-              </Badge>
+              </span>
             )}
           </div>
           <span>{format(new Date(msg.sent_at), 'dd.MM.yy HH:mm', { locale: bg })}</span>
@@ -381,9 +384,7 @@ const Messages = () => {
         ) : isMobile ? (
           // Mobile view - cards
           <div className="space-y-2">
-            {filteredMessages.map((msg) => (
-              <MobileMessageCard key={msg.id} msg={msg} />
-            ))}
+            {filteredMessages.map((msg) => renderMobileMessageCard(msg))}
           </div>
         ) : (
           // Desktop view - table
