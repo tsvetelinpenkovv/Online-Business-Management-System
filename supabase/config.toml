@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.sync-stock]
 verify_jwt = false
+
+[functions.sync-products]
+verify_jwt = false
+
+[functions.connectix-send]
+verify_jwt = false

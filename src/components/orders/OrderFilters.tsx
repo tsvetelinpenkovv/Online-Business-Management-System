@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES } from '@/types/order';
@@ -229,6 +229,15 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           Склад
         </Button>
 
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/settings?tab=api')}
+          className="bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
+        >
+          <MessageCircle className="w-4 h-4 mr-2" />
+          Съобщения
+        </Button>
+
         {hasFilters && (
           <Button variant="ghost" onClick={onClearFilters} className="text-muted-foreground">
             <X className="w-4 h-4 mr-2" />
@@ -398,10 +407,20 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           <Button 
             variant="outline" 
             onClick={() => navigate('/inventory')}
-            className="col-span-2 sm:col-span-1 sm:w-auto h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
+            className="col-span-1 sm:w-auto h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
           >
             <Warehouse className="w-4 h-4 mr-2" />
             Склад
+          </Button>
+
+          {/* Messages button for mobile */}
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/settings?tab=api')}
+            className="col-span-1 sm:w-auto h-9 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Съобщения
           </Button>
 
           {hasFilters && (
