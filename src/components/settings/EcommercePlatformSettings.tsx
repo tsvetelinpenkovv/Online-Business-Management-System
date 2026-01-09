@@ -225,17 +225,17 @@ export const EcommercePlatformSettings: FC<EcommercePlatformSettingsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {platformLogos[platformName] || null}
-            <div>
-              <CardTitle>{displayName} интеграция</CardTitle>
-              <CardDescription>
+            <div className="min-w-0">
+              <CardTitle className="text-lg truncate">{displayName} интеграция</CardTitle>
+              <CardDescription className="line-clamp-2">
                 {description || `Синхронизирайте наличностите със своя ${displayName} магазин`}
               </CardDescription>
             </div>
           </div>
-          <Badge variant={config.is_enabled ? 'default' : 'secondary'} className={config.is_enabled ? 'bg-success' : ''}>
+          <Badge variant={config.is_enabled ? 'default' : 'secondary'} className={`shrink-0 self-start sm:self-center ${config.is_enabled ? 'bg-success' : ''}`}>
             {config.is_enabled ? 'Активен' : 'Неактивен'}
           </Badge>
         </div>

@@ -84,38 +84,38 @@ export const SourceSettings: FC = () => {
           <h4 className="text-sm font-medium text-muted-foreground">Стандартни източници</h4>
           <p className="text-xs text-muted-foreground">Кликнете върху логото, за да го смените</p>
           <div className="grid gap-3">
-            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 gap-2">
+              <div className="flex items-center gap-3 min-w-0">
                 <EditableSourceLogo
                   sourceId="google"
                   sourceName="Google"
                   currentLogo={<GoogleLogo />}
                 />
-                <span className="font-medium">Google</span>
+                <span className="font-medium truncate">Google</span>
               </div>
-              <Badge variant="secondary">Винаги активен</Badge>
+              <Badge variant="secondary" className="whitespace-nowrap shrink-0 text-xs">Винаги активен</Badge>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 gap-2">
+              <div className="flex items-center gap-3 min-w-0">
                 <EditableSourceLogo
                   sourceId="facebook"
                   sourceName="Facebook"
                   currentLogo={<FacebookLogo />}
                 />
-                <span className="font-medium">Facebook</span>
+                <span className="font-medium truncate">Facebook</span>
               </div>
-              <Badge variant="secondary">Винаги активен</Badge>
+              <Badge variant="secondary" className="whitespace-nowrap shrink-0 text-xs">Винаги активен</Badge>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 gap-2">
+              <div className="flex items-center gap-3 min-w-0">
                 <EditableSourceLogo
                   sourceId="phone"
                   sourceName="Телефон"
                   currentLogo={<PhoneLogo />}
                 />
-                <span className="font-medium">Телефон</span>
+                <span className="font-medium truncate">Телефон</span>
               </div>
-              <Badge variant="secondary">Винаги активен</Badge>
+              <Badge variant="secondary" className="whitespace-nowrap shrink-0 text-xs">Винаги активен</Badge>
             </div>
           </div>
         </div>
@@ -127,20 +127,20 @@ export const SourceSettings: FC = () => {
             {platforms.map((platform) => (
               <div 
                 key={platform.id} 
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex items-center justify-between p-3 border rounded-lg gap-2"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <EditableSourceLogo
                     sourceId={platform.id}
                     sourceName={platform.display_name}
                     currentLogo={platformLogos[platform.name] || null}
                     logoUrl={platform.logo_url}
                   />
-                  <span className="font-medium">{platform.display_name}</span>
+                  <span className="font-medium truncate">{platform.display_name}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                   {platform.is_enabled && (
-                    <Badge className="bg-success">Активен</Badge>
+                    <Badge className="bg-success text-xs hidden sm:inline-flex">Активен</Badge>
                   )}
                   <Switch
                     checked={platform.is_enabled}
