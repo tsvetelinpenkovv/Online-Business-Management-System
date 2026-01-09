@@ -227,12 +227,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[180px] h-10 justify-between">
-                <div className="flex items-center min-w-0">
+              <Button variant="outline" className="w-full sm:w-[180px] h-10">
+                <div className="flex items-center justify-center w-full">
                   <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate leading-none">{getStatusLabel()}</span>
+                  <span className="flex-1 text-center">{getStatusLabel()}</span>
+                  <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
                 </div>
-                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
@@ -249,12 +249,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[180px] h-10 justify-between">
-                <div className="flex items-center min-w-0">
+              <Button variant="outline" className="w-full sm:w-[180px] h-10">
+                <div className="flex items-center justify-center w-full">
                   <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate leading-none">{getSourceLabel()}</span>
+                  <span className="flex-1 text-center">{getSourceLabel()}</span>
+                  <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
                 </div>
-                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
