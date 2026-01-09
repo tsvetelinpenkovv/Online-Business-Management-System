@@ -581,7 +581,7 @@ const Settings = () => {
               onScroll={checkScrollButtons}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <TabsList className={`inline-flex w-max lg:w-full lg:grid gap-1 p-1 ${isAdmin ? 'lg:grid-cols-8' : 'lg:grid-cols-7'}`}>
+              <TabsList className={`inline-flex w-max lg:w-full lg:grid gap-1 lg:gap-2 p-1 ${isAdmin ? 'lg:grid-cols-8' : 'lg:grid-cols-7'}`}>
                 <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-1">API</TabsTrigger>
                 <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-2">Платформи</TabsTrigger>
                 <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-3">Източници</TabsTrigger>
