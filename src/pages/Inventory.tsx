@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -18,6 +18,7 @@ import { CategoriesTab } from '@/components/inventory/CategoriesTab';
 import { DocumentsTab } from '@/components/inventory/DocumentsTab';
 import { MovementsTab } from '@/components/inventory/MovementsTab';
 import { ReportsTab } from '@/components/inventory/ReportsTab';
+import { ForecastTab } from '@/components/inventory/ForecastTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
 import { WooCommerceSettings } from '@/components/inventory/WooCommerceSettings';
@@ -242,6 +243,10 @@ export default function Inventory() {
                   <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Отчети</span>
                 </TabsTrigger>
+                <TabsTrigger value="forecast" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Прогнози</span>
+                </TabsTrigger>
                 <TabsTrigger value="woocommerce" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
                   <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>WooCommerce</span>
@@ -276,6 +281,10 @@ export default function Inventory() {
 
           <TabsContent value="reports" className="mt-4 sm:mt-6">
             <ReportsTab inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="forecast" className="mt-4 sm:mt-6">
+            <ForecastTab inventory={inventory} />
           </TabsContent>
 
           <TabsContent value="woocommerce" className="mt-4 sm:mt-6">
