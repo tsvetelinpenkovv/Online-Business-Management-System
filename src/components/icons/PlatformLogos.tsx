@@ -7,7 +7,7 @@ interface LogoProps {
   className?: string;
 }
 
-export const PrestaShopLogo: FC<LogoProps> = ({ className = "w-5 h-5" }) => (
+export const PrestaShopLogo: FC<LogoProps> = ({ className = "w-6 h-6" }) => (
   <img src={prestashopLogo} alt="PrestaShop" className={className} />
 );
 

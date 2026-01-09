@@ -12,6 +12,7 @@ import {
   MovementType
 } from '@/types/inventory';
 import { useToast } from '@/hooks/use-toast';
+import { useStockSync } from '@/hooks/useStockSync';
 
 export function useInventory() {
   const [products, setProducts] = useState<InventoryProduct[]>([]);
@@ -23,6 +24,7 @@ export function useInventory() {
   const [batches, setBatches] = useState<StockBatch[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { syncAfterMovement } = useStockSync();
 
   const fetchProducts = useCallback(async () => {
     const { data, error } = await supabase
@@ -299,7 +301,8 @@ export function useInventory() {
     unitPrice: number = 0,
     reason?: string,
     batchId?: string,
-    documentId?: string
+    documentId?: string,
+    skipSync: boolean = false
   ) => {
     // Get current stock
     const product = products.find(p => p.id === productId);
@@ -343,6 +346,12 @@ export function useInventory() {
 
     toast({ title: 'Успех', description: 'Движението е записано' });
     await Promise.all([fetchProducts(), fetchMovements()]);
+
+    // Auto-sync stock to e-commerce platforms
+    if (!skipSync && product.sku) {
+      syncAfterMovement(productId, stockAfter);
+    }
+
     return data;
   };
 

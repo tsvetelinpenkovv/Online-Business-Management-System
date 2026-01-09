@@ -170,11 +170,9 @@ export const PlatformApiSettings: FC = () => {
   };
 
   const getWebhookUrl = (platformName: string): string => {
-    if (platformName === 'woocommerce') {
-      return `${supabaseUrl}/functions/v1/woocommerce-webhook`;
-    }
-    if (platformName === 'prestashop') {
-      return `${supabaseUrl}/functions/v1/prestashop-webhook`;
+    const webhookPlatforms = ['woocommerce', 'prestashop', 'opencart', 'magento', 'shopify'];
+    if (webhookPlatforms.includes(platformName)) {
+      return `${supabaseUrl}/functions/v1/${platformName}-webhook`;
     }
     return '';
   };
