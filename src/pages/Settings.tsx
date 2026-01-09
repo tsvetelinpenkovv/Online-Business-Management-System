@@ -46,6 +46,7 @@ interface CompanySettings {
   inventory_page_title: string | null;
   footer_text: string | null;
   footer_website: string | null;
+  footer_link: string | null;
 }
 
 const Settings = () => {
@@ -169,6 +170,7 @@ const Settings = () => {
           inventory_page_title: companySettings.inventory_page_title,
           footer_text: companySettings.footer_text,
           footer_website: companySettings.footer_website,
+          footer_link: companySettings.footer_link,
         })
         .eq('id', companySettings.id);
 
@@ -773,6 +775,19 @@ const Settings = () => {
                           />
                           <p className="text-xs text-muted-foreground">
                             Основният текст който се показва във футера
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="footer-link">Линк към текста (по избор)</Label>
+                          <Input
+                            id="footer-link"
+                            placeholder="https://www.linkedin.com/in/..."
+                            value={companySettings.footer_link || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, footer_link: e.target.value})}
+                            className="bg-background"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Ако е попълнено, текстът във футера ще бъде линк. Оставете празно ако не искате линк.
                           </p>
                         </div>
                         <div className="space-y-2">
