@@ -337,7 +337,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     aria-label={`Избери поръчка ${order.id}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium" title={`Поръчка номер ${order.id}`}>#{order.id}</TableCell>
+                <TableCell className="font-medium" title={`Поръчка номер ${order.id}`}>{order.id}</TableCell>
                 <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
                   <SourceIcon source={order.source} className="w-5 h-5" />
                 </TableCell>

@@ -411,7 +411,7 @@ const Index = () => {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" title="Обнови" className={autoRefreshInterval > 0 ? 'border-primary' : ''}>
+                <Button variant="outline" size="icon" title="Обнови">
                   <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
                 </Button>
               </DropdownMenuTrigger>
@@ -471,7 +471,7 @@ const Index = () => {
           <div className="flex sm:hidden items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={`h-8 w-8 ${autoRefreshInterval > 0 ? 'border-primary' : ''}`} title="Обнови">
+                <Button variant="outline" size="icon" className="h-8 w-8" title="Обнови">
                   <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
                 </Button>
               </DropdownMenuTrigger>

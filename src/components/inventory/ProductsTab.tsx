@@ -41,7 +41,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Pencil, Trash2, Package, 
-  AlertTriangle, ArrowUpDown, MoreHorizontal
+  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -72,6 +72,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
     min_stock_level: 0,
     barcode: '',
     is_active: true,
+    current_stock: 0,
   });
 
   const filteredProducts = inventory.products.filter(p => 
@@ -93,6 +94,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
       min_stock_level: 0,
       barcode: '',
       is_active: true,
+      current_stock: 0,
     });
     setIsDialogOpen(true);
   };
@@ -110,6 +112,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
       min_stock_level: product.min_stock_level,
       barcode: product.barcode || '',
       is_active: product.is_active,
+      current_stock: product.current_stock,
     });
     setIsDialogOpen(true);
   };
@@ -117,17 +120,40 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
   const handleSubmit = async () => {
     if (editProduct) {
       await inventory.updateProduct(editProduct.id, {
-        ...formData,
+        sku: formData.sku,
+        name: formData.name,
+        description: formData.description || null,
         category_id: formData.category_id || null,
         unit_id: formData.unit_id || null,
+        purchase_price: formData.purchase_price,
+        sale_price: formData.sale_price,
+        min_stock_level: formData.min_stock_level,
+        barcode: formData.barcode || null,
+        is_active: formData.is_active,
+        current_stock: formData.current_stock,
       });
     } else {
-      await inventory.createProduct({
-        ...formData,
+      // For new products, create with current_stock included
+      const productData = {
+        sku: formData.sku,
+        name: formData.name,
+        description: formData.description || null,
         category_id: formData.category_id || null,
         unit_id: formData.unit_id || null,
+        purchase_price: formData.purchase_price,
+        sale_price: formData.sale_price,
+        min_stock_level: formData.min_stock_level,
+        barcode: formData.barcode || null,
+        is_active: formData.is_active,
         woocommerce_id: null,
-      });
+      };
+      
+      const result = await inventory.createProduct(productData);
+      
+      // If created successfully and we have initial stock, update it
+      if (result && formData.current_stock > 0) {
+        await inventory.updateProduct(result.id, { current_stock: formData.current_stock });
+      }
     }
     setIsDialogOpen(false);
   };
@@ -197,7 +223,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                       </div>
                       <p className="font-medium truncate">{product.name}</p>
                       {product.barcode && (
-                        <p className="text-xs text-muted-foreground">{product.barcode}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Barcode className="w-3 h-3" />
+                          {product.barcode}
+                        </p>
                       )}
                       {product.category?.name && (
                         <p className="text-xs text-muted-foreground mt-1">{product.category.name}</p>
@@ -284,7 +313,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                           <div>
                             <p className="font-medium">{product.name}</p>
                             {product.barcode && (
-                              <p className="text-xs text-muted-foreground">{product.barcode}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Barcode className="w-3 h-3" />
+                                {product.barcode}
+                              </p>
                             )}
                           </div>
                         </TableCell>
@@ -431,6 +463,17 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                 min="0"
                 value={formData.sale_price}
                 onChange={(e) => setFormData({ ...formData, sale_price: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="current_stock">Количество (бр.)</Label>
+              <Input
+                id="current_stock"
+                type="number"
+                step="1"
+                min="0"
+                value={formData.current_stock}
+                onChange={(e) => setFormData({ ...formData, current_stock: parseInt(e.target.value) || 0 })}
               />
             </div>
             <div className="space-y-2">

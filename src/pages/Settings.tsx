@@ -880,6 +880,45 @@ const Settings = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  Favicon
+                </CardTitle>
+                <CardDescription>
+                  Въведете URL адрес за favicon на сайта. Той ще се показва в таб-а на браузъра.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="favicon_url">Favicon URL</Label>
+                  <Input
+                    id="favicon_url"
+                    placeholder="https://example.com/favicon.ico"
+                    value={settings.favicon_url || ''}
+                    onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Въведете пълен URL адрес към .ico, .png или .svg файл
+                  </p>
+                </div>
+                {settings.favicon_url && (
+                  <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                    <img 
+                      src={settings.favicon_url} 
+                      alt="Favicon preview" 
+                      className="w-8 h-8 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <span className="text-sm text-muted-foreground">Предварителен преглед на favicon</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="api" className="space-y-6">
