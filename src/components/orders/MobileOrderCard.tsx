@@ -1,9 +1,10 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { 
   User, Phone, Euro, Package, Truck, MessageCircle, 
   MoreHorizontal, Pencil, Trash2, Printer, Calendar,
-  Barcode, ExternalLink, Search, Globe, FileBox
+  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Order, OrderStatus } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { CourierLogo } from './CourierLogo';
@@ -40,6 +41,31 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onPrint,
   onStatusChange,
 }) => {
+  const { toast } = useToast();
+  const [copiedPhone, setCopiedPhone] = useState(false);
+  const [copiedCatalog, setCopiedCatalog] = useState(false);
+
+  const handleCopyPhone = () => {
+    navigator.clipboard.writeText(order.phone);
+    setCopiedPhone(true);
+    setTimeout(() => setCopiedPhone(false), 2000);
+    toast({
+      title: 'Копирано',
+      description: `Телефон ${order.phone} е копиран`,
+    });
+  };
+
+  const handleCopyCatalog = () => {
+    if (order.catalog_number) {
+      navigator.clipboard.writeText(order.catalog_number);
+      setCopiedCatalog(true);
+      setTimeout(() => setCopiedCatalog(false), 2000);
+      toast({
+        title: 'Копирано',
+        description: `Каталожен номер ${order.catalog_number} е копиран`,
+      });
+    }
+  };
   const getCardBorderColor = (status: string) => {
     switch (status) {
       case 'Нова':
@@ -150,7 +176,18 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <PhoneWithFlag phone={order.phone} />
+            <span>{order.phone}</span>
+            <button
+              onClick={handleCopyPhone}
+              className="p-0.5 hover:bg-muted rounded transition-colors"
+              title="Копирай телефон"
+            >
+              {copiedPhone ? (
+                <Check className="w-3.5 h-3.5 text-success" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+              )}
+            </button>
           </div>
           {order.customer_email && (
             <div className="flex items-center gap-2">
@@ -167,7 +204,20 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
             <div className="flex-1">
               <span className="text-sm">{order.product_name}</span>
               {order.catalog_number && (
-                <p className="text-xs text-muted-foreground font-mono">{order.catalog_number}</p>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground font-mono">{order.catalog_number}</span>
+                  <button
+                    onClick={handleCopyCatalog}
+                    className="p-0.5 hover:bg-muted rounded transition-colors"
+                    title="Копирай каталожен номер"
+                  >
+                    {copiedCatalog ? (
+                      <Check className="w-3 h-3 text-success" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-muted-foreground hover:text-primary" />
+                    )}
+                  </button>
+                </div>
               )}
             </div>
             <div className="flex items-center gap-2">
