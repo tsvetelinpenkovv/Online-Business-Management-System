@@ -20,8 +20,9 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw
+  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -34,6 +35,14 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [copiedSku, setCopiedSku] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSku(text);
+    setTimeout(() => setCopiedSku(null), 2000);
+    toast.success('Код копиран!');
+  };
 
   const filteredMovements = inventory.movements.filter(m => {
     const matchesSearch = 
@@ -148,7 +157,22 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
                   </div>
                   <div className="mb-3">
                     <p className="font-medium">{movement.product?.name || 'Неизвестен'}</p>
-                    <p className="text-xs text-muted-foreground">{movement.product?.sku}</p>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">{movement.product?.sku}</span>
+                      {movement.product?.sku && (
+                        <button
+                          onClick={() => copyToClipboard(movement.product!.sku)}
+                          className="p-0.5 hover:bg-muted rounded transition-colors"
+                          title="Копирай код"
+                        >
+                          {copiedSku === movement.product?.sku ? (
+                            <Check className="w-3 h-3 text-success" />
+                          ) : (
+                            <Copy className="w-3 h-3 text-muted-foreground hover:text-primary" />
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 pt-3 border-t">
                     <div>
@@ -238,7 +262,22 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
                         <TableCell>
                           <div>
                             <p className="font-medium">{movement.product?.name || 'Неизвестен'}</p>
-                            <p className="text-xs text-muted-foreground">{movement.product?.sku}</p>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">{movement.product?.sku}</span>
+                              {movement.product?.sku && (
+                                <button
+                                  onClick={() => copyToClipboard(movement.product!.sku)}
+                                  className="p-0.5 hover:bg-muted rounded transition-colors"
+                                  title="Копирай код"
+                                >
+                                  {copiedSku === movement.product?.sku ? (
+                                    <Check className="w-3 h-3 text-success" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-muted-foreground hover:text-primary" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-medium">

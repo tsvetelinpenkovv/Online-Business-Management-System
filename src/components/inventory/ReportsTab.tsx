@@ -23,7 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Package, TrendingUp, Warehouse, Download, FileSpreadsheet,
-  ArrowDownToLine, ArrowUpFromLine
+  ArrowDownToLine, ArrowUpFromLine, Copy, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
@@ -43,8 +43,12 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
 
   const stats = inventory.getInventoryStats();
 
+  const [copiedSku, setCopiedSku] = useState<string | null>(null);
+  
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    setCopiedSku(text);
+    setTimeout(() => setCopiedSku(null), 2000);
     toast.success('Код копиран!');
   };
 
@@ -150,13 +154,22 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
-                    <span 
-                          className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                          onClick={() => copyToClipboard(product.sku)}
-                          title="Натисни за копиране"
-                        >
-                          {product.sku}
-                        </span>
+                    <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            {product.sku}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(product.sku)}
+                            className="p-0.5 hover:bg-muted rounded transition-colors"
+                            title="Копирай код"
+                          >
+                            {copiedSku === product.sku ? (
+                              <Check className="w-3.5 h-3.5 text-success" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                            )}
+                          </button>
+                        </div>
                         <p className="font-medium mt-1 truncate">{product.name}</p>
                         {product.category?.name && (
                           <p className="text-xs text-muted-foreground">{product.category.name}</p>
@@ -227,12 +240,21 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                     <TableBody>
                       {filteredProducts.map((product) => (
                         <TableRow key={product.id} className={product.current_stock <= product.min_stock_level ? 'bg-warning/10' : ''}>
-                          <TableCell 
-                            className="font-mono cursor-pointer hover:text-primary transition-colors"
-                            onClick={() => copyToClipboard(product.sku)}
-                            title="Натисни за копиране"
-                          >
-                            {product.sku}
+                          <TableCell className="font-mono">
+                            <div className="flex items-center gap-1">
+                              <span>{product.sku}</span>
+                              <button
+                                onClick={() => copyToClipboard(product.sku)}
+                                className="p-0.5 hover:bg-muted rounded transition-colors"
+                                title="Копирай код"
+                              >
+                                {copiedSku === product.sku ? (
+                                  <Check className="w-3.5 h-3.5 text-success" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                                )}
+                              </button>
+                            </div>
                           </TableCell>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.category?.name || '-'}</TableCell>

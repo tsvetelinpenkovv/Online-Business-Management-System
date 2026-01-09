@@ -2,7 +2,7 @@ import { FC, useState } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -106,11 +106,26 @@ export const OrdersTable: FC<OrdersTableProps> = ({
     }
   };
 
+  const [copiedCatalog, setCopiedCatalog] = useState<string | null>(null);
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
+
   const handleCopyCatalog = (catalogNumber: string) => {
     navigator.clipboard.writeText(catalogNumber);
+    setCopiedCatalog(catalogNumber);
+    setTimeout(() => setCopiedCatalog(null), 2000);
     toast({
       title: 'Копирано',
       description: `Каталожен номер ${catalogNumber} е копиран`,
+    });
+  };
+
+  const handleCopyPhone = (phone: string) => {
+    navigator.clipboard.writeText(phone);
+    setCopiedPhone(phone);
+    setTimeout(() => setCopiedPhone(null), 2000);
+    toast({
+      title: 'Копирано',
+      description: `Телефон ${phone} е копиран`,
     });
   };
 
@@ -380,7 +395,20 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   <CorrectStatusIcon isCorrect={order.is_correct} />
                 </TableCell>
                 <TableCell className="text-sm">
-                  <PhoneWithFlag phone={order.phone} />
+                  <div className="flex items-center gap-1">
+                    <span>{order.phone}</span>
+                    <button
+                      onClick={() => handleCopyPhone(order.phone)}
+                      className="p-0.5 hover:bg-muted rounded transition-colors"
+                      title="Копирай телефон"
+                    >
+                      {copiedPhone === order.phone ? (
+                        <Check className="w-3.5 h-3.5 text-success" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                      )}
+                    </button>
+                  </div>
                 </TableCell>
                 <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
                 <TableCell>
@@ -423,12 +451,25 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     />
                   </div>
                 </TableCell>
-                <TableCell 
-                  className="font-mono text-xs text-muted-foreground whitespace-nowrap cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => order.catalog_number && handleCopyCatalog(order.catalog_number)}
-                  title={order.catalog_number ? "Кликни за копиране" : undefined}
-                >
-                  {order.catalog_number || '-'}
+                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                  {order.catalog_number ? (
+                    <div className="flex items-center gap-1">
+                      <span>{order.catalog_number}</span>
+                      <button
+                        onClick={() => handleCopyCatalog(order.catalog_number!)}
+                        className="p-0.5 hover:bg-muted rounded transition-colors"
+                        title="Копирай каталожен номер"
+                      >
+                        {copiedCatalog === order.catalog_number ? (
+                          <Check className="w-3.5 h-3.5 text-success" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    '-'
+                  )}
                 </TableCell>
                 <TableCell className="text-center" title={`Количество: ${order.quantity} бр.`}>
                   {order.quantity > 1 ? (
