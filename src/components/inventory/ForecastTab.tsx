@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, subDays, differenceInDays, addDays } from 'date-fns';
 import { bg } from 'date-fns/locale';
-import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X, ChevronDown } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X, ChevronDown, FolderTree, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -12,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useInventory } from '@/hooks/useInventory';
 import { useToast } from '@/hooks/use-toast';
+
+type ForecastSortKey = 'name' | 'category' | 'soldQuantity' | 'currentStock' | 'projectedSales' | 'neededQuantity';
+type SortDirection = 'asc' | 'desc';
 
 interface ForecastTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -28,7 +31,30 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
   const [forecastDate, setForecastDate] = useState<Date | null>(defaultForecastDate);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<ForecastSortKey>('neededQuantity');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const { toast } = useToast();
+
+  const handleSort = (key: ForecastSortKey) => {
+    if (sortKey === key) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortableHeader = ({ columnKey, children, align = 'left' }: { columnKey: ForecastSortKey; children: React.ReactNode; align?: 'left' | 'right' }) => (
+    <TableHead 
+      className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${align === 'right' ? 'text-right' : ''}`}
+      onClick={() => handleSort(columnKey)}
+    >
+      <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+      </div>
+    </TableHead>
+  );
 
   const copyToClipboard = async (sku: string) => {
     await navigator.clipboard.writeText(sku);
@@ -51,7 +77,7 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
     const historyDays = differenceInDays(effectiveHistoryTo, effectiveHistoryFrom) || 1;
     const forecastDays = differenceInDays(effectiveForecastDate, today);
 
-    return inventory.products
+    const data = inventory.products
       .filter(product => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
@@ -88,9 +114,34 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
           dailySalesRate: Math.round(dailySalesRate * 100) / 100,
           daysUntilStockout: dailySalesRate > 0 ? Math.floor(currentStock / dailySalesRate) : Infinity,
         };
-      })
-      .sort((a, b) => b.neededQuantity - a.neededQuantity);
-  }, [inventory.products, inventory.movements, historyDateFrom, historyDateTo, forecastDate, searchQuery]);
+      });
+
+    // Apply sorting
+    return data.sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name, 'bg');
+          break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category, 'bg');
+          break;
+        case 'soldQuantity':
+          comparison = a.soldQuantity - b.soldQuantity;
+          break;
+        case 'currentStock':
+          comparison = a.currentStock - b.currentStock;
+          break;
+        case 'projectedSales':
+          comparison = a.projectedSales - b.projectedSales;
+          break;
+        case 'neededQuantity':
+          comparison = a.neededQuantity - b.neededQuantity;
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.products, inventory.movements, historyDateFrom, historyDateTo, forecastDate, searchQuery, sortKey, sortDirection]);
 
   // Summary stats
   const stats = useMemo(() => {
@@ -155,7 +206,7 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                             e.stopPropagation();
                             setHistoryDateFrom(null);
                           }}
-                          className="hover:bg-muted rounded p-0.5"
+                          className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                         >
                           <X className="h-3 w-3" />
                         </span>
@@ -195,7 +246,7 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                             e.stopPropagation();
                             setHistoryDateTo(null);
                           }}
-                          className="hover:bg-muted rounded p-0.5"
+                          className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                         >
                           <X className="h-3 w-3" />
                         </span>
@@ -235,7 +286,7 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                             e.stopPropagation();
                             setForecastDate(null);
                           }}
-                          className="hover:bg-muted rounded p-0.5"
+                          className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                         >
                           <X className="h-3 w-3" />
                         </span>
@@ -269,9 +320,9 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                 />
                 {(historyDateFrom || historyDateTo || forecastDate) && (
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
-                    className="shrink-0"
+                    className="shrink-0 border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => {
                       setHistoryDateFrom(null);
                       setHistoryDateTo(null);
@@ -347,12 +398,30 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Артикул</TableHead>
-                  <TableHead>Категория</TableHead>
-                  <TableHead className="text-right">Продадени ({historyDays} дни)</TableHead>
-                  <TableHead className="text-right">Налични</TableHead>
-                  <TableHead className="text-right">Прогноза ({forecastDays} дни)</TableHead>
-                  <TableHead className="text-right">За поръчка</TableHead>
+                  <SortableHeader columnKey="name">
+                    <Package className="w-4 h-4 text-muted-foreground" />
+                    Артикул
+                  </SortableHeader>
+                  <SortableHeader columnKey="category">
+                    <FolderTree className="w-4 h-4 text-muted-foreground" />
+                    Категория
+                  </SortableHeader>
+                  <SortableHeader columnKey="soldQuantity" align="right">
+                    <ShoppingCart className="w-4 h-4 text-muted-foreground" />
+                    Продадени ({historyDays} дни)
+                  </SortableHeader>
+                  <SortableHeader columnKey="currentStock" align="right">
+                    <Package className="w-4 h-4 text-muted-foreground" />
+                    Налични
+                  </SortableHeader>
+                  <SortableHeader columnKey="projectedSales" align="right">
+                    <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                    Прогноза ({forecastDays} дни)
+                  </SortableHeader>
+                  <SortableHeader columnKey="neededQuantity" align="right">
+                    <ShoppingCart className="w-4 h-4 text-muted-foreground" />
+                    За поръчка
+                  </SortableHeader>
                 </TableRow>
               </TableHeader>
               <TableBody>
