@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, subDays, differenceInDays, addDays } from 'date-fns';
 import { bg } from 'date-fns/locale';
-import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -19,9 +19,13 @@ interface ForecastTabProps {
 
 export const ForecastTab = ({ inventory }: ForecastTabProps) => {
   const today = new Date();
-  const [historyDateFrom, setHistoryDateFrom] = useState<Date>(subDays(today, 30));
-  const [historyDateTo, setHistoryDateTo] = useState<Date>(today);
-  const [forecastDate, setForecastDate] = useState<Date>(addDays(today, 30));
+  const defaultHistoryFrom = subDays(today, 30);
+  const defaultHistoryTo = today;
+  const defaultForecastDate = addDays(today, 30);
+  
+  const [historyDateFrom, setHistoryDateFrom] = useState<Date | null>(defaultHistoryFrom);
+  const [historyDateTo, setHistoryDateTo] = useState<Date | null>(defaultHistoryTo);
+  const [forecastDate, setForecastDate] = useState<Date | null>(defaultForecastDate);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
   const { toast } = useToast();
@@ -33,14 +37,19 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
     setTimeout(() => setCopiedSku(null), 2000);
   };
 
-  const formatDateWithYear = (date: Date) => {
+  const formatDateWithYear = (date: Date | null) => {
+    if (!date) return "Избери дата";
     return format(date, "d MMM yyyy", { locale: bg }) + " г.";
   };
 
   // Calculate sales data for each product
   const forecastData = useMemo(() => {
-    const historyDays = differenceInDays(historyDateTo, historyDateFrom) || 1;
-    const forecastDays = differenceInDays(forecastDate, today);
+    const effectiveHistoryFrom = historyDateFrom || defaultHistoryFrom;
+    const effectiveHistoryTo = historyDateTo || defaultHistoryTo;
+    const effectiveForecastDate = forecastDate || defaultForecastDate;
+    
+    const historyDays = differenceInDays(effectiveHistoryTo, effectiveHistoryFrom) || 1;
+    const forecastDays = differenceInDays(effectiveForecastDate, today);
 
     return inventory.products
       .filter(product => {
@@ -58,7 +67,7 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
           if (m.product_id !== product.id) return false;
           if (m.movement_type !== 'out') return false;
           const moveDate = new Date(m.created_at);
-          return moveDate >= historyDateFrom && moveDate <= historyDateTo;
+          return moveDate >= effectiveHistoryFrom && moveDate <= effectiveHistoryTo;
         });
 
         const soldQuantity = productMovements.reduce((sum, m) => sum + Number(m.quantity), 0);
@@ -113,8 +122,8 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
     link.click();
   };
 
-  const historyDays = differenceInDays(historyDateTo, historyDateFrom) || 1;
-  const forecastDays = differenceInDays(forecastDate, today);
+  const historyDays = differenceInDays(historyDateTo || defaultHistoryTo, historyDateFrom || defaultHistoryFrom) || 1;
+  const forecastDays = differenceInDays(forecastDate || defaultForecastDate, today);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -131,67 +140,141 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
             {/* History Period - From */}
             <div className="space-y-2">
               <Label className="text-sm">Минал период от</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formatDateWithYear(historyDateFrom)}
+              <div className="flex gap-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateWithYear(historyDateFrom)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={historyDateFrom || undefined}
+                      onSelect={(date) => date && setHistoryDateFrom(date)}
+                      disabled={(date) => date > (historyDateTo || today) || date > today}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {historyDateFrom && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-10 w-10"
+                    onClick={() => setHistoryDateFrom(null)}
+                  >
+                    <X className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={historyDateFrom}
-                    onSelect={(date) => date && setHistoryDateFrom(date)}
-                    disabled={(date) => date > historyDateTo || date > today}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                )}
+              </div>
             </div>
 
             {/* History Period - To */}
             <div className="space-y-2">
               <Label className="text-sm">Минал период до</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formatDateWithYear(historyDateTo)}
+              <div className="flex gap-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateWithYear(historyDateTo)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={historyDateTo || undefined}
+                      onSelect={(date) => date && setHistoryDateTo(date)}
+                      disabled={(date) => date < (historyDateFrom || subDays(today, 365)) || date > today}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {historyDateTo && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-10 w-10"
+                    onClick={() => setHistoryDateTo(null)}
+                  >
+                    <X className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={historyDateTo}
-                    onSelect={(date) => date && setHistoryDateTo(date)}
-                    disabled={(date) => date < historyDateFrom || date > today}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                )}
+              </div>
             </div>
 
             {/* Forecast Until Date */}
             <div className="space-y-2">
               <Label className="text-sm">Наличност до дата</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formatDateWithYear(forecastDate)}
+              <div className="flex gap-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateWithYear(forecastDate)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={forecastDate || undefined}
+                      onSelect={(date) => date && setForecastDate(date)}
+                      disabled={(date) => date <= today}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {forecastDate && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-10 w-10"
+                    onClick={() => setForecastDate(null)}
+                  >
+                    <X className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={forecastDate}
-                    onSelect={(date) => date && setForecastDate(date)}
-                    disabled={(date) => date <= today}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                )}
+              </div>
+            </div>
+
+            {/* Forecast Until Date */}
+            <div className="space-y-2">
+              <Label className="text-sm">Наличност до дата</Label>
+              <div className="flex gap-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateWithYear(forecastDate)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={forecastDate || undefined}
+                      onSelect={(date) => date && setForecastDate(date)}
+                      disabled={(date) => date <= today}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {forecastDate && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-10 w-10"
+                    onClick={() => setForecastDate(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Search */}
@@ -268,26 +351,10 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                 <TableRow>
                   <TableHead>Артикул</TableHead>
                   <TableHead>Категория</TableHead>
-                  <TableHead className="text-right">
-                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
-                      Продадени ({historyDays} дни)
-                    </Badge>
-                  </TableHead>
-                  <TableHead className="text-right">
-                    <Badge variant="outline" className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700">
-                      Налични
-                    </Badge>
-                  </TableHead>
-                  <TableHead className="text-right">
-                    <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700">
-                      Прогноза ({forecastDays} дни)
-                    </Badge>
-                  </TableHead>
-                  <TableHead className="text-right">
-                    <Badge variant="outline" className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700">
-                      За поръчка
-                    </Badge>
-                  </TableHead>
+                  <TableHead className="text-right">Продадени ({historyDays} дни)</TableHead>
+                  <TableHead className="text-right">Налични</TableHead>
+                  <TableHead className="text-right">Прогноза ({forecastDays} дни)</TableHead>
+                  <TableHead className="text-right">За поръчка</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -317,17 +384,31 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                         </div>
                       </TableCell>
                       <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">{item.soldQuantity} бр.</TableCell>
                       <TableCell className="text-right">
-                        <span className={item.currentStock <= 0 ? 'text-red-500 font-medium' : ''}>
-                          {item.currentStock} бр.
-                        </span>
+                        <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
+                          {item.soldQuantity} бр.
+                        </Badge>
                       </TableCell>
-                      <TableCell className="text-right">{item.projectedSales} бр.</TableCell>
                       <TableCell className="text-right">
-                        <span className={item.neededQuantity > 0 ? 'text-orange-600 dark:text-orange-400 font-bold' : ''}>
+                        <Badge variant="outline" className={item.currentStock <= 0 
+                          ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700' 
+                          : 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700'
+                        }>
+                          {item.currentStock} бр.
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700">
+                          {item.projectedSales} бр.
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant="outline" className={item.neededQuantity > 0 
+                          ? 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 font-bold' 
+                          : 'bg-muted text-muted-foreground border-muted'
+                        }>
                           {item.neededQuantity} бр.
-                        </span>
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))
@@ -374,26 +455,28 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <div>
-                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 text-xs mb-1">
-                      Продадени
+                    <div className="text-muted-foreground text-xs mb-1">Продадени</div>
+                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
+                      {item.soldQuantity} бр.
                     </Badge>
-                    <div className="font-medium">{item.soldQuantity} бр.</div>
                   </div>
                   <div>
-                    <Badge variant="outline" className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 text-xs mb-1">
-                      Налични
-                    </Badge>
-                    <div className={`font-medium ${item.currentStock <= 0 ? 'text-red-500' : ''}`}>
+                    <div className="text-muted-foreground text-xs mb-1">Налични</div>
+                    <Badge variant="outline" className={item.currentStock <= 0 
+                      ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700' 
+                      : 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700'
+                    }>
                       {item.currentStock} бр.
-                    </div>
+                    </Badge>
                   </div>
                   <div>
-                    <Badge variant="outline" className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 text-xs mb-1">
-                      За поръчка
-                    </Badge>
-                    <div className={`font-medium ${item.neededQuantity > 0 ? 'text-orange-600 dark:text-orange-400' : ''}`}>
+                    <div className="text-muted-foreground text-xs mb-1">За поръчка</div>
+                    <Badge variant="outline" className={item.neededQuantity > 0 
+                      ? 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 font-bold' 
+                      : 'bg-muted text-muted-foreground border-muted'
+                    }>
                       {item.neededQuantity} бр.
-                    </div>
+                    </Badge>
                   </div>
                 </div>
               </CardContent>
