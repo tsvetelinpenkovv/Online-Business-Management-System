@@ -591,9 +591,8 @@ const Settings = () => {
                 <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-6 lg:flex-1 lg:justify-center">Статуси</TabsTrigger>
                 <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-7 lg:flex-1 lg:justify-center">Фирма</TabsTrigger>
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8 lg:flex-1 lg:justify-center">Потребители</TabsTrigger>}
-                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center">
-                  <BookOpen className="w-3.5 h-3.5 mr-1" />
-                  Документация
+                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center" title="Документация">
+                  <BookOpen className="w-4 h-4 text-rose-500" />
                 </TabsTrigger>
               </TabsList>
             </div>

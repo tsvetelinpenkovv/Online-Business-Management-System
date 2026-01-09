@@ -6,9 +6,11 @@ import { Separator } from '@/components/ui/separator';
 import { 
   FileText, Download, BookOpen, ShoppingCart, Package, 
   MessageCircle, Settings, Users, Truck, Building2, 
-  Database, Shield, Layers, BarChart3, Globe
+  Database, Shield, Layers, BarChart3, Globe, FileDown
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCompanyLogo } from '@/hooks/useCompanyLogo';
+import jsPDF from 'jspdf';
 
 const documentationContent = `
 # СИСТЕМА ЗА УПРАВЛЕНИЕ НА ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО
@@ -340,7 +342,9 @@ const documentationContent = `
 
 export const DocumentationTab = () => {
   const { toast } = useToast();
+  const { logoUrl } = useCompanyLogo();
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const handleDownload = () => {
     setDownloading(true);
@@ -370,6 +374,157 @@ export const DocumentationTab = () => {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Add logo if available
+      if (logoUrl) {
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = logoUrl;
+          });
+          doc.addImage(img, 'PNG', 15, 10, 40, 20);
+        } catch (e) {
+          console.log('Logo could not be added to PDF');
+        }
+      }
+
+      // Title
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('СИСТЕМА ЗА УПРАВЛЕНИЕ НА', 105, logoUrl ? 45 : 25, { align: 'center' });
+      doc.text('ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО', 105, logoUrl ? 55 : 35, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Пълна документация v1.0', 105, logoUrl ? 65 : 45, { align: 'center' });
+
+      // Date
+      doc.setFontSize(10);
+      doc.text(`Генерирана на: ${new Date().toLocaleDateString('bg-BG')}`, 105, logoUrl ? 75 : 55, { align: 'center' });
+
+      // Separator line
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, logoUrl ? 80 : 60, 195, logoUrl ? 80 : 60);
+
+      let yPosition = logoUrl ? 90 : 70;
+      const pageHeight = 280;
+      const lineHeight = 6;
+      const marginLeft = 15;
+      const maxWidth = 180;
+
+      // Process content
+      const lines = documentationContent.split('\n');
+      
+      for (const line of lines) {
+        if (yPosition > pageHeight) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        const trimmedLine = line.trim();
+        
+        if (trimmedLine.startsWith('# ')) {
+          doc.setFontSize(16);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(180, 50, 50);
+          const text = trimmedLine.replace('# ', '');
+          doc.text(text, marginLeft, yPosition);
+          yPosition += lineHeight * 1.5;
+        } else if (trimmedLine.startsWith('## ')) {
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(60, 60, 60);
+          const text = trimmedLine.replace('## ', '');
+          doc.text(text, marginLeft, yPosition);
+          yPosition += lineHeight * 1.3;
+        } else if (trimmedLine.startsWith('### ')) {
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(80, 80, 80);
+          const text = trimmedLine.replace('### ', '');
+          doc.text(text, marginLeft, yPosition);
+          yPosition += lineHeight * 1.2;
+        } else if (trimmedLine.startsWith('#### ')) {
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(100, 100, 100);
+          const text = trimmedLine.replace('#### ', '');
+          doc.text(text, marginLeft, yPosition);
+          yPosition += lineHeight;
+        } else if (trimmedLine.startsWith('- **')) {
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(40, 40, 40);
+          const text = '• ' + trimmedLine.replace('- **', '').replace('**:', ':').replace('**', '');
+          const splitText = doc.splitTextToSize(text, maxWidth);
+          doc.text(splitText, marginLeft + 5, yPosition);
+          yPosition += lineHeight * splitText.length;
+        } else if (trimmedLine.startsWith('- ')) {
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(40, 40, 40);
+          const text = '• ' + trimmedLine.replace('- ', '');
+          const splitText = doc.splitTextToSize(text, maxWidth);
+          doc.text(splitText, marginLeft + 5, yPosition);
+          yPosition += lineHeight * splitText.length;
+        } else if (trimmedLine.startsWith('|')) {
+          // Skip table formatting for PDF
+          continue;
+        } else if (trimmedLine === '---') {
+          doc.setDrawColor(200, 200, 200);
+          doc.line(marginLeft, yPosition, 195, yPosition);
+          yPosition += lineHeight;
+        } else if (trimmedLine.length > 0) {
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(40, 40, 40);
+          const cleanText = trimmedLine.replace(/\*\*/g, '').replace(/\*/g, '');
+          const splitText = doc.splitTextToSize(cleanText, maxWidth);
+          doc.text(splitText, marginLeft, yPosition);
+          yPosition += lineHeight * splitText.length;
+        } else {
+          yPosition += lineHeight * 0.5;
+        }
+      }
+
+      // Footer on last page
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Страница ${i} от ${pageCount}`, 105, 290, { align: 'center' });
+      }
+
+      doc.save(`документация-система-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      toast({
+        title: 'Успех',
+        description: 'PDF документацията беше изтеглена успешно',
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно генериране на PDF',
+        variant: 'destructive',
+      });
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const sections = [
     { icon: Globe, title: '1. Общ преглед', description: 'Обща информация за системата и нейните възможности' },
     { icon: ShoppingCart, title: '2. Модул "Поръчки"', description: 'Управление на поръчки, статуси, филтри и групови действия' },
@@ -387,7 +542,7 @@ export const DocumentationTab = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />
@@ -397,10 +552,16 @@ export const DocumentationTab = () => {
                 Пълна документация за функционалността и използването на системата
               </CardDescription>
             </div>
-            <Button onClick={handleDownload} disabled={downloading}>
-              <Download className="w-4 h-4 mr-2" />
-              {downloading ? 'Изтегляне...' : 'Изтегли (Markdown)'}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleDownload} disabled={downloading}>
+                <Download className="w-4 h-4 mr-2" />
+                {downloading ? 'Изтегляне...' : 'Markdown'}
+              </Button>
+              <Button onClick={handleDownloadPdf} disabled={downloadingPdf} className="bg-rose-600 hover:bg-rose-700">
+                <FileDown className="w-4 h-4 mr-2" />
+                {downloadingPdf ? 'Генериране...' : 'PDF'}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
