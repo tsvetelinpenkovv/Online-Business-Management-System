@@ -122,7 +122,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
     >
       <div className={`flex items-center gap-1.5 ${align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : ''}`}>
         {children}
-        <ArrowUpDown className={`w-4 h-4 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+        <ArrowUpDown className={`w-3.5 h-3.5 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
       </div>
     </TableHead>
   );

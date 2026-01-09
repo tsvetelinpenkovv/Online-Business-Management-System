@@ -38,7 +38,7 @@ export const InfoPopover: FC<InfoPopoverProps> = ({ title, content, icon = 'info
         )}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 shadow-lg shadow-black/10 dark:shadow-black/30" 
+        className="w-80 shadow-xl shadow-black/15 dark:shadow-black/40" 
         align="center"
         showArrow
       >
