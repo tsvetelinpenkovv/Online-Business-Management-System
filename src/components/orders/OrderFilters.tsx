@@ -225,7 +225,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full sm:w-[180px] h-10">
                 <div className="flex items-center justify-center w-full">
@@ -247,7 +247,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full sm:w-[180px] h-10">
                 <div className="flex items-center justify-center w-full">
