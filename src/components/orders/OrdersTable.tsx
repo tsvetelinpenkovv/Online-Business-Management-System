@@ -1,8 +1,8 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
-  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check
+  Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -45,6 +45,8 @@ import {
 import { format } from 'date-fns';
 import { EditOrderDialog } from './EditOrderDialog';
 
+type OrderSortKey = 'id' | 'created_at' | 'customer_name' | 'phone' | 'total_price' | 'product_name' | 'catalog_number' | 'quantity' | 'status';
+
 interface OrdersTableProps {
   orders: Order[];
   onDelete: (id: number) => void;
@@ -65,6 +67,65 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [sortKey, setSortKey] = useState<OrderSortKey>('created_at');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (key: OrderSortKey) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedOrders = useMemo(() => {
+    return [...orders].sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'id':
+          comparison = a.id - b.id;
+          break;
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'customer_name':
+          comparison = a.customer_name.localeCompare(b.customer_name);
+          break;
+        case 'phone':
+          comparison = a.phone.localeCompare(b.phone);
+          break;
+        case 'total_price':
+          comparison = a.total_price - b.total_price;
+          break;
+        case 'product_name':
+          comparison = a.product_name.localeCompare(b.product_name);
+          break;
+        case 'catalog_number':
+          comparison = (a.catalog_number || '').localeCompare(b.catalog_number || '');
+          break;
+        case 'quantity':
+          comparison = a.quantity - b.quantity;
+          break;
+        case 'status':
+          comparison = a.status.localeCompare(b.status);
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [orders, sortKey, sortDirection]);
+
+  const SortableHead = ({ columnKey, children, className = '', align = 'left' }: { columnKey: OrderSortKey; children: React.ReactNode; className?: string; align?: 'left' | 'center' | 'right' }) => (
+    <TableHead 
+      className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${className}`}
+      onClick={() => handleSort(columnKey)}
+    >
+      <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : ''}`}>
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+      </div>
+    </TableHead>
+  );
 
   const getRowColorByStatus = () => {
     return 'hover:bg-muted/30';
@@ -265,54 +326,42 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   className={isSomeSelected ? 'opacity-50' : ''}
                 />
               </TableHead>
-              <TableHead className="w-[80px]">
+              <SortableHead columnKey="id" className="w-[80px]">
                 ID
-              </TableHead>
+              </SortableHead>
               <TableHead className="w-[50px] text-center" title="Източник">
                 <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
-              <TableHead className="w-[90px]">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Дата
-                </div>
-              </TableHead>
-              <TableHead className="w-[110px]">
-                <div className="flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Клиент
-                </div>
-              </TableHead>
+              <SortableHead columnKey="created_at" className="w-[90px]">
+                <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Дата
+              </SortableHead>
+              <SortableHead columnKey="customer_name" className="w-[110px]">
+                <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Клиент
+              </SortableHead>
               <TableHead className="w-[50px] text-center" title="Коректност на клиента">
                 <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
-              <TableHead className="w-[130px]">
-                <div className="flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Телефон
-                </div>
-              </TableHead>
-              <TableHead className="w-[80px]">
-                <div className="flex items-center gap-1.5">
-                  <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Цена
-                </div>
-              </TableHead>
-              <TableHead className="w-[140px]">
-                <div className="flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Продукт
-                </div>
-              </TableHead>
-              <TableHead className="w-[100px]">
-                <div className="flex items-center gap-1.5">
-                  <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Кат.№
-                </div>
-              </TableHead>
-              <TableHead className="w-[50px] text-center" title="Количество">
-                <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
-              </TableHead>
+              <SortableHead columnKey="phone" className="w-[130px]">
+                <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Телефон
+              </SortableHead>
+              <SortableHead columnKey="total_price" className="w-[80px]">
+                <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Цена
+              </SortableHead>
+              <SortableHead columnKey="product_name" className="w-[140px]">
+                <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Продукт
+              </SortableHead>
+              <SortableHead columnKey="catalog_number" className="w-[100px]">
+                <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Кат.№
+              </SortableHead>
+              <SortableHead columnKey="quantity" className="w-[50px]" align="center">
+                <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              </SortableHead>
               <TableHead className="w-[120px]">
                 <div className="flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -322,12 +371,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               <TableHead className="w-[70px] text-center" title="Товарителница">
                 <ExternalLink className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
-              <TableHead className="w-[140px]">
-                <div className="flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Статус
-                </div>
-              </TableHead>
+              <SortableHead columnKey="status" className="w-[140px]">
+                <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                Статус
+              </SortableHead>
               <TableHead className="w-[160px]">
                 <div className="flex items-center gap-1.5">
                   <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -340,7 +387,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
+            {sortedOrders.map((order) => (
               <TableRow key={order.id} className={getRowColorByStatus()}>
                 <TableCell className={`${getRowStripClass(order.status)} pl-2 pr-0`}>
                   <Checkbox
