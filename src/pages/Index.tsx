@@ -296,10 +296,8 @@ const Index = () => {
             <div className="flex items-center gap-1 sm:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1 text-xs px-2">
+                  <Button variant="outline" size="sm" className="px-2">
                     <Tags className="w-3 h-3" />
-                    <span className="sr-only sm:not-sr-only">Статус</span>
-                    ({selectedOrders.length})
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
