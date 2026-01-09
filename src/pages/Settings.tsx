@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
+import { useFavicon } from '@/hooks/useFavicon';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,14 +47,17 @@ interface CompanySettings {
 const Settings = () => {
   const { user, loading: authLoading } = useAuth();
   const { logoUrl, uploadLogo, deleteLogo, loading: logoLoading } = useCompanyLogo();
+  const { faviconUrl, uploadFavicon, deleteFavicon, loading: faviconLoading } = useFavicon();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [customApis, setCustomApis] = useState<{ key: string; value: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
   
   // User management state
   const [isAdmin, setIsAdmin] = useState(false);
@@ -408,6 +412,47 @@ const Settings = () => {
       toast({
         title: 'Грешка',
         description: 'Неуспешно изтриване на логото',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFavicon(true);
+    try {
+      await uploadFavicon(file);
+      toast({
+        title: 'Успех',
+        description: 'Favicon-ът беше качен успешно',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно качване на favicon',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingFavicon(false);
+      if (faviconInputRef.current) {
+        faviconInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleFaviconDelete = async () => {
+    try {
+      await deleteFavicon();
+      toast({
+        title: 'Успех',
+        description: 'Favicon-ът беше изтрит',
+      });
+    } catch (error) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно изтриване на favicon',
         variant: 'destructive',
       });
     }
@@ -888,35 +933,70 @@ const Settings = () => {
                   Favicon
                 </CardTitle>
                 <CardDescription>
-                  Въведете URL адрес за favicon на сайта. Той ще се показва в таб-а на браузъра.
+                  Качете favicon за сайта. Той ще се показва в таб-а на браузъра.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="favicon_url">Favicon URL</Label>
-                  <Input
-                    id="favicon_url"
-                    placeholder="https://example.com/favicon.ico"
-                    value={settings.favicon_url || ''}
-                    onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Въведете пълен URL адрес към .ico, .png или .svg файл
-                  </p>
+                <div className="p-4 bg-muted rounded-lg text-sm space-y-2">
+                  <p className="font-medium">Изисквания за favicon:</p>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li>Формат: <strong>PNG</strong>, <strong>ICO</strong>, <strong>JPEG</strong> или <strong>SVG</strong></li>
+                    <li>Препоръчителен размер: <strong>32x32</strong> или <strong>64x64 пиксела</strong></li>
+                    <li>Максимален размер: <strong>1MB</strong></li>
+                  </ul>
                 </div>
-                {settings.favicon_url && (
-                  <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                    <img 
-                      src={settings.favicon_url} 
-                      alt="Favicon preview" 
-                      className="w-8 h-8 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <span className="text-sm text-muted-foreground">Предварителен преглед на favicon</span>
-                  </div>
-                )}
+
+                <div className="flex flex-col items-center gap-4 p-6 border-2 border-dashed rounded-lg">
+                  {faviconLoading ? (
+                    <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
+                  ) : faviconUrl ? (
+                    <div className="relative">
+                      <img 
+                        src={faviconUrl} 
+                        alt="Favicon" 
+                        className="w-16 h-16 object-contain"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={handleFaviconDelete}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-muted-foreground">Няма качен favicon</p>
+                    </div>
+                  )}
+
+                  <input
+                    ref={faviconInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/x-icon,image/svg+xml,.ico"
+                    onChange={handleFaviconUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => faviconInputRef.current?.click()}
+                    disabled={uploadingFavicon}
+                  >
+                    {uploadingFavicon ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Качване...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {faviconUrl ? 'Смени favicon' : 'Качи favicon'}
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

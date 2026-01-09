@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 }) => {
   const navigate = useNavigate();
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
+  
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [sourceOpen, setSourceOpen] = useState(false);
 
 
   return (
@@ -77,7 +80,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+        <Select value={statusFilter} onValueChange={onStatusFilterChange} open={statusOpen} onOpenChange={setStatusOpen}>
           <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
             <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Статус" />
@@ -94,7 +97,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
+        <Select value={sourceFilter} onValueChange={onSourceFilterChange} open={sourceOpen} onOpenChange={setSourceOpen}>
           <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
             <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Източници" />
@@ -201,7 +204,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+          <Select value={statusFilter} onValueChange={onStatusFilterChange} open={statusOpen} onOpenChange={setStatusOpen}>
             <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
               <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Статус" />
@@ -218,7 +221,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </SelectContent>
           </Select>
 
-          <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
+          <Select value={sourceFilter} onValueChange={onSourceFilterChange} open={sourceOpen} onOpenChange={setSourceOpen}>
             <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
               <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Източници" />
