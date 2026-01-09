@@ -49,13 +49,15 @@ export const MessageStatusIcon: FC<MessageStatusIconProps> = ({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className={`inline-flex items-center gap-0.5 ${className}`}>
+          <div className={`relative inline-flex ${className}`}>
             {channel === 'viber' ? (
-              <MessageCircle className={`w-3 h-3 ${getChannelColor()}`} />
+              <MessageCircle className={`w-4 h-4 ${getChannelColor()}`} />
             ) : (
-              <Smartphone className={`w-3 h-3 ${getChannelColor()}`} />
+              <Smartphone className={`w-4 h-4 ${getChannelColor()}`} />
             )}
-            {getStatusIcon()}
+            <div className="absolute -bottom-0.5 -right-0.5 bg-background rounded-full p-[1px]">
+              {getStatusIcon()}
+            </div>
           </div>
         </TooltipTrigger>
         <TooltipContent>
