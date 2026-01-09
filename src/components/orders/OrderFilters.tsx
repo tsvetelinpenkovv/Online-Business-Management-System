@@ -152,9 +152,26 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[140px]">
-              <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+            <Button variant="outline" className="w-[160px] justify-between">
+              <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {dateFrom && (
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDateFromChange(undefined);
+                    }}
+                    className="hover:bg-muted rounded p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                )}
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </div>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -170,9 +187,26 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[140px]">
-              <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+            <Button variant="outline" className="w-[160px] justify-between">
+              <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {dateTo && (
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDateToChange(undefined);
+                    }}
+                    className="hover:bg-muted rounded p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                )}
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </div>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -289,10 +323,27 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[140px] h-10 text-sm"
+                  className="flex-1 sm:flex-none sm:min-w-[160px] h-10 text-sm justify-between"
                 >
-                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {dateFrom && (
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDateFromChange(undefined);
+                        }}
+                        className="hover:bg-muted rounded p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </div>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -310,10 +361,27 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[140px] h-10 text-sm"
+                  className="flex-1 sm:flex-none sm:min-w-[160px] h-10 text-sm justify-between"
                 >
-                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {dateTo && (
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDateToChange(undefined);
+                        }}
+                        className="hover:bg-muted rounded p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </div>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

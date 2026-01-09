@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, subDays, differenceInDays, addDays } from 'date-fns';
 import { bg } from 'date-fns/locale';
-import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -137,154 +137,152 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* History Period - From */}
+          {/* History Period - From */}
             <div className="space-y-2">
               <Label className="text-sm">Минал период от</Label>
-              <div className="flex gap-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between text-left font-normal">
+                    <div className="flex items-center">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formatDateWithYear(historyDateFrom)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={historyDateFrom || undefined}
-                      onSelect={(date) => date && setHistoryDateFrom(date)}
-                      disabled={(date) => date > (historyDateTo || today) || date > today}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                {historyDateFrom && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-10 w-10"
-                    onClick={() => setHistoryDateFrom(null)}
-                  >
-                    <X className="h-4 w-4" />
+                      <span className="truncate">{formatDateWithYear(historyDateFrom)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {historyDateFrom && (
+                        <span
+                          role="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setHistoryDateFrom(null);
+                          }}
+                          className="hover:bg-muted rounded p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </span>
+                      )}
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </div>
                   </Button>
-                )}
-              </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={historyDateFrom || undefined}
+                    onSelect={(date) => date && setHistoryDateFrom(date)}
+                    disabled={(date) => date > (historyDateTo || today) || date > today}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* History Period - To */}
             <div className="space-y-2">
               <Label className="text-sm">Минал период до</Label>
-              <div className="flex gap-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between text-left font-normal">
+                    <div className="flex items-center">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formatDateWithYear(historyDateTo)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={historyDateTo || undefined}
-                      onSelect={(date) => date && setHistoryDateTo(date)}
-                      disabled={(date) => date < (historyDateFrom || subDays(today, 365)) || date > today}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                {historyDateTo && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-10 w-10"
-                    onClick={() => setHistoryDateTo(null)}
-                  >
-                    <X className="h-4 w-4" />
+                      <span className="truncate">{formatDateWithYear(historyDateTo)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {historyDateTo && (
+                        <span
+                          role="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setHistoryDateTo(null);
+                          }}
+                          className="hover:bg-muted rounded p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </span>
+                      )}
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </div>
                   </Button>
-                )}
-              </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={historyDateTo || undefined}
+                    onSelect={(date) => date && setHistoryDateTo(date)}
+                    disabled={(date) => date < (historyDateFrom || subDays(today, 365)) || date > today}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Forecast Until Date */}
             <div className="space-y-2">
               <Label className="text-sm">Наличност до дата</Label>
-              <div className="flex gap-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between text-left font-normal">
+                    <div className="flex items-center">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formatDateWithYear(forecastDate)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={forecastDate || undefined}
-                      onSelect={(date) => date && setForecastDate(date)}
-                      disabled={(date) => date <= today}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                {forecastDate && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-10 w-10"
-                    onClick={() => setForecastDate(null)}
-                  >
-                    <X className="h-4 w-4" />
+                      <span className="truncate">{formatDateWithYear(forecastDate)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {forecastDate && (
+                        <span
+                          role="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setForecastDate(null);
+                          }}
+                          className="hover:bg-muted rounded p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </span>
+                      )}
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </div>
                   </Button>
-                )}
-              </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={forecastDate || undefined}
+                    onSelect={(date) => date && setForecastDate(date)}
+                    disabled={(date) => date <= today}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
-            {/* Forecast Until Date */}
-            <div className="space-y-2">
-              <Label className="text-sm">Наличност до дата</Label>
-              <div className="flex gap-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formatDateWithYear(forecastDate)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={forecastDate || undefined}
-                      onSelect={(date) => date && setForecastDate(date)}
-                      disabled={(date) => date <= today}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                {forecastDate && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-10 w-10"
-                    onClick={() => setForecastDate(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Search */}
+            {/* Search + Clear All */}
             <div className="space-y-2">
               <Label className="text-sm">Търсене</Label>
-              <Input
-                placeholder="Име, SKU или баркод..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Име, SKU или баркод..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1"
+                />
+                {(historyDateFrom || historyDateTo || forecastDate) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => {
+                      setHistoryDateFrom(null);
+                      setHistoryDateTo(null);
+                      setForecastDate(null);
+                    }}
+                    title="Изчисти всички дати"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
