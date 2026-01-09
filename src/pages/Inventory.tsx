@@ -177,14 +177,14 @@ export default function Inventory() {
             {/* Left fade & arrow */}
             {showLeftArrow && (
               <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center sm:hidden">
-                <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+                <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none" />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm shadow-sm border"
+                  className="relative h-6 w-6 rounded-full bg-card/90 backdrop-blur-sm shadow-sm border"
                   onClick={() => scrollTabs('left')}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3 h-3" />
                 </Button>
               </div>
             )}
@@ -192,14 +192,14 @@ export default function Inventory() {
             {/* Right fade & arrow */}
             {showRightArrow && (
               <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center sm:hidden">
-                <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm shadow-sm border"
+                  className="relative h-6 w-6 rounded-full bg-card/90 backdrop-blur-sm shadow-sm border"
                   onClick={() => scrollTabs('right')}
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3 h-3" />
                 </Button>
               </div>
             )}
