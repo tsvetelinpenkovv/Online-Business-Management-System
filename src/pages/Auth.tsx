@@ -307,21 +307,28 @@ const Auth = () => {
       </Card>
       
       <div className="mt-6 text-center text-xs text-muted-foreground">
-        <div>
+        <span>
           {companySettings?.footer_text || 'Разработен от'}{' '}
-          {companySettings?.footer_link ? (
+          {companySettings?.footer_link && companySettings?.footer_link_text ? (
             <a 
               href={companySettings.footer_link} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-primary hover:underline font-medium"
             >
-              {companySettings?.footer_link_text || 'Цветелин Пенков'}
+              {companySettings.footer_link_text}
             </a>
           ) : (
-            <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
+            <a 
+              href="https://www.linkedin.com/in/tsvetelinpenkov/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              {companySettings?.footer_link_text || 'Цветелин Пенков'}
+            </a>
           )}
-        </div>
+        </span>
         <div className="mt-1">
           <a 
             href={companySettings?.footer_website ? (companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`) : 'https://www.penkovstudio.eu'} 
