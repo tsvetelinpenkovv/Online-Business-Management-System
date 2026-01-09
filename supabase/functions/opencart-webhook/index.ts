@@ -29,6 +29,59 @@ interface OpenCartOrder {
     quantity: number;
     price: string;
   }>;
+  // UTM tracking fields (from OpenCart tracking extensions)
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  // Tracking data from extensions
+  tracking?: {
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    referrer?: string;
+  };
+  // Custom fields
+  custom_field?: Record<string, string>;
+  // Affiliate/referrer data
+  affiliate_id?: number;
+  affiliate_name?: string;
+  marketing_id?: number;
+  marketing_tracking?: string;
+}
+
+// Detect marketing source from UTM data
+function detectMarketingSource(order: OpenCartOrder): string | null {
+  // Check direct UTM fields
+  let utmSource = order.utm_source || '';
+  
+  // Check tracking object
+  if (order.tracking) {
+    utmSource = order.tracking.source || utmSource;
+  }
+  
+  // Check custom fields
+  if (order.custom_field) {
+    utmSource = order.custom_field.utm_source || order.custom_field.source || utmSource;
+  }
+  
+  // Check marketing tracking code
+  if (order.marketing_tracking) {
+    utmSource = order.marketing_tracking || utmSource;
+  }
+  
+  // Normalize and detect source
+  const source = utmSource.toLowerCase();
+  
+  if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
+    return 'facebook';
+  }
+  
+  if (source.includes('google') || source.includes('gclid') || source.includes('adwords') || source.includes('ppc') || source.includes('cpc')) {
+    return 'google';
+  }
+  
+  // Return null to use default platform source
+  return null;
 }
 
 function mapOpenCartStatus(status: string): string {
@@ -76,6 +129,11 @@ Deno.serve(async (req) => {
     const catalogNumbers = order.products?.map(item => item.model).filter(Boolean).join(', ') || null;
     const totalQuantity = order.products?.reduce((sum, item) => sum + item.quantity, 0) || 1;
 
+    // Detect marketing source from UTM data
+    const marketingSource = detectMarketingSource(order);
+    const orderSource = marketingSource || 'opencart';
+    console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
+
     const orderCode = `OC-${order.order_id}`;
     const { data: existingOrder } = await supabase
       .from('orders')
@@ -94,9 +152,9 @@ Deno.serve(async (req) => {
       quantity: totalQuantity,
       delivery_address: deliveryAddress,
       status: mapOpenCartStatus(order.order_status),
-      source: 'opencart',
+      source: orderSource,
       is_correct: true,
-      comment: `OpenCart Order #${order.order_id}`,
+      comment: `OpenCart Order #${order.order_id}${marketingSource ? ` (via ${marketingSource})` : ''}`,
     };
 
     if (existingOrder) {

@@ -34,6 +34,60 @@ interface PrestaShopOrder {
     product_quantity: number;
     unit_price_tax_incl: string;
   }>;
+  // UTM tracking fields (from PrestaShop tracking modules)
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  // Connection info
+  connection?: {
+    http_referer?: string;
+    id_referer?: number;
+  };
+  // Custom fields from modules
+  custom_fields?: Record<string, string>;
+  // Marketing data
+  marketing?: {
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    referrer?: string;
+  };
+}
+
+// Detect marketing source from UTM data
+function detectMarketingSource(order: PrestaShopOrder): string | null {
+  // Check direct UTM fields
+  let utmSource = order.utm_source || '';
+  
+  // Check marketing object
+  if (order.marketing) {
+    utmSource = order.marketing.source || utmSource;
+  }
+  
+  // Check custom fields
+  if (order.custom_fields) {
+    utmSource = order.custom_fields.utm_source || order.custom_fields.source || utmSource;
+  }
+  
+  // Check referrer from connection
+  let referrer = '';
+  if (order.connection) {
+    referrer = order.connection.http_referer || '';
+  }
+  
+  // Normalize and detect source
+  const source = (utmSource || referrer).toLowerCase();
+  
+  if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
+    return 'facebook';
+  }
+  
+  if (source.includes('google') || source.includes('gclid') || source.includes('adwords') || source.includes('ppc') || source.includes('cpc')) {
+    return 'google';
+  }
+  
+  // Return null to use default platform source
+  return null;
 }
 
 // Map PrestaShop order state to our status
@@ -115,6 +169,11 @@ Deno.serve(async (req) => {
     const catalogNumbers = orderRows.map((item) => item.product_reference).filter(Boolean).join(', ');
     const totalQuantity = orderRows.reduce((sum: number, item) => sum + (item.product_quantity || 1), 0);
 
+    // Detect marketing source from UTM data
+    const marketingSource = detectMarketingSource(order);
+    const orderSource = marketingSource || 'prestashop';
+    console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
+
     // Check if order already exists (by PrestaShop reference as code)
     const orderCode = `PS-${order.reference || order.id}`;
     const { data: existingOrder } = await supabase
@@ -134,9 +193,9 @@ Deno.serve(async (req) => {
       quantity: totalQuantity || 1,
       delivery_address: deliveryAddress,
       status: mapPrestaShopStatus(order.current_state || 1),
-      source: 'prestashop',
+      source: orderSource,
       is_correct: true,
-      comment: `PrestaShop Order #${order.reference || order.id}`,
+      comment: `PrestaShop Order #${order.reference || order.id}${marketingSource ? ` (via ${marketingSource})` : ''}`,
     };
 
     if (existingOrder) {
