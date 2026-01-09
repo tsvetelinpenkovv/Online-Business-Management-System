@@ -519,14 +519,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
                       )}
                     </button>
-                    {getOrderMessage(order.id) && (
-                      <MessageStatusIcon
-                        channel={getOrderMessage(order.id)!.channel}
-                        status={getOrderMessage(order.id)!.status}
-                        sentAt={getOrderMessage(order.id)!.sent_at}
-                        className="ml-1"
-                      />
-                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
@@ -672,12 +664,20 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell title="Действия с поръчката">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" title="Отвори меню с действия">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                  <div className="flex items-center justify-center gap-1">
+                    {getOrderMessage(order.id) && (
+                      <MessageStatusIcon
+                        channel={getOrderMessage(order.id)!.channel}
+                        status={getOrderMessage(order.id)!.status}
+                        sentAt={getOrderMessage(order.id)!.sent_at}
+                      />
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Отвори меню с действия">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setEditOrder(order)}>
                         <Pencil className="w-4 h-4 mr-2" />
@@ -723,6 +723,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
