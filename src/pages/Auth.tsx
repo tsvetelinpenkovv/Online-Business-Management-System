@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff } from 'lucide-react';
+import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff, UserPlus, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CompanySettings {
@@ -23,15 +23,43 @@ interface CompanySettings {
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
+  const [isSetupMode, setIsSetupMode] = useState<boolean | null>(null);
+  const [checkingSystem, setCheckingSystem] = useState(true);
   const { signIn, signOut, user } = useAuth();
   const { logoUrl, loading: logoLoading } = useCompanyLogo();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if system has users
+  useEffect(() => {
+    const checkSystemStatus = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('setup-first-admin', {
+          method: 'GET',
+        });
+
+        if (error) {
+          console.error('Error checking system status:', error);
+          setIsSetupMode(false);
+        } else {
+          setIsSetupMode(!data.hasUsers);
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        setIsSetupMode(false);
+      } finally {
+        setCheckingSystem(false);
+      }
+    };
+
+    checkSystemStatus();
+  }, []);
 
   useEffect(() => {
     const fetchCompanySettings = async () => {
@@ -73,6 +101,54 @@ const Auth = () => {
 
     checkUserAccess();
   }, [user, navigate, signOut, toast]);
+
+  const handleSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (password.length < 6) {
+        toast({
+          title: 'Грешка',
+          description: 'Паролата трябва да бъде поне 6 символа',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('setup-first-admin', {
+        body: { email, password, name },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: 'Успех!',
+        description: 'Администраторският акаунт е създаден. Моля влезте.',
+      });
+
+      // Switch to login mode
+      setIsSetupMode(false);
+      setPassword('');
+      setName('');
+    } catch (error: any) {
+      console.error('Setup error:', error);
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно създаване на акаунт',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,6 +236,18 @@ const Auth = () => {
     }
   };
 
+  if (checkingSystem) {
+    return (
+      <div 
+        className="min-h-screen flex flex-col items-center justify-center p-4"
+        style={{ backgroundColor: companySettings?.login_background_color || 'hsl(var(--background))' }}
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Зареждане...</p>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="min-h-screen flex flex-col items-center justify-center p-4"
@@ -184,81 +272,108 @@ const Auth = () => {
               </div>
             )}
           </div>
-          <CardTitle className="text-2xl">{companySettings?.login_title || 'Управление на поръчки и складови наличности'}</CardTitle>
-          <CardDescription>{companySettings?.login_description || 'Влезте в системата за управление на поръчки и склад'}</CardDescription>
+          {isSetupMode ? (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <CardTitle className="text-2xl">Първоначална настройка</CardTitle>
+              </div>
+              <CardDescription>
+                Създайте първия администраторски акаунт за системата
+              </CardDescription>
+            </>
+          ) : (
+            <>
+              <CardTitle className="text-2xl">{companySettings?.login_title || 'Управление на поръчки и складови наличности'}</CardTitle>
+              <CardDescription>{companySettings?.login_description || 'Влезте в системата за управление на поръчки и склад'}</CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Имейл</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10"
-                />
+          {isSetupMode ? (
+            <form onSubmit={handleSetup} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Име</Label>
+                <div className="relative">
+                  <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Вашето име"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Парола</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
+              <div className="space-y-2">
+                <Label htmlFor="email">Имейл</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Парола</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="pl-10 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">Минимум 6 символа</p>
+              </div>
+              <div className="pt-4">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Създаване...
+                    </>
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Създай администратор
+                    </>
                   )}
-                </button>
+                </Button>
               </div>
-            </div>
-            <div className="pt-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Влизане...
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Вход
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-
-          {showForgotPassword ? (
-            <div className="mt-6 pt-6 border-t">
-              <p className="text-sm text-muted-foreground mb-4 text-center">
-                Въведете имейл адреса си и ще ви изпратим линк за възстановяване на паролата
-              </p>
-              <form onSubmit={handleForgotPassword} className="space-y-4">
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email">Имейл</Label>
+                  <Label htmlFor="email">Имейл</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="reset-email"
+                      id="email"
                       type="email"
                       placeholder="email@example.com"
                       value={email}
@@ -268,40 +383,106 @@ const Auth = () => {
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full" variant="outline" disabled={isResetting}>
-                  {isResetting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Изпращане...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Изпрати линк за възстановяване
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Парола</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="pl-10 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Влизане...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Вход
+                      </>
+                    )}
+                  </Button>
+                </div>
               </form>
-              <Button 
-                variant="ghost" 
-                className="w-full mt-2 text-xs" 
-                onClick={() => setShowForgotPassword(false)}
-              >
-                <ArrowLeft className="w-3 h-3 mr-1" />
-                Обратно към вход
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
-                className="text-xs text-muted-foreground hover:text-primary underline inline-flex items-center gap-1"
-              >
-                <KeyRound className="w-3 h-3" />
-                Забравена парола?
-              </button>
-            </div>
+
+              {showForgotPassword ? (
+                <div className="mt-6 pt-6 border-t">
+                  <p className="text-sm text-muted-foreground mb-4 text-center">
+                    Въведете имейл адреса си и ще ви изпратим линк за възстановяване на паролата
+                  </p>
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Имейл</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="email@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full" variant="outline" disabled={isResetting}>
+                      {isResetting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Изпращане...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Изпрати линк за възстановяване
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full mt-2 text-xs" 
+                    onClick={() => setShowForgotPassword(false)}
+                  >
+                    <ArrowLeft className="w-3 h-3 mr-1" />
+                    Обратно към вход
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-xs text-muted-foreground hover:text-primary underline inline-flex items-center gap-1"
+                  >
+                    <KeyRound className="w-3 h-3" />
+                    Забравена парола?
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
