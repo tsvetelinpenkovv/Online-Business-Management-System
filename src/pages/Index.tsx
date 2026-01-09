@@ -63,8 +63,9 @@ const Index = () => {
     orders_page_title: string | null;
     inventory_page_title: string | null;
     footer_text: string | null;
-    footer_website: string | null;
+    footer_link_text: string | null;
     footer_link: string | null;
+    footer_website: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -96,8 +97,9 @@ const Index = () => {
             orders_page_title: data.orders_page_title,
             inventory_page_title: data.inventory_page_title,
             footer_text: data.footer_text,
-            footer_website: data.footer_website,
+            footer_link_text: data.footer_link_text,
             footer_link: data.footer_link,
+            footer_website: data.footer_website,
           });
         }
       } catch (error) {
@@ -613,20 +615,23 @@ const Index = () => {
 
       <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card mt-auto">
         <div className="text-center text-xs sm:text-sm text-muted-foreground">
-          {companySettings?.footer_link ? (
-            <a
-              href={companySettings.footer_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              {companySettings?.footer_text || 'Разработен от Цветелин Пенков'}
-            </a>
-          ) : (
-            <span className="font-medium">
-              {companySettings?.footer_text || 'Разработен от Цветелин Пенков'}
-            </span>
-          )}
+          <span>
+            {companySettings?.footer_text || 'Разработен от'}{' '}
+            {companySettings?.footer_link && companySettings?.footer_link_text ? (
+              <a
+                href={companySettings.footer_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                {companySettings.footer_link_text}
+              </a>
+            ) : (
+              <span className="font-medium">
+                {companySettings?.footer_link_text || 'Цветелин Пенков'}
+              </span>
+            )}
+          </span>
           {companySettings?.footer_website && (
             <div className="mt-1">
               <a
