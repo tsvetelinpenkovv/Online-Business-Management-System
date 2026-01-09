@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 interface CompanySettings {
   login_title?: string;
   login_description?: string;
+  login_background_color?: string;
   footer_text?: string;
   footer_link?: string;
   footer_link_text?: string;
@@ -36,7 +37,7 @@ const Auth = () => {
     const fetchCompanySettings = async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('login_title, login_description, footer_text, footer_link, footer_link_text, footer_website')
+        .select('login_title, login_description, login_background_color, footer_text, footer_link, footer_link_text, footer_website')
         .limit(1)
         .maybeSingle();
       if (data) {
@@ -160,7 +161,10 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center p-4"
+      style={{ backgroundColor: companySettings?.login_background_color || 'hsl(var(--background))' }}
+    >
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -303,33 +307,31 @@ const Auth = () => {
       </Card>
       
       <div className="mt-6 text-center text-xs text-muted-foreground">
-        <span>
+        <div>
           {companySettings?.footer_text || 'Разработен от'}{' '}
-          {companySettings?.footer_link && companySettings?.footer_link_text ? (
+          {companySettings?.footer_link ? (
             <a 
               href={companySettings.footer_link} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-primary hover:underline font-medium"
             >
-              {companySettings.footer_link_text}
+              {companySettings?.footer_link_text || 'Цветелин Пенков'}
             </a>
           ) : (
             <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
           )}
-        </span>
-        {companySettings?.footer_website && (
-          <div className="mt-1">
-            <a 
-              href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              {companySettings.footer_website}
-            </a>
-          </div>
-        )}
+        </div>
+        <div className="mt-1">
+          <a 
+            href={companySettings?.footer_website ? (companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`) : 'https://www.penkovstudio.eu'} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            {companySettings?.footer_website || 'www.penkovstudio.eu'}
+          </a>
+        </div>
       </div>
     </div>
   );
