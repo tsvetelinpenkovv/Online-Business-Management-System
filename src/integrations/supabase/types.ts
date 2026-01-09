@@ -81,6 +81,7 @@ export type Database = {
           footer_website: string | null
           id: string
           inventory_page_title: string | null
+          login_background_color: string | null
           login_description: string | null
           login_title: string | null
           manager_name: string | null
@@ -108,6 +109,7 @@ export type Database = {
           footer_website?: string | null
           id?: string
           inventory_page_title?: string | null
+          login_background_color?: string | null
           login_description?: string | null
           login_title?: string | null
           manager_name?: string | null
@@ -135,6 +137,7 @@ export type Database = {
           footer_website?: string | null
           id?: string
           inventory_page_title?: string | null
+          login_background_color?: string | null
           login_description?: string | null
           login_title?: string | null
           manager_name?: string | null

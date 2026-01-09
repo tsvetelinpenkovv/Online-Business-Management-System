@@ -50,6 +50,7 @@ interface CompanySettings {
   footer_website: string | null;
   login_title: string | null;
   login_description: string | null;
+  login_background_color: string | null;
 }
 
 const Settings = () => {
@@ -787,6 +788,37 @@ const Settings = () => {
                             onChange={(e) => setCompanySettings({...companySettings, login_description: e.target.value})}
                             className="bg-background"
                           />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-background-color">Фонов цвят</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="login-background-color"
+                              type="color"
+                              value={companySettings.login_background_color || '#ffffff'}
+                              onChange={(e) => setCompanySettings({...companySettings, login_background_color: e.target.value})}
+                              className="w-16 h-10 p-1 cursor-pointer"
+                            />
+                            <Input
+                              placeholder="#ffffff"
+                              value={companySettings.login_background_color || ''}
+                              onChange={(e) => setCompanySettings({...companySettings, login_background_color: e.target.value})}
+                              className="bg-background flex-1"
+                            />
+                            {companySettings.login_background_color && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCompanySettings({...companySettings, login_background_color: null})}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Оставете празно за цвета по подразбиране на темата
+                          </p>
                         </div>
                       </div>
                     </div>
