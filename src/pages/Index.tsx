@@ -635,14 +635,14 @@ const Index = () => {
         onCreateOrder={createOrder}
       />
 
-      {/* Mobile FAB for new order */}
+      {/* Mobile/Tablet FAB for new order */}
       <Button 
         onClick={() => setShowAddOrderDialog(true)} 
         size="icon" 
-        className="sm:hidden fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-20"
+        className="lg:hidden fixed bottom-6 right-4 h-12 w-12 rounded-full shadow-lg z-20"
         title="Нова поръчка"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-5 h-5" />
       </Button>
     </div>
   );
