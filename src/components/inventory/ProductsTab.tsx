@@ -1,6 +1,9 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { InventoryProduct } from '@/types/inventory';
+
+type SortKey = 'name' | 'sku' | 'current_stock' | 'purchase_price' | 'sale_price' | 'category';
+type SortDirection = 'asc' | 'desc';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,11 +84,61 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
     is_active: true,
     current_stock: 0,
   });
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-  const filteredProducts = inventory.products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.sku.toLowerCase().includes(search.toLowerCase()) ||
-    p.barcode?.toLowerCase().includes(search.toLowerCase())
+  const filteredAndSortedProducts = useMemo(() => {
+    const filtered = inventory.products.filter(p => 
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.sku.toLowerCase().includes(search.toLowerCase()) ||
+      p.barcode?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name, 'bg');
+          break;
+        case 'sku':
+          comparison = a.sku.localeCompare(b.sku);
+          break;
+        case 'current_stock':
+          comparison = a.current_stock - b.current_stock;
+          break;
+        case 'purchase_price':
+          comparison = a.purchase_price - b.purchase_price;
+          break;
+        case 'sale_price':
+          comparison = a.sale_price - b.sale_price;
+          break;
+        case 'category':
+          comparison = (a.category?.name || '').localeCompare(b.category?.name || '', 'bg');
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.products, search, sortKey, sortDirection]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortableHeader = ({ columnKey, children }: { columnKey: SortKey; children: React.ReactNode }) => (
+    <TableHead 
+      className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'text-right' : ''}`}
+      onClick={() => handleSort(columnKey)}
+    >
+      <div className={`flex items-center gap-1 ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'justify-end' : ''}`}>
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+      </div>
+    </TableHead>
   );
 
   const openCreateDialog = () => {
@@ -214,7 +267,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
       {/* Products - Mobile Cards */}
       {isMobile ? (
         <div className="space-y-3">
-          {filteredProducts.length === 0 ? (
+          {filteredAndSortedProducts.length === 0 ? (
             <Card className="py-8">
               <CardContent className="text-center text-muted-foreground">
                 <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -222,7 +275,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
               </CardContent>
             </Card>
           ) : (
-            filteredProducts.map((product) => (
+            filteredAndSortedProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -287,7 +340,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                       <p className="text-xs text-muted-foreground">Наличност</p>
                       <Badge 
                         variant="secondary" 
-                        className={`mt-0.5 ${
+                        className={`mt-0.5 pointer-events-none ${
                           product.current_stock <= 0 
                             ? 'bg-destructive/15 text-destructive' 
                             : product.current_stock <= product.min_stock_level 
@@ -324,19 +377,19 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Код</TableHead>
-                    <TableHead>Наименование</TableHead>
-                    <TableHead>Категория</TableHead>
-                    <TableHead className="text-right">Наличност</TableHead>
-                    <TableHead className="text-right">Покупна цена</TableHead>
-                    <TableHead className="text-right">Продажна цена</TableHead>
+                    <SortableHeader columnKey="sku">Код</SortableHeader>
+                    <SortableHeader columnKey="name">Наименование</SortableHeader>
+                    <SortableHeader columnKey="category">Категория</SortableHeader>
+                    <SortableHeader columnKey="current_stock">Наличност</SortableHeader>
+                    <SortableHeader columnKey="purchase_price">Покупна цена</SortableHeader>
+                    <SortableHeader columnKey="sale_price">Продажна цена</SortableHeader>
                     <TableHead className="text-right">Марж</TableHead>
                     <TableHead>Статус</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.length === 0 ? (
+                  {filteredAndSortedProducts.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                         <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -344,7 +397,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredProducts.map((product) => (
+                    filteredAndSortedProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell 
                           className="font-mono text-sm cursor-pointer hover:text-primary transition-colors"
@@ -381,7 +434,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         <TableCell className="text-right">
                           <Badge 
                             variant="secondary" 
-                            className={`${
+                            className={`pointer-events-none ${
                               product.current_stock <= 0 
                                 ? 'bg-destructive/15 text-destructive' 
                                 : product.current_stock <= product.min_stock_level 
