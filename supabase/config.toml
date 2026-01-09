@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.setup-first-admin]
 verify_jwt = false
+
+[functions.woocommerce-webhook]
+verify_jwt = false
+
+[functions.prestashop-webhook]
+verify_jwt = false
