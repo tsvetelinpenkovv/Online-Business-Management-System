@@ -248,14 +248,14 @@ export const ConnectixSettings: FC = () => {
           <div className="space-y-2">
             <Label>Статус, който тригерира изпращане</Label>
             <Select
-              value={config.trigger_status}
-              onValueChange={(value) => setConfig({ ...config, trigger_status: value })}
+              value={config.trigger_status || "none"}
+              onValueChange={(value) => setConfig({ ...config, trigger_status: value === "none" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Изберете статус..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Без автоматично изпращане —</SelectItem>
+                <SelectItem value="none">— Без автоматично изпращане —</SelectItem>
                 {statuses.map((status) => (
                   <SelectItem key={status.id} value={status.name}>
                     {status.name}
