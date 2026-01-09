@@ -475,14 +475,6 @@ const Index = () => {
 
           {/* Mobile menu */}
           <div className="flex sm:hidden items-center gap-1">
-            <Button 
-              onClick={() => setShowAddOrderDialog(true)} 
-              size="icon" 
-              className="h-8 w-8"
-              title="Нова поръчка"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8" title="Обнови">
@@ -642,6 +634,16 @@ const Index = () => {
         onOpenChange={setShowAddOrderDialog}
         onCreateOrder={createOrder}
       />
+
+      {/* Mobile FAB for new order */}
+      <Button 
+        onClick={() => setShowAddOrderDialog(true)} 
+        size="icon" 
+        className="sm:hidden fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-20"
+        title="Нова поръчка"
+      >
+        <Plus className="w-6 h-6" />
+      </Button>
     </div>
   );
 };
