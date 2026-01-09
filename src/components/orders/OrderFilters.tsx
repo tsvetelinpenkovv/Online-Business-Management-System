@@ -227,10 +227,10 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[180px] justify-between">
-                <div className="flex items-center">
+              <Button variant="outline" className="w-full sm:w-[180px] h-10 justify-between">
+                <div className="flex items-center min-w-0">
                   <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{getStatusLabel()}</span>
+                  <span className="truncate leading-none">{getStatusLabel()}</span>
                 </div>
                 <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
@@ -249,10 +249,10 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[180px] justify-between">
-                <div className="flex items-center">
+              <Button variant="outline" className="w-full sm:w-[180px] h-10 justify-between">
+                <div className="flex items-center min-w-0">
                   <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{getSourceLabel()}</span>
+                  <span className="truncate leading-none">{getSourceLabel()}</span>
                 </div>
                 <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
@@ -285,9 +285,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm"
+                  className="flex-1 sm:flex-none sm:min-w-[140px] h-10 text-sm"
                 >
-                  <Calendar className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                   <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yy', { locale: bg }) : 'От дата'}</span>
                 </Button>
               </PopoverTrigger>
@@ -306,9 +306,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex-1 sm:flex-none sm:min-w-[140px] text-xs sm:text-sm"
+                  className="flex-1 sm:flex-none sm:min-w-[140px] h-10 text-sm"
                 >
-                  <Calendar className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                   <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yy', { locale: bg }) : 'До дата'}</span>
                 </Button>
               </PopoverTrigger>
