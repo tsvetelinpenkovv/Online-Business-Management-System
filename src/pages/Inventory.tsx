@@ -35,15 +35,16 @@ export default function Inventory() {
   const [showRightArrow, setShowRightArrow] = useState(true);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const [inventoryPageTitle, setInventoryPageTitle] = useState<string>('Склад');
-  const [footerText, setFooterText] = useState<string>('Разработен от Цветелин Пенков');
-  const [footerWebsite, setFooterWebsite] = useState<string>('');
+  const [footerText, setFooterText] = useState<string>('Разработен от');
+  const [footerLinkText, setFooterLinkText] = useState<string>('Цветелин Пенков');
   const [footerLink, setFooterLink] = useState<string>('');
+  const [footerWebsite, setFooterWebsite] = useState<string>('');
 
   useEffect(() => {
     const fetchSettings = async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('inventory_page_title, footer_text, footer_website, footer_link')
+        .select('inventory_page_title, footer_text, footer_link_text, footer_link, footer_website')
         .limit(1)
         .maybeSingle();
       if (data?.inventory_page_title) {
@@ -52,11 +53,14 @@ export default function Inventory() {
       if (data?.footer_text) {
         setFooterText(data.footer_text);
       }
-      if (data?.footer_website) {
-        setFooterWebsite(data.footer_website);
+      if (data?.footer_link_text) {
+        setFooterLinkText(data.footer_link_text);
       }
       if (data?.footer_link) {
         setFooterLink(data.footer_link);
+      }
+      if (data?.footer_website) {
+        setFooterWebsite(data.footer_website);
       }
     };
     fetchSettings();
@@ -341,18 +345,21 @@ export default function Inventory() {
       {/* Футер */}
       <footer className="mt-auto border-t bg-card py-4">
         <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
-          {footerLink ? (
-            <a 
-              href={footerLink} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              {footerText}
-            </a>
-          ) : (
-            <span className="font-medium">{footerText}</span>
-          )}
+          <span>
+            {footerText}{' '}
+            {footerLink && footerLinkText ? (
+              <a 
+                href={footerLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                {footerLinkText}
+              </a>
+            ) : (
+              <span className="font-medium">{footerLinkText}</span>
+            )}
+          </span>
           {footerWebsite && (
             <div className="mt-1">
               <a 

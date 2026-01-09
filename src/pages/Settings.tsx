@@ -45,8 +45,9 @@ interface CompanySettings {
   orders_page_title: string | null;
   inventory_page_title: string | null;
   footer_text: string | null;
-  footer_website: string | null;
+  footer_link_text: string | null;
   footer_link: string | null;
+  footer_website: string | null;
 }
 
 const Settings = () => {
@@ -169,8 +170,9 @@ const Settings = () => {
           orders_page_title: companySettings.orders_page_title,
           inventory_page_title: companySettings.inventory_page_title,
           footer_text: companySettings.footer_text,
-          footer_website: companySettings.footer_website,
+          footer_link_text: companySettings.footer_link_text,
           footer_link: companySettings.footer_link,
+          footer_website: companySettings.footer_website,
         })
         .eq('id', companySettings.id);
 
@@ -763,22 +765,37 @@ const Settings = () => {
 
                     <div className="space-y-4">
                       <h3 className="font-medium">Настройки на футера</h3>
-                      <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="footer-text">Текст във футера</Label>
+                          <Label htmlFor="footer-text">Префикс текст</Label>
                           <Input
                             id="footer-text"
-                            placeholder="Разработен от Цветелин Пенков"
+                            placeholder="Разработен от"
                             value={companySettings.footer_text || ''}
                             onChange={(e) => setCompanySettings({...companySettings, footer_text: e.target.value})}
                             className="bg-background"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Основният текст който се показва във футера
+                            Обикновен текст преди линка (напр. "Разработен от")
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="footer-link">Линк към текста (по избор)</Label>
+                          <Label htmlFor="footer-link-text">Текст на линка</Label>
+                          <Input
+                            id="footer-link-text"
+                            placeholder="Цветелин Пенков"
+                            value={companySettings.footer_link_text || ''}
+                            onChange={(e) => setCompanySettings({...companySettings, footer_link_text: e.target.value})}
+                            className="bg-background"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Текстът който ще бъде линк (напр. име)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="footer-link">URL адрес на линка</Label>
                           <Input
                             id="footer-link"
                             placeholder="https://www.linkedin.com/in/..."
@@ -787,11 +804,11 @@ const Settings = () => {
                             className="bg-background"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Ако е попълнено, текстът във футера ще бъде линк. Оставете празно ако не искате линк.
+                            Линкът към който води текста (оставете празно ако не искате линк)
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="footer-website">Уебсайт във футера</Label>
+                          <Label htmlFor="footer-website">Уебсайт</Label>
                           <Input
                             id="footer-website"
                             placeholder="www.penkovstudio.eu"
@@ -800,7 +817,7 @@ const Settings = () => {
                             className="bg-background"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Уебсайтът който се показва под основния текст (центриран)
+                            Показва се на втори ред под основния текст
                           </p>
                         </div>
                       </div>
