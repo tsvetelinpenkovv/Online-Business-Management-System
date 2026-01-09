@@ -14,16 +14,18 @@ export function useStockSync() {
   const syncProductStock = useCallback(async (
     productId: string,
     sku: string,
+    productName: string,
     newQuantity: number,
     platform?: string
   ): Promise<SyncResult> => {
     try {
-      console.log('Syncing stock:', { productId, sku, newQuantity, platform });
+      console.log('Syncing stock:', { productId, sku, productName, newQuantity, platform });
 
       const { data, error } = await supabase.functions.invoke('sync-stock', {
         body: {
           product_id: productId,
           sku,
+          product_name: productName,
           new_quantity: newQuantity,
           platform,
         },
@@ -47,20 +49,20 @@ export function useStockSync() {
     productId: string,
     newStockLevel: number
   ) => {
-    // Get the product SKU
+    // Get the product SKU and name
     const { data: product } = await supabase
       .from('inventory_products')
-      .select('sku')
+      .select('sku, name')
       .eq('id', productId)
       .maybeSingle();
 
-    if (!product?.sku) {
-      console.log('No SKU found for product, skipping sync');
+    if (!product?.sku && !product?.name) {
+      console.log('No SKU or name found for product, skipping sync');
       return;
     }
 
-    // Sync to all enabled platforms
-    const result = await syncProductStock(productId, product.sku, newStockLevel);
+    // Sync to all enabled platforms using SKU or name
+    const result = await syncProductStock(productId, product.sku || '', product.name || '', newStockLevel);
     
     if (result.success && result.results) {
       const successfulPlatforms = Object.entries(result.results)

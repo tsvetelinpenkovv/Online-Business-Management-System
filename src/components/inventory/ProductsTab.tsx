@@ -207,6 +207,8 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
         barcode: formData.barcode || null,
         is_active: formData.is_active,
         woocommerce_id: null,
+        is_bundle: false,
+        external_bundle_type: null,
       };
       
       const result = await inventory.createProduct(productData);

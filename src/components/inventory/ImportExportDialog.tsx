@@ -404,6 +404,8 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
               barcode: getMappedValue(row, 'barcode') || null,
               is_active: getMappedValue(row, 'is_active') !== 'Не',
               woocommerce_id: null,
+              is_bundle: false,
+              external_bundle_type: null,
             });
             success++;
             break;
