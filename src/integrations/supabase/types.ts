@@ -254,8 +254,10 @@ export type Database = {
           created_at: string
           current_stock: number
           description: string | null
+          external_bundle_type: string | null
           id: string
           is_active: boolean
+          is_bundle: boolean
           min_stock_level: number | null
           name: string
           purchase_price: number | null
@@ -271,8 +273,10 @@ export type Database = {
           created_at?: string
           current_stock?: number
           description?: string | null
+          external_bundle_type?: string | null
           id?: string
           is_active?: boolean
+          is_bundle?: boolean
           min_stock_level?: number | null
           name: string
           purchase_price?: number | null
@@ -288,8 +292,10 @@ export type Database = {
           created_at?: string
           current_stock?: number
           description?: string | null
+          external_bundle_type?: string | null
           id?: string
           is_active?: boolean
+          is_bundle?: boolean
           min_stock_level?: number | null
           name?: string
           purchase_price?: number | null
@@ -508,6 +514,48 @@ export type Database = {
             columns: ["courier_id"]
             isOneToOne: false
             referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_bundles: {
+        Row: {
+          component_product_id: string
+          component_quantity: number
+          created_at: string
+          id: string
+          parent_product_id: string
+          updated_at: string
+        }
+        Insert: {
+          component_product_id: string
+          component_quantity?: number
+          created_at?: string
+          id?: string
+          parent_product_id: string
+          updated_at?: string
+        }
+        Update: {
+          component_product_id?: string
+          component_quantity?: number
+          created_at?: string
+          id?: string
+          parent_product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_bundles_component_product_id_fkey"
+            columns: ["component_product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_bundles_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
             referencedColumns: ["id"]
           },
         ]

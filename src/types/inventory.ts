@@ -43,11 +43,28 @@ export interface InventoryProduct {
   woocommerce_id: number | null;
   barcode: string | null;
   is_active: boolean;
+  is_bundle: boolean;
+  external_bundle_type: string | null;
   created_at: string;
   updated_at: string;
   // Joined fields
   category?: InventoryCategory;
   unit?: UnitOfMeasure;
+  // Bundle components (joined)
+  bundle_components?: ProductBundleComponent[];
+}
+
+export interface ProductBundle {
+  id: string;
+  parent_product_id: string;
+  component_product_id: string;
+  component_quantity: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductBundleComponent extends ProductBundle {
+  component_product?: InventoryProduct;
 }
 
 export interface StockBatch {

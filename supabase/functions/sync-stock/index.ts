@@ -8,6 +8,7 @@ const corsHeaders = {
 interface SyncRequest {
   product_id: string;
   sku: string;
+  product_name?: string; // Added for combined SKU/name search
   new_quantity: number;
   platform?: string; // Optional: sync only to specific platform
 }
@@ -19,28 +20,50 @@ interface PlatformConfig {
   is_enabled: boolean;
 }
 
-async function syncToWooCommerce(config: PlatformConfig, sku: string, quantity: number): Promise<boolean> {
+async function syncToWooCommerce(config: PlatformConfig, sku: string, productName: string | undefined, quantity: number): Promise<boolean> {
   try {
     const credentials = btoa(`${config.api_key}:${config.api_secret}`);
     
-    // First, find the product by SKU
-    const searchUrl = `${config.store_url}/wp-json/wc/v3/products?sku=${encodeURIComponent(sku)}`;
-    const searchRes = await fetch(searchUrl, {
-      headers: { 'Authorization': `Basic ${credentials}` },
-    });
+    // First, try to find the product by SKU
+    let products: any[] = [];
     
-    if (!searchRes.ok) {
-      console.error('WooCommerce search failed:', await searchRes.text());
-      return false;
+    if (sku) {
+      const searchUrl = `${config.store_url}/wp-json/wc/v3/products?sku=${encodeURIComponent(sku)}`;
+      const searchRes = await fetch(searchUrl, {
+        headers: { 'Authorization': `Basic ${credentials}` },
+      });
+      
+      if (searchRes.ok) {
+        products = await searchRes.json();
+      }
     }
     
-    const products = await searchRes.json();
+    // If not found by SKU, search by name
+    if (!products.length && productName) {
+      console.log('Product not found by SKU, searching by name:', productName);
+      const nameSearchUrl = `${config.store_url}/wp-json/wc/v3/products?search=${encodeURIComponent(productName)}`;
+      const nameSearchRes = await fetch(nameSearchUrl, {
+        headers: { 'Authorization': `Basic ${credentials}` },
+      });
+      
+      if (nameSearchRes.ok) {
+        const nameResults = await nameSearchRes.json();
+        // Find exact or close name match
+        products = nameResults.filter((p: any) => 
+          p.name.toLowerCase() === productName.toLowerCase() ||
+          p.name.toLowerCase().includes(productName.toLowerCase()) ||
+          productName.toLowerCase().includes(p.name.toLowerCase())
+        );
+      }
+    }
+    
     if (!products.length) {
-      console.log('Product not found in WooCommerce:', sku);
+      console.log('Product not found in WooCommerce by SKU or name:', sku, productName);
       return false;
     }
     
     const productId = products[0].id;
+    console.log('Found product in WooCommerce:', productId, products[0].name);
     
     // Update stock quantity
     const updateUrl = `${config.store_url}/wp-json/wc/v3/products/${productId}`;
@@ -61,7 +84,7 @@ async function syncToWooCommerce(config: PlatformConfig, sku: string, quantity: 
       return false;
     }
     
-    console.log('WooCommerce stock updated for SKU:', sku, 'New quantity:', quantity);
+    console.log('WooCommerce stock updated for:', sku || productName, 'New quantity:', quantity);
     return true;
   } catch (error) {
     console.error('WooCommerce sync error:', error);
@@ -69,29 +92,48 @@ async function syncToWooCommerce(config: PlatformConfig, sku: string, quantity: 
   }
 }
 
-async function syncToPrestaShop(config: PlatformConfig, sku: string, quantity: number): Promise<boolean> {
+async function syncToPrestaShop(config: PlatformConfig, sku: string, productName: string | undefined, quantity: number): Promise<boolean> {
   try {
     // PrestaShop uses webservice key as auth
     const credentials = btoa(`${config.api_key}:`);
     
+    let productId: number | null = null;
+    
     // Search for product by reference (SKU)
-    const searchUrl = `${config.store_url}/api/products?filter[reference]=${encodeURIComponent(sku)}&output_format=JSON`;
-    const searchRes = await fetch(searchUrl, {
-      headers: { 'Authorization': `Basic ${credentials}` },
-    });
-    
-    if (!searchRes.ok) {
-      console.error('PrestaShop search failed:', await searchRes.text());
-      return false;
+    if (sku) {
+      const searchUrl = `${config.store_url}/api/products?filter[reference]=${encodeURIComponent(sku)}&output_format=JSON`;
+      const searchRes = await fetch(searchUrl, {
+        headers: { 'Authorization': `Basic ${credentials}` },
+      });
+      
+      if (searchRes.ok) {
+        const data = await searchRes.json();
+        if (data.products?.length) {
+          productId = data.products[0].id;
+        }
+      }
     }
     
-    const data = await searchRes.json();
-    if (!data.products?.length) {
-      console.log('Product not found in PrestaShop:', sku);
-      return false;
+    // If not found by SKU, search by name
+    if (!productId && productName) {
+      console.log('Product not found by SKU, searching by name:', productName);
+      const nameSearchUrl = `${config.store_url}/api/products?filter[name]=%[${encodeURIComponent(productName)}]%&output_format=JSON`;
+      const nameSearchRes = await fetch(nameSearchUrl, {
+        headers: { 'Authorization': `Basic ${credentials}` },
+      });
+      
+      if (nameSearchRes.ok) {
+        const nameData = await nameSearchRes.json();
+        if (nameData.products?.length) {
+          productId = nameData.products[0].id;
+        }
+      }
     }
     
-    const productId = data.products[0].id;
+    if (!productId) {
+      console.log('Product not found in PrestaShop by SKU or name:', sku, productName);
+      return false;
+    }
     
     // Get stock available ID
     const stockUrl = `${config.store_url}/api/stock_availables?filter[id_product]=${productId}&output_format=JSON`;
@@ -134,7 +176,7 @@ async function syncToPrestaShop(config: PlatformConfig, sku: string, quantity: n
       return false;
     }
     
-    console.log('PrestaShop stock updated for SKU:', sku, 'New quantity:', quantity);
+    console.log('PrestaShop stock updated for:', sku || productName, 'New quantity:', quantity);
     return true;
   } catch (error) {
     console.error('PrestaShop sync error:', error);
@@ -142,29 +184,53 @@ async function syncToPrestaShop(config: PlatformConfig, sku: string, quantity: n
   }
 }
 
-async function syncToShopify(config: PlatformConfig, sku: string, quantity: number): Promise<boolean> {
+async function syncToShopify(config: PlatformConfig, sku: string, productName: string | undefined, quantity: number): Promise<boolean> {
   try {
+    let variant: any = null;
+    
     // Shopify API - search for product variant by SKU
-    const searchUrl = `${config.store_url}/admin/api/2024-01/variants.json?sku=${encodeURIComponent(sku)}`;
-    const searchRes = await fetch(searchUrl, {
-      headers: {
-        'X-Shopify-Access-Token': config.api_key,
-        'Content-Type': 'application/json',
-      },
-    });
+    if (sku) {
+      const searchUrl = `${config.store_url}/admin/api/2024-01/variants.json?sku=${encodeURIComponent(sku)}`;
+      const searchRes = await fetch(searchUrl, {
+        headers: {
+          'X-Shopify-Access-Token': config.api_key,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (searchRes.ok) {
+        const data = await searchRes.json();
+        if (data.variants?.length) {
+          variant = data.variants[0];
+        }
+      }
+    }
     
-    if (!searchRes.ok) {
-      console.error('Shopify search failed:', await searchRes.text());
+    // If not found by SKU, search by product name
+    if (!variant && productName) {
+      console.log('Product not found by SKU, searching by name:', productName);
+      const productsUrl = `${config.store_url}/admin/api/2024-01/products.json?title=${encodeURIComponent(productName)}`;
+      const productsRes = await fetch(productsUrl, {
+        headers: {
+          'X-Shopify-Access-Token': config.api_key,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (productsRes.ok) {
+        const productsData = await productsRes.json();
+        if (productsData.products?.length) {
+          // Use first variant of first matching product
+          variant = productsData.products[0].variants?.[0];
+        }
+      }
+    }
+    
+    if (!variant) {
+      console.log('Product not found in Shopify by SKU or name:', sku, productName);
       return false;
     }
     
-    const data = await searchRes.json();
-    if (!data.variants?.length) {
-      console.log('Product not found in Shopify:', sku);
-      return false;
-    }
-    
-    const variant = data.variants[0];
     const inventoryItemId = variant.inventory_item_id;
     
     // Get location ID (use first location)
@@ -206,7 +272,7 @@ async function syncToShopify(config: PlatformConfig, sku: string, quantity: numb
       return false;
     }
     
-    console.log('Shopify stock updated for SKU:', sku, 'New quantity:', quantity);
+    console.log('Shopify stock updated for:', sku || productName, 'New quantity:', quantity);
     return true;
   } catch (error) {
     console.error('Shopify sync error:', error);
@@ -225,10 +291,10 @@ Deno.serve(async (req) => {
     const body = await req.json() as SyncRequest;
     console.log('Sync request:', body);
 
-    const { product_id, sku, new_quantity, platform } = body;
+    const { product_id, sku, product_name, new_quantity, platform } = body;
 
-    if (!sku) {
-      return new Response(JSON.stringify({ error: 'SKU is required' }), {
+    if (!sku && !product_name) {
+      return new Response(JSON.stringify({ error: 'SKU or product name is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -285,13 +351,13 @@ Deno.serve(async (req) => {
       // Sync based on platform type
       switch (p.name) {
         case 'woocommerce':
-          results[p.name] = await syncToWooCommerce(config, sku, new_quantity);
+          results[p.name] = await syncToWooCommerce(config, sku, product_name, new_quantity);
           break;
         case 'prestashop':
-          results[p.name] = await syncToPrestaShop(config, sku, new_quantity);
+          results[p.name] = await syncToPrestaShop(config, sku, product_name, new_quantity);
           break;
         case 'shopify':
-          results[p.name] = await syncToShopify(config, sku, new_quantity);
+          results[p.name] = await syncToShopify(config, sku, product_name, new_quantity);
           break;
         case 'opencart':
         case 'magento':
