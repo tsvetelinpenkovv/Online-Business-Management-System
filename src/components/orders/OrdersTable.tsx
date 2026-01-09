@@ -664,14 +664,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell title="Действия с поръчката">
-                  <div className="flex items-center justify-center gap-1">
-                    {getOrderMessage(order.id) && (
-                      <MessageStatusIcon
-                        channel={getOrderMessage(order.id)!.channel}
-                        status={getOrderMessage(order.id)!.status}
-                        sentAt={getOrderMessage(order.id)!.sent_at}
-                      />
-                    )}
+                  <div className="flex flex-col items-center gap-0.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Отвори меню с действия">
@@ -723,6 +716,13 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                    {getOrderMessage(order.id) && (
+                      <MessageStatusIcon
+                        channel={getOrderMessage(order.id)!.channel}
+                        status={getOrderMessage(order.id)!.status}
+                        sentAt={getOrderMessage(order.id)!.sent_at}
+                      />
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
