@@ -18,13 +18,13 @@ export const MessageStatusIcon: FC<MessageStatusIconProps> = ({
   const getStatusIcon = () => {
     switch (status) {
       case 'read':
-        return <CheckCheck className="w-2.5 h-2.5 text-info" />;
+        return <CheckCheck className="w-2 h-2 text-info" />;
       case 'delivered':
-        return <Check className="w-2.5 h-2.5 text-success" />;
+        return <Check className="w-2 h-2 text-success" />;
       case 'failed':
-        return <XCircle className="w-2.5 h-2.5 text-destructive" />;
+        return <XCircle className="w-2 h-2 text-destructive" />;
       default:
-        return <Clock className="w-2.5 h-2.5 text-muted-foreground" />;
+        return <Clock className="w-2 h-2 text-muted-foreground" />;
     }
   };
 
@@ -51,9 +51,9 @@ export const MessageStatusIcon: FC<MessageStatusIconProps> = ({
         <TooltipTrigger asChild>
           <div className={`inline-flex items-center gap-0.5 ${className}`}>
             {channel === 'viber' ? (
-              <MessageCircle className={`w-3.5 h-3.5 ${getChannelColor()}`} />
+              <MessageCircle className={`w-3 h-3 ${getChannelColor()}`} />
             ) : (
-              <Smartphone className={`w-3.5 h-3.5 ${getChannelColor()}`} />
+              <Smartphone className={`w-3 h-3 ${getChannelColor()}`} />
             )}
             {getStatusIcon()}
           </div>
