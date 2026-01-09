@@ -141,9 +141,9 @@ export default function Inventory() {
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          {/* Scrollable tabs for mobile */}
-          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-            <TabsList className="inline-flex w-max sm:w-auto sm:flex sm:flex-wrap h-auto gap-1 p-1 bg-muted/50">
+          {/* Scrollable tabs for mobile - hidden scrollbar */}
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <TabsList className="inline-flex w-max sm:w-auto sm:flex sm:flex-wrap h-auto gap-1 p-1 bg-muted/50 [&::-webkit-scrollbar]:hidden">
               <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Табло</span>
