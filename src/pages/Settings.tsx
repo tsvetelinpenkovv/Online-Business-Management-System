@@ -520,7 +520,7 @@ const Settings = () => {
               <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 gap-1">
                 <TabsTrigger value="api" className="whitespace-nowrap">API</TabsTrigger>
                 <TabsTrigger value="platforms" className="whitespace-nowrap">Платформи</TabsTrigger>
-                <TabsTrigger value="sources" className="whitespace-nowrap border-l-2 border-primary/30 ml-1 pl-2">Източници</TabsTrigger>
+                <TabsTrigger value="sources" className="whitespace-nowrap">Източници</TabsTrigger>
                 <TabsTrigger value="branding" className="whitespace-nowrap">Лого</TabsTrigger>
                 <TabsTrigger value="couriers" className="whitespace-nowrap">Куриери</TabsTrigger>
                 <TabsTrigger value="statuses" className="whitespace-nowrap">Статуси</TabsTrigger>
