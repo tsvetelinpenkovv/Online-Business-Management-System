@@ -391,14 +391,14 @@ const Index = () => {
                 </Button>
               </>
             )}
-            <Button onClick={() => setShowAddOrderDialog(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Нова поръчка
-            </Button>
           </div>
 
           {/* Tablet and Desktop common actions */}
           <div className="hidden sm:flex items-center gap-2">
+            <Button onClick={() => setShowAddOrderDialog(true)} className="hidden lg:flex gap-2">
+              <Plus className="w-4 h-4" />
+              Нова поръчка
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
