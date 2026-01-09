@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { InventoryCategory } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Plus, Search, Pencil, Trash2, FolderTree, MoreHorizontal, Package
+  Plus, Search, Pencil, Trash2, FolderTree, MoreHorizontal, Package, ArrowUpDown, FileText
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -49,6 +49,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+type CategorySortKey = 'name' | 'description' | 'parent' | 'productCount';
+type SortDirection = 'asc' | 'desc';
 
 interface CategoriesTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -60,14 +63,33 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editCategory, setEditCategory] = useState<InventoryCategory | null>(null);
+  const [sortKey, setSortKey] = useState<CategorySortKey>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     parent_id: '',
   });
 
-  const filteredCategories = inventory.categories.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase())
+  const handleSort = (key: CategorySortKey) => {
+    if (sortKey === key) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortableHeader = ({ columnKey, children, align = 'left' }: { columnKey: CategorySortKey; children: React.ReactNode; align?: 'left' | 'right' }) => (
+    <TableHead 
+      className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${align === 'right' ? 'text-right' : ''}`}
+      onClick={() => handleSort(columnKey)}
+    >
+      <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+      </div>
+    </TableHead>
   );
 
   const getParentName = (parentId: string | null) => {
@@ -79,6 +101,31 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
   const getProductCount = (categoryId: string) => {
     return inventory.products.filter(p => p.category_id === categoryId).length;
   };
+
+  const filteredAndSortedCategories = useMemo(() => {
+    const filtered = inventory.categories.filter(c => 
+      c.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name, 'bg');
+          break;
+        case 'description':
+          comparison = (a.description || '').localeCompare(b.description || '', 'bg');
+          break;
+        case 'parent':
+          comparison = getParentName(a.parent_id).localeCompare(getParentName(b.parent_id), 'bg');
+          break;
+        case 'productCount':
+          comparison = getProductCount(a.id) - getProductCount(b.id);
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.categories, inventory.products, search, sortKey, sortDirection]);
 
   const openCreateDialog = () => {
     setEditCategory(null);
@@ -144,7 +191,7 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
       {/* Categories - Mobile Cards */}
       {isMobile ? (
         <div className="space-y-3">
-          {filteredCategories.length === 0 ? (
+          {filteredAndSortedCategories.length === 0 ? (
             <Card className="py-8">
               <CardContent className="text-center text-muted-foreground">
                 <FolderTree className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -152,7 +199,7 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
               </CardContent>
             </Card>
           ) : (
-            filteredCategories.map((category) => (
+            filteredAndSortedCategories.map((category) => (
               <Card key={category.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -212,15 +259,24 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Наименование</TableHead>
-                    <TableHead>Описание</TableHead>
-                    <TableHead>Родителска категория</TableHead>
-                    <TableHead className="text-right">Артикули</TableHead>
+                    <SortableHeader columnKey="name">
+                      <FolderTree className="w-4 h-4 text-muted-foreground" />
+                      Наименование
+                    </SortableHeader>
+                    <SortableHeader columnKey="description">
+                      <FileText className="w-4 h-4 text-muted-foreground" />
+                      Описание
+                    </SortableHeader>
+                    <SortableHeader columnKey="parent">Родителска категория</SortableHeader>
+                    <SortableHeader columnKey="productCount" align="right">
+                      <Package className="w-4 h-4 text-muted-foreground" />
+                      Артикули
+                    </SortableHeader>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCategories.length === 0 ? (
+                  {filteredAndSortedCategories.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                         <FolderTree className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -228,7 +284,7 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredCategories.map((category) => (
+                    filteredAndSortedCategories.map((category) => (
                       <TableRow key={category.id}>
                         <TableCell className="font-medium">{category.name}</TableCell>
                         <TableCell className="text-muted-foreground">

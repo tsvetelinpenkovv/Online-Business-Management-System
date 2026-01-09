@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { Supplier } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { 
-  Plus, Search, Pencil, Trash2, Users, Phone, Mail, MapPin, MoreHorizontal
+  Plus, Search, Pencil, Trash2, Users, Phone, Mail, MapPin, MoreHorizontal, ArrowUpDown, Building, User, Hash
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -43,6 +43,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+type SupplierSortKey = 'name' | 'contact_person' | 'phone' | 'email' | 'eik' | 'is_active';
+type SortDirection = 'asc' | 'desc';
 
 interface SuppliersTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -54,6 +57,8 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editSupplier, setEditSupplier] = useState<Supplier | null>(null);
+  const [sortKey, setSortKey] = useState<SupplierSortKey>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [formData, setFormData] = useState({
     name: '',
     contact_person: '',
@@ -65,6 +70,60 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
     notes: '',
     is_active: true,
   });
+
+  const handleSort = (key: SupplierSortKey) => {
+    if (sortKey === key) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortableHeader = ({ columnKey, children }: { columnKey: SupplierSortKey; children: React.ReactNode }) => (
+    <TableHead 
+      className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+      onClick={() => handleSort(columnKey)}
+    >
+      <div className="flex items-center gap-1">
+        {children}
+        <ArrowUpDown className={`w-3 h-3 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+      </div>
+    </TableHead>
+  );
+
+  const filteredAndSortedSuppliers = useMemo(() => {
+    const filtered = inventory.suppliers.filter(s => 
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.contact_person?.toLowerCase().includes(search.toLowerCase()) ||
+      s.email?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortKey) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name, 'bg');
+          break;
+        case 'contact_person':
+          comparison = (a.contact_person || '').localeCompare(b.contact_person || '', 'bg');
+          break;
+        case 'phone':
+          comparison = (a.phone || '').localeCompare(b.phone || '');
+          break;
+        case 'email':
+          comparison = (a.email || '').localeCompare(b.email || '');
+          break;
+        case 'eik':
+          comparison = (a.eik || '').localeCompare(b.eik || '');
+          break;
+        case 'is_active':
+          comparison = (a.is_active ? 1 : 0) - (b.is_active ? 1 : 0);
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [inventory.suppliers, search, sortKey, sortDirection]);
 
   const filteredSuppliers = inventory.suppliers.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -142,7 +201,7 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
       {/* Suppliers - Mobile Cards */}
       {isMobile ? (
         <div className="space-y-3">
-          {filteredSuppliers.length === 0 ? (
+          {filteredAndSortedSuppliers.length === 0 ? (
             <Card className="py-8">
               <CardContent className="text-center text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -150,7 +209,7 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
               </CardContent>
             </Card>
           ) : (
-            filteredSuppliers.map((supplier) => (
+            filteredAndSortedSuppliers.map((supplier) => (
               <Card key={supplier.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -226,17 +285,32 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Наименование</TableHead>
-                    <TableHead>Контактно лице</TableHead>
-                    <TableHead>Телефон</TableHead>
-                    <TableHead>Имейл</TableHead>
-                    <TableHead>ЕИК</TableHead>
-                    <TableHead>Статус</TableHead>
+                    <SortableHeader columnKey="name">
+                      <Building className="w-4 h-4 text-muted-foreground" />
+                      Наименование
+                    </SortableHeader>
+                    <SortableHeader columnKey="contact_person">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      Контактно лице
+                    </SortableHeader>
+                    <SortableHeader columnKey="phone">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      Телефон
+                    </SortableHeader>
+                    <SortableHeader columnKey="email">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      Имейл
+                    </SortableHeader>
+                    <SortableHeader columnKey="eik">
+                      <Hash className="w-4 h-4 text-muted-foreground" />
+                      ЕИК
+                    </SortableHeader>
+                    <SortableHeader columnKey="is_active">Статус</SortableHeader>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSuppliers.length === 0 ? (
+                  {filteredAndSortedSuppliers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -244,7 +318,7 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredSuppliers.map((supplier) => (
+                    filteredAndSortedSuppliers.map((supplier) => (
                       <TableRow key={supplier.id}>
                         <TableCell>
                           <div>

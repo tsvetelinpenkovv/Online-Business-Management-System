@@ -165,7 +165,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                       e.stopPropagation();
                       onDateFromChange(undefined);
                     }}
-                    className="hover:bg-muted rounded p-0.5"
+                    className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                   >
                     <X className="h-3 w-3" />
                   </span>
@@ -200,7 +200,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                       e.stopPropagation();
                       onDateToChange(undefined);
                     }}
-                    className="hover:bg-muted rounded p-0.5"
+                    className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                   >
                     <X className="h-3 w-3" />
                   </span>
@@ -337,7 +337,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                           e.stopPropagation();
                           onDateFromChange(undefined);
                         }}
-                        className="hover:bg-muted rounded p-0.5"
+                        className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                       >
                         <X className="h-3 w-3" />
                       </span>
@@ -375,7 +375,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                           e.stopPropagation();
                           onDateToChange(undefined);
                         }}
-                        className="hover:bg-muted rounded p-0.5"
+                        className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
                       >
                         <X className="h-3 w-3" />
                       </span>
