@@ -11,6 +11,7 @@ import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
 import { PhoneWithFlag } from './PhoneWithFlag';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
+import { MessageStatusIcon } from './MessageStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,6 +31,11 @@ interface MobileOrderCardProps {
   onDelete: () => void;
   onPrint: () => void;
   onStatusChange?: (orderId: number, newStatus: OrderStatus) => void;
+  messageInfo?: {
+    channel: 'viber' | 'sms';
+    status: 'sent' | 'delivered' | 'read' | 'failed';
+    sentAt?: string;
+  } | null;
 }
 
 export const MobileOrderCard: FC<MobileOrderCardProps> = ({
@@ -40,6 +46,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onDelete,
   onPrint,
   onStatusChange,
+  messageInfo,
 }) => {
   const { toast } = useToast();
   const [copiedPhone, setCopiedPhone] = useState(false);
@@ -112,6 +119,13 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               aria-label={`Избери поръчка ${order.id}`}
             />
             <span className="text-xs text-muted-foreground font-medium whitespace-nowrap inline-flex items-center gap-1 min-w-[70px]">№ {order.id}</span>
+            {messageInfo && (
+              <MessageStatusIcon 
+                channel={messageInfo.channel} 
+                status={messageInfo.status} 
+                sentAt={messageInfo.sentAt}
+              />
+            )}
           </div>
           <div className="flex items-center gap-2">
             <SourceIcon source={order.source} className="w-5 h-5" />
