@@ -334,7 +334,7 @@ export default function Inventory() {
         inventory={inventory}
       />
 
-      {/* Footer */}
+      {/* Футер */}
       <footer className="mt-auto border-t bg-card py-4">
         <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
           <a 
@@ -347,7 +347,7 @@ export default function Inventory() {
           </a>
           {footerWebsite && (
             <div className="mt-1">
-              website: <a 
+              <a 
                 href={footerWebsite.startsWith('http') ? footerWebsite : `https://${footerWebsite}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
