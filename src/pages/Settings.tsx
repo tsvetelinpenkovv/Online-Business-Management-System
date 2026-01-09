@@ -12,7 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
@@ -89,6 +90,43 @@ const Settings = () => {
   const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
   const [loadingCompany, setLoadingCompany] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
+
+  // Mobile tabs scroll
+  const isMobile = useIsMobile();
+  const tabsListRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollButtons = () => {
+    if (tabsListRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsListRef.current) {
+      const scrollAmount = 150;
+      tabsListRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    const tabsList = tabsListRef.current;
+    if (tabsList) {
+      tabsList.addEventListener('scroll', checkScrollButtons);
+      window.addEventListener('resize', checkScrollButtons);
+      return () => {
+        tabsList.removeEventListener('scroll', checkScrollButtons);
+        window.removeEventListener('resize', checkScrollButtons);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -516,7 +554,21 @@ const Settings = () => {
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         <Tabs defaultValue="api" className="w-full">
           <div className="relative mb-6">
-            <div className="overflow-x-auto scrollbar-hide">
+            {/* Left scroll button - mobile only */}
+            {isMobile && canScrollLeft && (
+              <button
+                onClick={() => scrollTabs('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1 shadow-md"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            
+            <div 
+              ref={tabsListRef}
+              className="overflow-x-auto scrollbar-hide"
+              onScroll={checkScrollButtons}
+            >
               <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 gap-1">
                 <TabsTrigger value="api" className="whitespace-nowrap">API</TabsTrigger>
                 <TabsTrigger value="platforms" className="whitespace-nowrap">Платформи</TabsTrigger>
@@ -528,9 +580,24 @@ const Settings = () => {
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap">Потребители</TabsTrigger>}
               </TabsList>
             </div>
+            
+            {/* Right scroll button - mobile only */}
+            {isMobile && canScrollRight && (
+              <button
+                onClick={() => scrollTabs('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1 shadow-md"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+            
             {/* Gradient indicators for scroll on mobile */}
-            <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none md:hidden" />
-            <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none md:hidden" />
+            {isMobile && canScrollLeft && (
+              <div className="absolute left-6 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+            )}
+            {isMobile && canScrollRight && (
+              <div className="absolute right-6 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+            )}
           </div>
 
           <TabsContent value="platforms" className="space-y-6">
