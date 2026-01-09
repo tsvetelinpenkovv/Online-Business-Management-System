@@ -16,6 +16,7 @@ interface CompanySettings {
   footer_text?: string;
   footer_link?: string;
   footer_link_text?: string;
+  footer_website?: string;
 }
 
 const Auth = () => {
@@ -35,7 +36,7 @@ const Auth = () => {
     const fetchCompanySettings = async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('login_title, login_description, footer_text, footer_link, footer_link_text')
+        .select('login_title, login_description, footer_text, footer_link, footer_link_text, footer_website')
         .limit(1)
         .maybeSingle();
       if (data) {
@@ -317,6 +318,18 @@ const Auth = () => {
             <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
           )}
         </span>
+        {companySettings?.footer_website && (
+          <div className="mt-1">
+            <a 
+              href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {companySettings.footer_website}
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
