@@ -20,3 +20,15 @@ verify_jwt = false
 
 [functions.prestashop-webhook]
 verify_jwt = false
+
+[functions.opencart-webhook]
+verify_jwt = false
+
+[functions.magento-webhook]
+verify_jwt = false
+
+[functions.shopify-webhook]
+verify_jwt = false
+
+[functions.sync-stock]
+verify_jwt = false
