@@ -3,7 +3,7 @@ import {
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown,
-  Send, Loader2
+  Send, Loader2, Smartphone
 } from 'lucide-react';
 import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -14,11 +14,13 @@ import { InfoPopover } from './InfoPopover';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { MobileOrderCard } from './MobileOrderCard';
 import { InvoiceDialog } from './InvoiceDialog';
+import { MessageStatusIcon } from './MessageStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOrderMessages } from '@/hooks/useOrderMessages';
 import {
   Table,
   TableBody,
@@ -72,6 +74,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const isMobile = useIsMobile();
   const [sortKey, setSortKey] = useState<OrderSortKey>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  
+  // Fetch messages for orders
+  const orderIds = useMemo(() => orders.map(o => o.id), [orders]);
+  const { getOrderMessage, refetch: refetchMessages } = useOrderMessages(orderIds);
 
   const handleSendMessage = async (order: Order) => {
     setSendingMessage(order.id);
@@ -95,6 +101,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
           title: 'Успех',
           description: data.sandbox ? 'Тестово съобщение (sandbox режим)' : 'Съобщението е изпратено успешно!',
         });
+        refetchMessages(); // Refresh message icons
       } else {
         throw new Error(data?.error || 'Неуспешно изпращане');
       }
@@ -444,7 +451,16 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   />
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
-                  <span className="inline-flex items-center gap-1">№ {order.id}</span>
+                  <div className="inline-flex items-center gap-1">
+                    <span>№ {order.id}</span>
+                    {getOrderMessage(order.id) && (
+                      <MessageStatusIcon
+                        channel={getOrderMessage(order.id)!.channel}
+                        status={getOrderMessage(order.id)!.status}
+                        sentAt={getOrderMessage(order.id)!.sent_at}
+                      />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
                   <SourceIcon source={order.source} className="w-5 h-5" />

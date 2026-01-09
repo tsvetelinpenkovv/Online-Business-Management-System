@@ -152,6 +152,74 @@ export type Database = {
         }
         Relationships: []
       }
+      connectix_messages: {
+        Row: {
+          channel: string
+          created_at: string
+          customer_name: string | null
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          is_sandbox: boolean | null
+          message_id: string | null
+          order_id: number | null
+          phone: string
+          read_at: string | null
+          sent_at: string
+          status: string
+          template_id: string | null
+          template_name: string | null
+          trigger_status: string | null
+          trigger_type: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          customer_name?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_sandbox?: boolean | null
+          message_id?: string | null
+          order_id?: number | null
+          phone: string
+          read_at?: string | null
+          sent_at?: string
+          status?: string
+          template_id?: string | null
+          template_name?: string | null
+          trigger_status?: string | null
+          trigger_type?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          customer_name?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_sandbox?: boolean | null
+          message_id?: string | null
+          order_id?: number | null
+          phone?: string
+          read_at?: string | null
+          sent_at?: string
+          status?: string
+          template_id?: string | null
+          template_name?: string | null
+          trigger_status?: string | null
+          trigger_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connectix_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couriers: {
         Row: {
           created_at: string

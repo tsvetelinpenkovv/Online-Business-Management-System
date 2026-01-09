@@ -231,7 +231,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Button 
           variant="outline" 
-          onClick={() => navigate('/settings?tab=api')}
+          onClick={() => navigate('/messages')}
           className="bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
         >
           <MessageCircle className="w-4 h-4 mr-2" />
@@ -416,7 +416,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           {/* Messages button for mobile */}
           <Button 
             variant="outline" 
-            onClick={() => navigate('/settings?tab=api')}
+            onClick={() => navigate('/messages')}
             className="col-span-1 sm:w-auto h-9 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
