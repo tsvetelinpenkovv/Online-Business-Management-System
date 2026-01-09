@@ -23,33 +23,11 @@ import { ReportsTab } from '@/components/inventory/ReportsTab';
 import { ForecastTab } from '@/components/inventory/ForecastTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
-import { EcommercePlatformSettings } from '@/components/settings/EcommercePlatformSettings';
-import { PrestaShopLogo, OpenCartLogo, MagentoLogo, ShopifyLogo } from '@/components/icons/PlatformLogos';
-import woocommerceLogo from '@/assets/woocommerce-logo.png';
-
-// Platform logo components map
-const platformLogoComponents: Record<string, React.ReactNode> = {
-  woocommerce: <img src={woocommerceLogo} alt="WooCommerce" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-  prestashop: <PrestaShopLogo className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-  opencart: <OpenCartLogo className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-  magento: <MagentoLogo className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-  shopify: <ShopifyLogo className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-};
-
-// Platform API labels
-const platformApiLabels: Record<string, { apiKey: string; apiSecret: string }> = {
-  woocommerce: { apiKey: 'Consumer Key', apiSecret: 'Consumer Secret' },
-  prestashop: { apiKey: 'API Key', apiSecret: 'Webservice Key' },
-  opencart: { apiKey: 'API Username', apiSecret: 'API Key' },
-  magento: { apiKey: 'Access Token', apiSecret: 'Access Token Secret' },
-  shopify: { apiKey: 'API Key', apiSecret: 'API Secret' },
-};
 
 export default function Inventory() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const inventory = useInventory();
-  const { platforms, loading: platformsLoading } = useEcommercePlatforms();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
@@ -304,17 +282,6 @@ export default function Inventory() {
                   <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Прогнози</span>
                 </TabsTrigger>
-                {/* Dynamic platform tabs */}
-                {platforms.filter(p => p.is_enabled).map((platform) => (
-                  <TabsTrigger 
-                    key={platform.name}
-                    value={platform.name} 
-                    className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
-                  >
-                    {platformLogoComponents[platform.name] || <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                    <span>{platform.display_name}</span>
-                  </TabsTrigger>
-                ))}
               </TabsList>
             </div>
           </div>
@@ -350,19 +317,6 @@ export default function Inventory() {
           <TabsContent value="forecast" className="mt-4 sm:mt-6">
             <ForecastTab inventory={inventory} />
           </TabsContent>
-
-          {/* Dynamic platform settings tabs */}
-          {platforms.filter(p => p.is_enabled).map((platform) => (
-            <TabsContent key={platform.name} value={platform.name} className="mt-4 sm:mt-6">
-              <EcommercePlatformSettings 
-                platformName={platform.name}
-                displayName={platform.display_name}
-                onSync={() => inventory.refresh()}
-                apiKeyLabel={platformApiLabels[platform.name]?.apiKey || 'API Key'}
-                apiSecretLabel={platformApiLabels[platform.name]?.apiSecret || 'API Secret'}
-              />
-            </TabsContent>
-          ))}
         </Tabs>
       </main>
 

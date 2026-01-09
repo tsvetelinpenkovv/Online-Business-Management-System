@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Save, TestTube, Copy, Check } from 'lucide-react';
+import { Loader2, Save, TestTube, Copy, Check, RefreshCw, Package } from 'lucide-react';
 import { useEcommercePlatforms, EcommercePlatform } from '@/hooks/useEcommercePlatforms';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -62,6 +62,7 @@ export const PlatformApiSettings: FC = () => {
   const [configs, setConfigs] = useState<Record<string, PlatformConfig>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState<string | null>(null);
   const [copiedWebhook, setCopiedWebhook] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -184,6 +185,43 @@ export const PlatformApiSettings: FC = () => {
       setCopiedWebhook(platformName);
       setTimeout(() => setCopiedWebhook(null), 2000);
       toast({ title: 'Копирано', description: 'Webhook URL е копиран' });
+    }
+  };
+
+  const syncProducts = async (platform: EcommercePlatform) => {
+    const config = configs[platform.name];
+    if (!config?.store_url || !config?.api_key) {
+      toast({ 
+        title: 'Грешка', 
+        description: 'Моля, конфигурирайте API настройките първо', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    setSyncing(platform.name);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-products', {
+        body: { platform: platform.name }
+      });
+
+      if (error) throw error;
+
+      const imported = data?.imported || 0;
+      const bundles = data?.bundles || 0;
+      
+      toast({ 
+        title: 'Синхронизация завършена', 
+        description: `Импортирани ${imported} продукта${bundles > 0 ? ` и ${bundles} комплекта` : ''} от ${platform.display_name}` 
+      });
+    } catch (err: any) {
+      toast({ 
+        title: 'Грешка при синхронизация', 
+        description: err.message || 'Неуспешна синхронизация', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setSyncing(null);
     }
   };
 
@@ -328,6 +366,20 @@ export const PlatformApiSettings: FC = () => {
                         <Save className="w-4 h-4 mr-2" />
                       )}
                       Запази
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => syncProducts(platform)}
+                      disabled={syncing === platform.name || !platform.is_enabled}
+                      title={!platform.is_enabled ? 'Активирайте платформата първо' : 'Синхронизирай продукти и комплекти'}
+                    >
+                      {syncing === platform.name ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Package className="w-4 h-4 mr-2" />
+                      )}
+                      Синхронизирай продукти
                     </Button>
                   </div>
                 </div>
