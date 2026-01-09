@@ -189,7 +189,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="total_price">Обща цена (лв.)</Label>
+            <Label htmlFor="total_price">Обща цена (€)</Label>
             <Input
               id="total_price"
               type="number"
