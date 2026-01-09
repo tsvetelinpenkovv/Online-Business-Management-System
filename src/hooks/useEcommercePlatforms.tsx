@@ -21,15 +21,22 @@ export const useEcommercePlatforms = () => {
       const { data, error } = await supabase
         .from('ecommerce_platforms')
         .select('*')
-        .order('display_name');
+        .order('name');
 
       if (error) throw error;
       
-      // Type assertion for the config field
+      // Type assertion for the config field and sort with WooCommerce first
       const typedData = (data || []).map(platform => ({
         ...platform,
         config: (platform.config || {}) as Record<string, any>
       }));
+      
+      // Sort: WooCommerce first, then alphabetically by display_name
+      typedData.sort((a, b) => {
+        if (a.name === 'woocommerce') return -1;
+        if (b.name === 'woocommerce') return 1;
+        return a.display_name.localeCompare(b.display_name);
+      });
       
       setPlatforms(typedData);
     } catch (error) {
