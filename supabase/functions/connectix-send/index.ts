@@ -189,9 +189,9 @@ serve(async (req) => {
         );
       }
 
-      if (!config.api_token || !config.template_id) {
+      if (!config.api_token) {
         return new Response(
-          JSON.stringify({ success: false, error: 'Connectix API token or template ID missing' }),
+          JSON.stringify({ success: false, error: 'Connectix API token missing' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -212,27 +212,30 @@ serve(async (req) => {
       };
 
       console.log('Sending message to:', formattedPhone.slice(0, 6) + '***');
-      console.log('Template ID:', config.template_id);
       console.log('Parameters:', messageParams);
 
-      // In sandbox mode, simulate success
+      // Determine channel (default viber)
+      const channel = 'viber';
+
+      // In sandbox mode, simulate success and log
       if (config.sandbox_mode) {
         console.log('Sandbox mode: Simulating message send');
         
-        // Log the simulated send
-        await supabase.from('api_settings').upsert({
-          setting_key: `connectix_log_${Date.now()}`,
-          setting_value: JSON.stringify({
-            type: 'sandbox_send',
-            phone: formattedPhone,
-            order_id,
-            params: messageParams,
-            timestamp: new Date().toISOString(),
-          }),
-        }, { onConflict: 'setting_key' });
+        // Log the message to database
+        await supabase.from('connectix_messages').insert({
+          order_id: order_id || null,
+          phone: formattedPhone,
+          customer_name: customer_name || null,
+          channel: channel,
+          template_name: 'Ръчно изпращане',
+          message_id: `sandbox_${Date.now()}`,
+          status: 'sent',
+          trigger_type: 'manual',
+          is_sandbox: true,
+        });
 
         return new Response(
-          JSON.stringify({ success: true, message: 'Sandbox mode - message simulated', message_id: `sandbox_${Date.now()}` }),
+          JSON.stringify({ success: true, sandbox: true, message: 'Sandbox mode - message simulated', message_id: `sandbox_${Date.now()}` }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -240,7 +243,6 @@ serve(async (req) => {
       // Send actual message via Connectix API
       try {
         const messageBody = {
-          template: config.template_id,
           phone: formattedPhone,
           parameters: messageParams,
           contact: {
@@ -262,12 +264,40 @@ serve(async (req) => {
 
         if (sendResponse.ok) {
           console.log('Message sent successfully:', responseData);
+          
+          // Log the message to database
+          await supabase.from('connectix_messages').insert({
+            order_id: order_id || null,
+            phone: formattedPhone,
+            customer_name: customer_name || null,
+            channel: responseData.channel || channel,
+            template_name: 'Ръчно изпращане',
+            message_id: responseData.id || responseData.message_id,
+            status: 'sent',
+            trigger_type: 'manual',
+            is_sandbox: false,
+          });
+
           return new Response(
             JSON.stringify({ success: true, message: 'Message sent', data: responseData }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         } else {
           console.error('Connectix send error:', responseData);
+          
+          // Log failed message
+          await supabase.from('connectix_messages').insert({
+            order_id: order_id || null,
+            phone: formattedPhone,
+            customer_name: customer_name || null,
+            channel: channel,
+            template_name: 'Ръчно изпращане',
+            status: 'failed',
+            trigger_type: 'manual',
+            error_message: responseData.message || 'Failed to send',
+            is_sandbox: false,
+          });
+
           return new Response(
             JSON.stringify({ success: false, error: responseData.message || 'Failed to send message' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
