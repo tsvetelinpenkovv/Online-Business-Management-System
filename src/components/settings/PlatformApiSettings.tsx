@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Save, TestTube, ExternalLink, Copy, Check } from 'lucide-react';
+import { Loader2, Save, TestTube, Copy, Check } from 'lucide-react';
 import { useEcommercePlatforms, EcommercePlatform } from '@/hooks/useEcommercePlatforms';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import woocommerceLogo from '@/assets/woocommerce-logo.png';
 import { PrestaShopLogo, OpenCartLogo, MagentoLogo, ShopifyLogo } from '@/components/icons/PlatformLogos';
+import { EditableSourceLogo } from './EditableSourceLogo';
 
 interface PlatformConfig {
   store_url: string;
@@ -221,7 +222,13 @@ export const PlatformApiSettings: FC = () => {
                   {/* Platform Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {platformLogos[platform.name]}
+                      <EditableSourceLogo
+                        sourceId={platform.id}
+                        sourceName={platform.display_name}
+                        currentLogo={platformLogos[platform.name]}
+                        logoUrl={platform.logo_url}
+                        size="lg"
+                      />
                       <div>
                         <h3 className="font-medium">{platform.display_name}</h3>
                         <p className="text-xs text-muted-foreground">{labels.description}</p>
