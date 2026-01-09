@@ -717,81 +717,81 @@ const Settings = () => {
               </CardContent>
             </Card>
 
-            {/* Персонализация - moved to bottom with reddish background */}
-            <Card className="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50">
+            {/* Персонализация - moved to bottom with gray background */}
+            <Card className="bg-muted/50 dark:bg-muted/30 border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-300">
+                <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Персонализация
                 </CardTitle>
-                <CardDescription className="text-red-600/80 dark:text-red-400/80">
-                  Персонализирайте имената на страниците и footer текста
+                <CardDescription>
+                  Персонализирайте имената на страниците и текста във футера
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {companySettings && (
                   <>
                     <div className="space-y-4">
-                      <h3 className="font-medium text-red-800 dark:text-red-300">Имена на страници</h3>
+                      <h3 className="font-medium">Имена на страници</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="orders-page-title" className="text-red-700 dark:text-red-300">Заглавие на страницата с поръчки</Label>
+                          <Label htmlFor="orders-page-title">Заглавие на страницата с поръчки</Label>
                           <Input
                             id="orders-page-title"
                             placeholder="Управление на поръчки"
                             value={companySettings.orders_page_title || ''}
                             onChange={(e) => setCompanySettings({...companySettings, orders_page_title: e.target.value})}
-                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                            className="bg-background"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="inventory-page-title" className="text-red-700 dark:text-red-300">Заглавие на складовата програма</Label>
+                          <Label htmlFor="inventory-page-title">Заглавие на складовата програма</Label>
                           <Input
                             id="inventory-page-title"
                             placeholder="Склад"
                             value={companySettings.inventory_page_title || ''}
                             onChange={(e) => setCompanySettings({...companySettings, inventory_page_title: e.target.value})}
-                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                            className="bg-background"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <Separator className="bg-red-200 dark:bg-red-800" />
+                    <Separator />
 
                     <div className="space-y-4">
-                      <h3 className="font-medium text-red-800 dark:text-red-300">Footer настройки</h3>
+                      <h3 className="font-medium">Настройки на футера</h3>
                       <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="footer-text" className="text-red-700 dark:text-red-300">Текст във Footer</Label>
+                          <Label htmlFor="footer-text">Текст във футера</Label>
                           <Input
                             id="footer-text"
                             placeholder="Разработен от Цветелин Пенков"
                             value={companySettings.footer_text || ''}
                             onChange={(e) => setCompanySettings({...companySettings, footer_text: e.target.value})}
-                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                            className="bg-background"
                           />
-                          <p className="text-xs text-red-600/70 dark:text-red-400/70">
-                            Основният текст който се показва във footer-a
+                          <p className="text-xs text-muted-foreground">
+                            Основният текст който се показва във футера
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="footer-website" className="text-red-700 dark:text-red-300">Уебсайт във Footer</Label>
+                          <Label htmlFor="footer-website">Уебсайт във футера</Label>
                           <Input
                             id="footer-website"
                             placeholder="www.penkovstudio.eu"
                             value={companySettings.footer_website || ''}
                             onChange={(e) => setCompanySettings({...companySettings, footer_website: e.target.value})}
-                            className="bg-white dark:bg-red-950/50 border-red-200 dark:border-red-800"
+                            className="bg-background"
                           />
-                          <p className="text-xs text-red-600/70 dark:text-red-400/70">
+                          <p className="text-xs text-muted-foreground">
                             Уебсайтът който се показва под основния текст (центриран)
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <Button onClick={handleSaveCompanySettings} disabled={savingCompany} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white">
+                    <Button onClick={handleSaveCompanySettings} disabled={savingCompany} className="w-full sm:w-auto">
                       {savingCompany ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />

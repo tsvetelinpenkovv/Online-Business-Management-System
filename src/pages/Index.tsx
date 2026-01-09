@@ -62,6 +62,8 @@ const Index = () => {
     manager_name: string | null;
     orders_page_title: string | null;
     inventory_page_title: string | null;
+    footer_text: string | null;
+    footer_website: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -92,6 +94,8 @@ const Index = () => {
             manager_name: data.manager_name,
             orders_page_title: data.orders_page_title,
             inventory_page_title: data.inventory_page_title,
+            footer_text: data.footer_text,
+            footer_website: data.footer_website,
           });
         }
       } catch (error) {
@@ -606,17 +610,28 @@ const Index = () => {
       </main>
 
       <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card mt-auto">
-        <p className="text-center text-xs sm:text-sm text-muted-foreground">
-          Разработен от{' '}
+        <div className="text-center text-xs sm:text-sm text-muted-foreground">
           <a
             href="https://www.linkedin.com/in/tsvetelinpenkov/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline font-medium"
           >
-            Цветелин Пенков
+            {companySettings?.footer_text || 'Разработен от Цветелин Пенков'}
           </a>
-        </p>
+          {companySettings?.footer_website && (
+            <div className="mt-1">
+              <a
+                href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {companySettings.footer_website}
+              </a>
+            </div>
+          )}
+        </div>
       </footer>
 
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
