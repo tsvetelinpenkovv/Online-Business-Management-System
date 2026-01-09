@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useFavicon } from '@/hooks/useFavicon';
+import { useLoginBackground } from '@/hooks/useLoginBackground';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,16 +58,19 @@ const Settings = () => {
   const { user, loading: authLoading } = useAuth();
   const { logoUrl, uploadLogo, deleteLogo, loading: logoLoading } = useCompanyLogo();
   const { faviconUrl, uploadFavicon, deleteFavicon, loading: faviconLoading } = useFavicon();
+  const { backgroundUrl, uploadBackground, deleteBackground, loading: backgroundLoading } = useLoginBackground();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [uploadingBackground, setUploadingBackground] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [customApis, setCustomApis] = useState<{ key: string; value: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
   
   // User management state
   const [isAdmin, setIsAdmin] = useState(false);
@@ -819,6 +823,86 @@ const Settings = () => {
                           <p className="text-xs text-muted-foreground">
                             Оставете празно за цвета по подразбиране на темата
                           </p>
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                          <Label>Фоново изображение</Label>
+                          <div className="flex items-center gap-4">
+                            {backgroundLoading ? (
+                              <div className="w-32 h-20 bg-muted rounded-lg flex items-center justify-center">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              </div>
+                            ) : backgroundUrl ? (
+                              <div className="relative">
+                                <img 
+                                  src={backgroundUrl} 
+                                  alt="Login background" 
+                                  className="w-32 h-20 object-cover rounded-lg border"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute -top-2 -right-2 w-6 h-6"
+                                  onClick={async () => {
+                                    const success = await deleteBackground();
+                                    if (success) {
+                                      toast({
+                                        title: 'Успех',
+                                        description: 'Фоновото изображение беше изтрито',
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="w-32 h-20 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
+                                <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                ref={backgroundInputRef}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingBackground(true);
+                                  const success = await uploadBackground(file);
+                                  if (success) {
+                                    toast({
+                                      title: 'Успех',
+                                      description: 'Фоновото изображение беше качено',
+                                    });
+                                  }
+                                  setUploadingBackground(false);
+                                  if (backgroundInputRef.current) {
+                                    backgroundInputRef.current.value = '';
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => backgroundInputRef.current?.click()}
+                                disabled={uploadingBackground}
+                              >
+                                {uploadingBackground ? (
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Upload className="w-4 h-4 mr-2" />
+                                )}
+                                {backgroundUrl ? 'Смени изображение' : 'Качи изображение'}
+                              </Button>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                JPG, PNG, WEBP, GIF. Макс. 5MB. Изображението замества фоновия цвят.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
