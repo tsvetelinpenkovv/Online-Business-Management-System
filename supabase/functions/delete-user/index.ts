@@ -72,6 +72,42 @@ Deno.serve(async (req) => {
     // Create admin client with service role
     const adminClient = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Check if the user to delete is an admin
+    const { data: userToDeleteData, error: checkUserError } = await adminClient
+      .from('allowed_users')
+      .select('role')
+      .eq('email', email)
+      .single()
+
+    if (checkUserError) {
+      console.error('Error checking user:', checkUserError)
+      return new Response(
+        JSON.stringify({ error: 'User not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // If the user is an admin, check if they're the last one
+    if (userToDeleteData.role === 'admin') {
+      const { count, error: countError } = await adminClient
+        .from('allowed_users')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'admin')
+
+      if (countError) {
+        console.error('Error counting admins:', countError)
+        throw countError
+      }
+
+      if ((count ?? 0) <= 1) {
+        console.log('Attempted to delete last admin:', email)
+        return new Response(
+          JSON.stringify({ error: 'Не можете да изтриете последния администратор. Винаги трябва да има поне един администратор в системата.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
     // Get the user ID from auth
     const { data: users, error: listError } = await adminClient.auth.admin.listUsers()
     
