@@ -461,16 +461,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   />
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
-                  <div className="inline-flex items-center gap-1">
-                    <span>№ {order.id}</span>
-                    {getOrderMessage(order.id) && (
-                      <MessageStatusIcon
-                        channel={getOrderMessage(order.id)!.channel}
-                        status={getOrderMessage(order.id)!.status}
-                        sentAt={getOrderMessage(order.id)!.sent_at}
-                      />
-                    )}
-                  </div>
+                  № {order.id}
                 </TableCell>
                 <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
                   <SourceIcon source={order.source} className="w-5 h-5" />
@@ -528,6 +519,14 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
                       )}
                     </button>
+                    {getOrderMessage(order.id) && (
+                      <MessageStatusIcon
+                        channel={getOrderMessage(order.id)!.channel}
+                        status={getOrderMessage(order.id)!.status}
+                        sentAt={getOrderMessage(order.id)!.sent_at}
+                        className="ml-1"
+                      />
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-sm font-medium text-success whitespace-nowrap" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
