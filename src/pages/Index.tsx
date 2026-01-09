@@ -613,30 +613,29 @@ const Index = () => {
         )}
       </main>
 
-      <footer className="w-full px-3 sm:px-6 py-3 sm:py-4 border-t bg-card mt-auto">
-        <div className="text-center text-xs sm:text-sm text-muted-foreground">
+      {/* Футер */}
+      <footer className="mt-auto border-t bg-card py-4">
+        <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
           <span>
             {companySettings?.footer_text || 'Разработен от'}{' '}
             {companySettings?.footer_link && companySettings?.footer_link_text ? (
-              <a
-                href={companySettings.footer_link}
-                target="_blank"
+              <a 
+                href={companySettings.footer_link} 
+                target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline font-medium"
               >
                 {companySettings.footer_link_text}
               </a>
             ) : (
-              <span className="font-medium">
-                {companySettings?.footer_link_text || 'Цветелин Пенков'}
-              </span>
+              <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
             )}
           </span>
           {companySettings?.footer_website && (
             <div className="mt-1">
-              <a
-                href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`}
-                target="_blank"
+              <a 
+                href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`} 
+                target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
