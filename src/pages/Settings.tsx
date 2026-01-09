@@ -116,17 +116,25 @@ const Settings = () => {
   };
 
   useEffect(() => {
-    checkScrollButtons();
+    // Wait for DOM to be ready
+    const timer = setTimeout(() => {
+      checkScrollButtons();
+    }, 100);
+    
     const tabsList = tabsListRef.current;
     if (tabsList) {
       tabsList.addEventListener('scroll', checkScrollButtons);
       window.addEventListener('resize', checkScrollButtons);
-      return () => {
+    }
+    
+    return () => {
+      clearTimeout(timer);
+      if (tabsList) {
         tabsList.removeEventListener('scroll', checkScrollButtons);
         window.removeEventListener('resize', checkScrollButtons);
-      };
-    }
-  }, []);
+      }
+    };
+  }, [isMobile]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -555,10 +563,10 @@ const Settings = () => {
         <Tabs defaultValue="api" className="w-full">
           <div className="relative mb-6">
             {/* Left scroll button - mobile only */}
-            {isMobile && canScrollLeft && (
+            {canScrollLeft && (
               <button
                 onClick={() => scrollTabs('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1 shadow-md"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md md:hidden"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -566,7 +574,7 @@ const Settings = () => {
             
             <div 
               ref={tabsListRef}
-              className="overflow-x-auto scrollbar-hide"
+              className="overflow-x-auto scrollbar-hide mx-7 md:mx-0"
               onScroll={checkScrollButtons}
             >
               <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 gap-1">
@@ -582,21 +590,13 @@ const Settings = () => {
             </div>
             
             {/* Right scroll button - mobile only */}
-            {isMobile && canScrollRight && (
+            {canScrollRight && (
               <button
                 onClick={() => scrollTabs('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1 shadow-md"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md md:hidden"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
-            )}
-            
-            {/* Gradient indicators for scroll on mobile */}
-            {isMobile && canScrollLeft && (
-              <div className="absolute left-6 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none" />
-            )}
-            {isMobile && canScrollRight && (
-              <div className="absolute right-6 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none" />
             )}
           </div>
 
