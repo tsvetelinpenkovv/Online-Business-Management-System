@@ -65,7 +65,7 @@ export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoa
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div className="flex justify-center cursor-pointer" onClick={() => setOpen(!open)}>
-          <Icon className={`w-4 h-4 ${className}`} />
+          <Icon className={`w-5 h-5 ${className}`} />
         </div>
       </PopoverTrigger>
       <PopoverContent 
