@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useFavicon } from '@/hooks/useFavicon';
@@ -18,6 +18,7 @@ import { CourierSettings } from '@/components/settings/CourierSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
 import { PlatformApiSettings } from '@/components/settings/PlatformApiSettings';
+import { ConnectixSettings } from '@/components/settings/ConnectixSettings';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -63,6 +64,8 @@ const Settings = () => {
   const { faviconUrl, uploadFavicon, deleteFavicon, loading: faviconLoading } = useFavicon();
   const { backgroundUrl, uploadBackground, deleteBackground, loading: backgroundLoading } = useLoginBackground();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'api';
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -560,7 +563,7 @@ const Settings = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
-        <Tabs defaultValue="api" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <div className="relative mb-6">
             {/* Left scroll button - mobile only */}
             {canScrollLeft && (
@@ -1367,6 +1370,8 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="api" className="space-y-6">
+            {/* Connectix Settings */}
+            <ConnectixSettings />
 
         <Card>
           <CardHeader>
