@@ -137,7 +137,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
     >
       <div className={`flex items-center gap-1.5 ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'justify-end' : ''}`}>
         {children}
-        <ArrowUpDown className={`w-4 h-4 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
+        <ArrowUpDown className={`w-3.5 h-3.5 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
       </div>
     </TableHead>
   );
@@ -374,11 +374,11 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Покупна</p>
-                      <p className="font-medium">{product.purchase_price.toFixed(2)} €</p>
+                      <p className="font-medium text-success">{product.purchase_price.toFixed(2)} €</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Продажна</p>
-                      <p className="font-medium">{product.sale_price.toFixed(2)} €</p>
+                      <p className="font-medium text-success">{product.sale_price.toFixed(2)} €</p>
                     </div>
                   </div>
                 </CardContent>
@@ -478,8 +478,8 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                             {product.current_stock} {product.unit?.abbreviation || 'бр.'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">{product.purchase_price.toFixed(2)} €</TableCell>
-                        <TableCell className="text-right">{product.sale_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-success font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-success font-medium">{product.sale_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right text-success">{margin(product)}%</TableCell>
                         <TableCell>{getStockStatus(product)}</TableCell>
                         <TableCell>
