@@ -80,8 +80,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={onStatusFilterChange} open={statusOpen} onOpenChange={setStatusOpen}>
-          <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+        <Select value={statusFilter} onValueChange={(val) => { onStatusFilterChange(val); setStatusOpen(false); }} open={statusOpen} onOpenChange={setStatusOpen}>
+          <SelectTrigger 
+            className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
+            onClick={(e) => { if (statusOpen) { e.preventDefault(); setStatusOpen(false); } }}
+          >
             <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
@@ -97,8 +100,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={sourceFilter} onValueChange={onSourceFilterChange} open={sourceOpen} onOpenChange={setSourceOpen}>
-          <SelectTrigger className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+        <Select value={sourceFilter} onValueChange={(val) => { onSourceFilterChange(val); setSourceOpen(false); }} open={sourceOpen} onOpenChange={setSourceOpen}>
+          <SelectTrigger 
+            className="w-[160px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
+            onClick={(e) => { if (sourceOpen) { e.preventDefault(); setSourceOpen(false); } }}
+          >
             <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="Източници" />
           </SelectTrigger>
@@ -204,8 +210,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={statusFilter} onValueChange={onStatusFilterChange} open={statusOpen} onOpenChange={setStatusOpen}>
-            <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+          <Select value={statusFilter} onValueChange={(val) => { onStatusFilterChange(val); setStatusOpen(false); }} open={statusOpen} onOpenChange={setStatusOpen}>
+            <SelectTrigger 
+              className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
+              onClick={(e) => { if (statusOpen) { e.preventDefault(); setStatusOpen(false); } }}
+            >
               <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Статус" />
             </SelectTrigger>
@@ -221,8 +230,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </SelectContent>
           </Select>
 
-          <Select value={sourceFilter} onValueChange={onSourceFilterChange} open={sourceOpen} onOpenChange={setSourceOpen}>
-            <SelectTrigger className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary">
+          <Select value={sourceFilter} onValueChange={(val) => { onSourceFilterChange(val); setSourceOpen(false); }} open={sourceOpen} onOpenChange={setSourceOpen}>
+            <SelectTrigger 
+              className="w-full sm:w-[180px] data-[state=open]:bg-primary data-[state=open]:text-primary-foreground data-[state=open]:border-primary"
+              onClick={(e) => { if (sourceOpen) { e.preventDefault(); setSourceOpen(false); } }}
+            >
               <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="Източници" />
             </SelectTrigger>

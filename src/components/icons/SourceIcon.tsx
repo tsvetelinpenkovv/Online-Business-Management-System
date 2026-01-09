@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { Phone } from 'lucide-react';
 import woocommerceLogo from '@/assets/woocommerce-logo.png';
 
 interface SourceIconProps {
@@ -26,6 +27,10 @@ export const SourceIcon: FC<SourceIconProps> = ({ source, className = "w-5 h-5" 
     case 'woocommerce':
       return (
         <img src={woocommerceLogo} alt="WooCommerce" className={className} />
+      );
+    case 'phone':
+      return (
+        <Phone className={`${className} text-green-600`} />
       );
     default:
       return null;

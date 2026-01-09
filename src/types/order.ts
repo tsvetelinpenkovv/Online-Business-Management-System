@@ -31,7 +31,7 @@ export interface Order {
   courier_id: string | null;
   status: OrderStatus;
   comment: string | null;
-  source: 'google' | 'facebook' | 'woocommerce';
+  source: 'google' | 'facebook' | 'woocommerce' | 'phone' | null;
   user_id: string | null;
 }
 

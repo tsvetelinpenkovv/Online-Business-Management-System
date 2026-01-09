@@ -300,13 +300,13 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
               <Label>Родителска категория</Label>
               <Select
                 value={formData.parent_id}
-                onValueChange={(value) => setFormData({ ...formData, parent_id: value })}
+                onValueChange={(value) => setFormData({ ...formData, parent_id: value === 'none' ? '' : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Няма (основна категория)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Няма (основна категория)</SelectItem>
+                  <SelectItem value="none">Няма (основна категория)</SelectItem>
                   {inventory.categories
                     .filter(c => c.id !== editCategory?.id)
                     .map((cat) => (

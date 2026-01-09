@@ -24,6 +24,7 @@ import {
   Package, TrendingUp, Warehouse, Download, FileSpreadsheet,
   ArrowDownToLine, ArrowUpFromLine
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { MOVEMENT_TYPE_LABELS } from '@/types/inventory';
@@ -40,6 +41,11 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   const stats = inventory.getInventoryStats();
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Код копиран!');
+  };
 
   // Filter movements by date
   const filteredMovements = useMemo(() => {
@@ -143,7 +149,11 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
-                        <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                    <span 
+                          className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => copyToClipboard(product.sku)}
+                          title="Натисни за копиране"
+                        >
                           {product.sku}
                         </span>
                         <p className="font-medium mt-1 truncate">{product.name}</p>
@@ -205,7 +215,13 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                     <TableBody>
                       {filteredProducts.map((product) => (
                         <TableRow key={product.id} className={product.current_stock <= product.min_stock_level ? 'bg-warning/10' : ''}>
-                          <TableCell className="font-mono">{product.sku}</TableCell>
+                          <TableCell 
+                            className="font-mono cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => copyToClipboard(product.sku)}
+                            title="Натисни за копиране"
+                          >
+                            {product.sku}
+                          </TableCell>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.category?.name || '-'}</TableCell>
                           <TableCell className="text-right">

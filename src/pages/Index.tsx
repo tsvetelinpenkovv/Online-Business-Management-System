@@ -7,12 +7,13 @@ import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { printOrderReceipts } from '@/components/orders/OrderReceipt';
+import { AddOrderDialog } from '@/components/orders/AddOrderDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +36,7 @@ type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { orders, loading: ordersLoading, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
+  const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   const { logoUrl } = useCompanyLogo();
   const navigate = useNavigate();
 
@@ -47,6 +48,7 @@ const Index = () => {
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [showAddOrderDialog, setShowAddOrderDialog] = useState(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
   const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
   const [companySettings, setCompanySettings] = useState<{
@@ -391,6 +393,10 @@ const Index = () => {
                 </Button>
               </>
             )}
+            <Button onClick={() => setShowAddOrderDialog(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Нова поръчка
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
@@ -469,6 +475,14 @@ const Index = () => {
 
           {/* Mobile menu */}
           <div className="flex sm:hidden items-center gap-1">
+            <Button 
+              onClick={() => setShowAddOrderDialog(true)} 
+              size="icon" 
+              className="h-8 w-8"
+              title="Нова поръчка"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8" title="Обнови">
@@ -622,6 +636,12 @@ const Index = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AddOrderDialog 
+        open={showAddOrderDialog} 
+        onOpenChange={setShowAddOrderDialog}
+        onCreateOrder={createOrder}
+      />
     </div>
   );
 };

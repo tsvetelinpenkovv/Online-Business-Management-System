@@ -41,8 +41,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Pencil, Trash2, Package, 
-  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode
+  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy
 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -180,6 +181,11 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
     return ((product.sale_price - product.purchase_price) / product.purchase_price * 100).toFixed(1);
   };
 
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${type} копиран!`);
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -216,14 +222,22 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        <span 
+                          className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => copyToClipboard(product.sku, 'Код')}
+                          title="Натисни за копиране"
+                        >
                           {product.sku}
                         </span>
                         {getStockStatus(product)}
                       </div>
                       <p className="font-medium truncate">{product.name}</p>
                       {product.barcode && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <p 
+                          className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => copyToClipboard(product.barcode!, 'Баркод')}
+                          title="Натисни за копиране"
+                        >
                           <Barcode className="w-3 h-3" />
                           {product.barcode}
                         </p>
@@ -308,12 +322,22 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                   ) : (
                     filteredProducts.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                        <TableCell 
+                          className="font-mono text-sm cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => copyToClipboard(product.sku, 'Код')}
+                          title="Натисни за копиране"
+                        >
+                          {product.sku}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{product.name}</p>
                             {product.barcode && (
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <p 
+                                className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => copyToClipboard(product.barcode!, 'Баркод')}
+                                title="Натисни за копиране"
+                              >
                                 <Barcode className="w-3 h-3" />
                                 {product.barcode}
                               </p>
