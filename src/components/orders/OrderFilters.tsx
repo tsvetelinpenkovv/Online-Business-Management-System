@@ -331,27 +331,23 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-9 text-sm justify-between"
+                className="h-9 text-sm justify-center"
               >
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {dateFrom && (
-                    <span
-                      role="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDateFromChange(undefined);
-                      }}
-                      className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </span>
-                  )}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </div>
+                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+                {dateFrom && (
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDateFromChange(undefined);
+                    }}
+                    className="ml-1 hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                )}
+                <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -369,27 +365,23 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-9 text-sm justify-between"
+                className="h-9 text-sm justify-center"
               >
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {dateTo && (
-                    <span
-                      role="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDateToChange(undefined);
-                      }}
-                      className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </span>
-                  )}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </div>
+                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+                {dateTo && (
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDateToChange(undefined);
+                    }}
+                    className="ml-1 hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                )}
+                <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
