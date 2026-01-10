@@ -13,7 +13,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import jsPDF from 'jspdf';
-
+import { loadNotoSansCyrillic } from '@/utils/cyrillicFont';
 const documentationContent = `
 # СИСТЕМА ЗА УПРАВЛЕНИЕ НА ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО
 ## Пълна документация v1.0
@@ -497,6 +497,38 @@ export const DocumentationTab = () => {
         format: 'a4'
       });
 
+      // Load Cyrillic font
+      let cyrillicFontLoaded = false;
+      try {
+        const fontData = await loadNotoSansCyrillic();
+        if (fontData) {
+          doc.addFileToVFS('NotoSans-Regular.ttf', fontData);
+          doc.addFont('NotoSans-Regular.ttf', 'NotoSans', 'normal');
+          doc.setFont('NotoSans');
+          cyrillicFontLoaded = true;
+        }
+      } catch (e) {
+        console.warn('Could not load Cyrillic font, falling back to transliteration');
+      }
+
+      // Fallback transliteration function if font fails
+      const transliterate = (text: string): string => {
+        if (cyrillicFontLoaded) return text; // Return original if Cyrillic font is loaded
+        const map: { [key: string]: string } = {
+          'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'zh',
+          'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+          'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f',
+          'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sht', 'ъ': 'a', 'ь': '',
+          'ю': 'yu', 'я': 'ya',
+          'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ж': 'Zh',
+          'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
+          'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F',
+          'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sht', 'Ъ': 'A', 'Ь': '',
+          'Ю': 'Yu', 'Я': 'Ya'
+        };
+        return text.split('').map(char => map[char] || char).join('');
+      };
+
       // Add logo if available
       let startY = 25;
       if (logoUrl) {
@@ -515,31 +547,17 @@ export const DocumentationTab = () => {
         }
       }
 
-      // Bulgarian to Latin transliteration map
-      const transliterate = (text: string): string => {
-        const map: { [key: string]: string } = {
-          'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'zh',
-          'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
-          'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f',
-          'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sht', 'ъ': 'a', 'ь': '',
-          'ю': 'yu', 'я': 'ya',
-          'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ж': 'Zh',
-          'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
-          'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F',
-          'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sht', 'Ъ': 'A', 'Ь': '',
-          'Ю': 'Yu', 'Я': 'Ya'
-        };
-        return text.split('').map(char => map[char] || char).join('');
-      };
-
-      // Title - transliterated for PDF compatibility
+      // Title
       doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
+      if (cyrillicFontLoaded) {
+        doc.setFont('NotoSans', 'normal');
+      } else {
+        doc.setFont('helvetica', 'bold');
+      }
       doc.text(transliterate('СИСТЕМА ЗА УПРАВЛЕНИЕ НА'), 105, startY, { align: 'center' });
       doc.text(transliterate('ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО'), 105, startY + 8, { align: 'center' });
       
       doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
       doc.text(transliterate('Пълна документация v1.0'), 105, startY + 18, { align: 'center' });
 
       // Date
@@ -567,58 +585,86 @@ export const DocumentationTab = () => {
         }
 
         const trimmedLine = line.trim();
-        const latinLine = transliterate(trimmedLine);
+        const processedLine = transliterate(trimmedLine);
         
         if (trimmedLine.startsWith('# ')) {
           doc.setFontSize(16);
-          doc.setFont('helvetica', 'bold');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'bold');
+          }
           doc.setTextColor(180, 50, 50);
-          const text = latinLine.replace('# ', '');
+          const text = processedLine.replace('# ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight * 1.5;
         } else if (trimmedLine.startsWith('## ')) {
           doc.setFontSize(14);
-          doc.setFont('helvetica', 'bold');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'bold');
+          }
           doc.setTextColor(60, 60, 60);
-          const text = latinLine.replace('## ', '');
+          const text = processedLine.replace('## ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight * 1.3;
         } else if (trimmedLine.startsWith('### ')) {
           doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'bold');
+          }
           doc.setTextColor(80, 80, 80);
-          const text = latinLine.replace('### ', '');
+          const text = processedLine.replace('### ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight * 1.2;
         } else if (trimmedLine.startsWith('#### ')) {
           doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'bold');
+          }
           doc.setTextColor(100, 100, 100);
-          const text = latinLine.replace('#### ', '');
+          const text = processedLine.replace('#### ', '');
           doc.text(text, marginLeft, yPosition);
           yPosition += lineHeight;
         } else if (trimmedLine.startsWith('- **')) {
           doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'normal');
+          }
           doc.setTextColor(40, 40, 40);
-          const text = '* ' + latinLine.replace('- **', '').replace('**:', ':').replace('**', '');
+          const text = '• ' + processedLine.replace('- **', '').replace('**:', ':').replace('**', '');
           const splitText = doc.splitTextToSize(text, maxWidth);
           doc.text(splitText, marginLeft + 5, yPosition);
           yPosition += lineHeight * splitText.length;
         } else if (trimmedLine.startsWith('- ')) {
           doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'normal');
+          }
           doc.setTextColor(40, 40, 40);
-          const text = '* ' + latinLine.replace('- ', '');
+          const text = '• ' + processedLine.replace('- ', '');
           const splitText = doc.splitTextToSize(text, maxWidth);
           doc.text(splitText, marginLeft + 5, yPosition);
           yPosition += lineHeight * splitText.length;
         } else if (trimmedLine.startsWith('|')) {
           // Table row
           doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'normal');
+          }
           doc.setTextColor(60, 60, 60);
-          const text = latinLine.replace(/\|/g, ' | ').trim();
+          const text = processedLine.replace(/\|/g, ' | ').trim();
           const splitText = doc.splitTextToSize(text, maxWidth);
           doc.text(splitText, marginLeft, yPosition);
           yPosition += lineHeight * splitText.length;
@@ -628,9 +674,13 @@ export const DocumentationTab = () => {
           yPosition += lineHeight;
         } else if (trimmedLine.length > 0) {
           doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
+          if (cyrillicFontLoaded) {
+            doc.setFont('NotoSans', 'normal');
+          } else {
+            doc.setFont('helvetica', 'normal');
+          }
           doc.setTextColor(40, 40, 40);
-          const cleanText = latinLine.replace(/\*\*/g, '').replace(/\*/g, '');
+          const cleanText = processedLine.replace(/\*\*/g, '').replace(/\*/g, '');
           const splitText = doc.splitTextToSize(cleanText, maxWidth);
           doc.text(splitText, marginLeft, yPosition);
           yPosition += lineHeight * splitText.length;
@@ -648,11 +698,11 @@ export const DocumentationTab = () => {
         doc.text(transliterate('Страница ') + i + transliterate(' от ') + pageCount, 105, 290, { align: 'center' });
       }
 
-      doc.save('dokumentaciya-sistema-' + new Date().toISOString().split('T')[0] + '.pdf');
+      doc.save('документация-система-' + new Date().toISOString().split('T')[0] + '.pdf');
       
       toast({
         title: 'Успех',
-        description: 'PDF документацията беше изтеглена успешно',
+        description: 'PDF документацията беше изтеглена успешно на български език',
       });
     } catch (error) {
       console.error('PDF generation error:', error);
