@@ -274,11 +274,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9 justify-between">
-                <div className="flex items-center">
-                  <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate text-sm">{getStatusLabel()}</span>
-                </div>
+              <Button variant="outline" className="h-9 justify-center">
+                <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate text-sm">{getStatusLabel()}</span>
                 <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -296,11 +294,9 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9 justify-between">
-                <div className="flex items-center">
-                  <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate text-sm">{getSourceLabel()}</span>
-                </div>
+              <Button variant="outline" className="h-9 justify-center">
+                <Globe className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate text-sm">{getSourceLabel()}</span>
                 <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
