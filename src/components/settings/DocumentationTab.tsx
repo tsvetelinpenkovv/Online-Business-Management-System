@@ -401,7 +401,7 @@ export const DocumentationTab = () => {
         }
       }
 
-      // Title - using Unicode text rendering
+      // Title - Note about transliteration
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.text('SISTEMA ZA UPRAVLENIE NA', 105, startY, { align: 'center' });
@@ -411,16 +411,23 @@ export const DocumentationTab = () => {
       doc.setFont('helvetica', 'normal');
       doc.text('Palna dokumentaciya v1.0', 105, startY + 18, { align: 'center' });
 
+      // Note about transliteration
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text('* Tekstut e transliteriran ot Kirilica za PDF format', 105, startY + 26, { align: 'center' });
+      doc.text('Za palen tekst na Bulgarski, svalette MD faila', 105, startY + 31, { align: 'center' });
+
       // Date
       doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
       const dateStr = new Date().toLocaleDateString('bg-BG');
-      doc.text('Generirana na: ' + dateStr, 105, startY + 26, { align: 'center' });
+      doc.text('Generirana na: ' + dateStr, 105, startY + 38, { align: 'center' });
 
       // Separator line
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, startY + 32, 195, startY + 32);
+      doc.line(15, startY + 44, 195, startY + 44);
 
-      let yPosition = startY + 42;
+      let yPosition = startY + 54;
       const pageHeight = 280;
       const lineHeight = 6;
       const marginLeft = 15;

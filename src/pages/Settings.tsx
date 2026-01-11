@@ -1380,21 +1380,35 @@ const Settings = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5" />
-              Nekorekten.com API
-            </CardTitle>
-            <CardDescription>
-              Проверка на телефонни номера за некоректни клиенти
-              <a 
-                href="https://nekorekten.com/bg/api/doc" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 ml-2 text-primary hover:underline"
-              >
-                Документация <ExternalLink className="w-3 h-3" />
-              </a>
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5" />
+                  Nekorekten.com API
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Проверка на телефонни номера за некоректни клиенти
+                  <a 
+                    href="https://nekorekten.com/bg/api/doc" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 ml-2 text-primary hover:underline"
+                  >
+                    Документация <ExternalLink className="w-3 h-3" />
+                  </a>
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${settings.nekorekten_enabled === 'true' ? 'text-success' : 'text-muted-foreground'}`}>
+                  {settings.nekorekten_enabled === 'true' ? 'Активен' : 'Неактивен'}
+                </span>
+                <Switch
+                  checked={settings.nekorekten_enabled === 'true'}
+                  onCheckedChange={(checked) => setSettings({ ...settings, nekorekten_enabled: checked ? 'true' : 'false' })}
+                  className="shrink-0"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -1405,6 +1419,7 @@ const Settings = () => {
                 placeholder="Вашият Nekorekten API ключ"
                 value={settings.nekorekten_api_key || ''}
                 onChange={(e) => setSettings({ ...settings, nekorekten_api_key: e.target.value })}
+                disabled={settings.nekorekten_enabled !== 'true'}
               />
               <p className="text-sm text-muted-foreground">
                 Можете да получите API ключ от профила си в Nekorekten.com
@@ -1417,6 +1432,7 @@ const Settings = () => {
                 placeholder="ID на вашия сайт в Nekorekten"
                 value={settings.nekorekten_site_id || ''}
                 onChange={(e) => setSettings({ ...settings, nekorekten_site_id: e.target.value })}
+                disabled={settings.nekorekten_enabled !== 'true'}
               />
             </div>
           </CardContent>

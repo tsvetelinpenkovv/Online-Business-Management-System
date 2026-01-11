@@ -51,6 +51,7 @@ const Index = () => {
   const [showAddOrderDialog, setShowAddOrderDialog] = useState(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
   const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
+  const [nekorektenEnabled, setNekorektenEnabled] = useState(true);
   const [companySettings, setCompanySettings] = useState<{
     company_name: string | null;
     registered_address: string | null;
@@ -74,7 +75,7 @@ const Index = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Fetch company settings
+  // Fetch company settings and nekorekten enabled status
   useEffect(() => {
     const fetchCompanySettings = async () => {
       try {
@@ -106,7 +107,23 @@ const Index = () => {
         console.error('Error fetching company settings:', error);
       }
     };
+
+    const fetchNekorektenEnabled = async () => {
+      try {
+        const { data } = await supabase
+          .from('api_settings')
+          .select('setting_value')
+          .eq('setting_key', 'nekorekten_enabled')
+          .maybeSingle();
+        
+        setNekorektenEnabled(data?.setting_value === 'true');
+      } catch (error) {
+        console.error('Error fetching nekorekten enabled:', error);
+      }
+    };
+
     fetchCompanySettings();
+    fetchNekorektenEnabled();
   }, []);
 
   // Auto-refresh logic
@@ -661,6 +678,7 @@ const Index = () => {
               onUpdate={updateOrder}
               selectedOrders={selectedOrders}
               onSelectionChange={setSelectedOrders}
+              nekorektenEnabled={nekorektenEnabled}
             />
           </div>
         )}

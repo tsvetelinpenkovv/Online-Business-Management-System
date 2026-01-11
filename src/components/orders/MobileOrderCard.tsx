@@ -36,6 +36,7 @@ interface MobileOrderCardProps {
     status: 'sent' | 'delivered' | 'read' | 'failed';
     sentAt?: string;
   } | null;
+  nekorektenEnabled?: boolean;
 }
 
 export const MobileOrderCard: FC<MobileOrderCardProps> = ({
@@ -47,6 +48,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onPrint,
   onStatusChange,
   messageInfo,
+  nekorektenEnabled = true,
 }) => {
   const { toast } = useToast();
   const [copiedPhone, setCopiedPhone] = useState(false);
@@ -129,7 +131,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <SourceIcon source={order.source} className="w-5 h-5" />
-            <CorrectStatusIcon isCorrect={order.is_correct} />
+            {nekorektenEnabled && <CorrectStatusIcon isCorrect={order.is_correct} />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">

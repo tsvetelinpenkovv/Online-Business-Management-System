@@ -57,6 +57,7 @@ interface OrdersTableProps {
   onUpdate: (order: Order) => void;
   selectedOrders: number[];
   onSelectionChange: (ids: number[]) => void;
+  nekorektenEnabled?: boolean;
 }
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
@@ -64,7 +65,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   onDelete, 
   onUpdate,
   selectedOrders,
-  onSelectionChange
+  onSelectionChange,
+  nekorektenEnabled = true
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
@@ -330,6 +332,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   }
                 }}
                 messageInfo={messageInfo}
+                nekorektenEnabled={nekorektenEnabled}
               />
             );
           })}
@@ -400,9 +403,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Клиент
                 </div>
               </SortableHead>
-              <TableHead className="w-[50px] text-center" title="Коректност на клиента">
-                <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
-              </TableHead>
+              {nekorektenEnabled && (
+                <TableHead className="w-[50px] text-center" title="Коректност на клиента">
+                  <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                </TableHead>
+              )}
               <SortableHead columnKey="phone" className="w-[130px]">
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -500,9 +505,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     />
                   </div>
                 </TableCell>
-                <TableCell>
-                  <CorrectStatusIcon isCorrect={order.is_correct} />
-                </TableCell>
+                {nekorektenEnabled && (
+                  <TableCell>
+                    <CorrectStatusIcon isCorrect={order.is_correct} />
+                  </TableCell>
+                )}
                 <TableCell className="text-sm">
                   <div className="flex items-center gap-1">
                     <span>{order.phone}</span>
