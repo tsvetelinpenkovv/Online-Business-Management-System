@@ -1,19 +1,21 @@
 import { FC, useState } from 'react';
-import { CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, MoreHorizontal } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-type CorrectStatus = 'correct' | 'incorrect' | 'unknown' | 'loading';
+type CorrectStatus = 'correct' | 'incorrect' | 'unknown' | 'loading' | 'hidden';
 
 interface CorrectStatusIconProps {
   isCorrect: boolean | null;
   isLoading?: boolean;
+  isHidden?: boolean;
 }
 
-const getStatus = (isCorrect: boolean | null, isLoading?: boolean): CorrectStatus => {
+const getStatus = (isCorrect: boolean | null, isLoading?: boolean, isHidden?: boolean): CorrectStatus => {
+  if (isHidden) return 'hidden';
   if (isLoading) return 'loading';
   if (isCorrect === null) return 'unknown';
   return isCorrect ? 'correct' : 'incorrect';
@@ -48,24 +50,46 @@ const statusConfig: Record<CorrectStatus, {
     arrowColor: 'hsl(38 92% 50% / 0.9)'
   },
   loading: {
-    icon: Loader2,
-    className: 'text-muted-foreground animate-spin',
-    message: 'Клиентът се проверявя. Проверката може да отнеме няколко минути.\n\nwww.nekorekten.com',
-    popoverClassName: 'bg-muted/90 backdrop-blur-md border-muted-foreground/40 text-muted-foreground',
+    icon: MoreHorizontal,
+    className: 'text-muted-foreground',
+    message: 'Клиентът се проверява. Проверката може да отнеме няколко минути.\n\nwww.nekorekten.com',
+    popoverClassName: 'bg-muted/90 backdrop-blur-md border-muted-foreground/40 text-foreground',
     arrowColor: 'hsl(210 40% 96% / 0.9)'
+  },
+  hidden: {
+    icon: CheckCircle2,
+    className: 'hidden',
+    message: '',
+    popoverClassName: '',
+    arrowColor: ''
   }
 };
 
-export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoading = false }) => {
+export const CorrectStatusIcon: FC<CorrectStatusIconProps> = ({ isCorrect, isLoading = false, isHidden = false }) => {
   const [open, setOpen] = useState(false);
-  const status = getStatus(isCorrect, isLoading);
+  const status = getStatus(isCorrect, isLoading, isHidden);
+  
+  // Don't render anything if hidden
+  if (status === 'hidden') {
+    return null;
+  }
+  
   const { icon: Icon, className, message, popoverClassName, arrowColor } = statusConfig[status];
+
+  // For loading state, show a gray circle with 3 horizontal dots
+  const iconElement = status === 'loading' ? (
+    <div className="w-5 h-5 rounded-full bg-muted-foreground/20 flex items-center justify-center">
+      <Icon className="w-3 h-3 text-muted-foreground" />
+    </div>
+  ) : (
+    <Icon className={`w-5 h-5 ${className}`} />
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div className="flex justify-center cursor-pointer" onClick={() => setOpen(!open)}>
-          <Icon className={`w-5 h-5 ${className}`} />
+          {iconElement}
         </div>
       </PopoverTrigger>
       <PopoverContent 

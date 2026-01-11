@@ -444,13 +444,13 @@ export const ConnectixSettings: FC = () => {
       {/* Main Settings Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shrink-0">
                 <MessageCircle className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <CardTitle className="flex items-center gap-2">
+              <div className="min-w-0">
+                <CardTitle className="flex flex-wrap items-center gap-2">
                   Connectix
                   <Badge variant={config.is_enabled ? 'default' : 'secondary'} className={config.is_enabled ? 'bg-success' : ''}>
                     {config.is_enabled ? 'Активен' : 'Неактивен'}
@@ -461,7 +461,7 @@ export const ConnectixSettings: FC = () => {
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="mt-1">
                   Изпращане на Viber и SMS известия към клиенти
                 </CardDescription>
               </div>
@@ -469,6 +469,7 @@ export const ConnectixSettings: FC = () => {
             <Switch
               checked={config.is_enabled}
               onCheckedChange={(checked) => setConfig({ ...config, is_enabled: checked })}
+              className="shrink-0"
             />
           </div>
         </CardHeader>

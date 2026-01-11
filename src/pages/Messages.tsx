@@ -119,13 +119,13 @@ const Messages = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'read':
-        return <Badge className="bg-info/15 text-info">Прочетено</Badge>;
+        return <Badge className="bg-info/15 text-info pointer-events-none">Прочетено</Badge>;
       case 'delivered':
-        return <Badge className="bg-success/15 text-success">Доставено</Badge>;
+        return <Badge className="bg-success/15 text-success pointer-events-none">Доставено</Badge>;
       case 'failed':
-        return <Badge className="bg-destructive/15 text-destructive">Грешка</Badge>;
+        return <Badge className="bg-destructive/15 text-destructive pointer-events-none">Грешка</Badge>;
       default:
-        return <Badge className="bg-muted text-muted-foreground">Изпратено</Badge>;
+        return <Badge className="bg-muted text-muted-foreground pointer-events-none">Изпратено</Badge>;
     }
   };
 
