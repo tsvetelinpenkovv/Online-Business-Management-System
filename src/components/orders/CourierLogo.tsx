@@ -15,9 +15,10 @@ export const CourierLogo: FC<CourierLogoProps> = ({
   className = "w-8 h-8",
   showLink = true 
 }) => {
+  // Always call hooks at the top level - before any early returns!
   const { couriers, loading, getCourierByUrl } = useCouriers();
   
-  // If no tracking URL, show dash immediately (no need to wait for loading)
+  // If no tracking URL, show dash immediately
   if (!trackingUrl) return <span className="text-muted-foreground">-</span>;
   
   // While loading couriers, show empty placeholder to prevent flash
