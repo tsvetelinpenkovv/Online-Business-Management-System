@@ -61,33 +61,62 @@ interface OrdersTableProps {
   nekorektenEnabled?: boolean;
 }
 
-// Invoice icon button component - checks if order has invoice
+// Invoice icon button component - checks if order has invoice and tracks if it was viewed
 const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ orderId, onClick }) => {
-  const [hasInvoice, setHasInvoice] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<{ hasInvoice: boolean; viewedAt: string | null }>({ hasInvoice: false, viewedAt: null });
 
   useEffect(() => {
     const checkInvoice = async () => {
       const { data } = await supabase
         .from('invoices')
-        .select('id')
+        .select('id, created_at')
         .eq('order_id', orderId)
         .maybeSingle();
-      setHasInvoice(!!data);
+      
+      if (data) {
+        // Check localStorage to see if this invoice was viewed
+        const viewedKey = `invoice_viewed_${data.id}`;
+        const viewedAt = localStorage.getItem(viewedKey);
+        setInvoiceData({ hasInvoice: true, viewedAt });
+      }
     };
     checkInvoice();
   }, [orderId]);
 
-  if (!hasInvoice) return null;
+  const handleClick = async () => {
+    // Mark as viewed when clicked
+    const { data } = await supabase
+      .from('invoices')
+      .select('id')
+      .eq('order_id', orderId)
+      .maybeSingle();
+    
+    if (data) {
+      const viewedKey = `invoice_viewed_${data.id}`;
+      const now = new Date().toISOString();
+      localStorage.setItem(viewedKey, now);
+      setInvoiceData(prev => ({ ...prev, viewedAt: now }));
+    }
+    onClick();
+  };
+
+  if (!invoiceData.hasInvoice) return null;
 
   return (
     <Button 
       variant="ghost" 
       size="icon" 
-      className="h-6 w-6 text-success hover:bg-success/10 hover:text-success" 
-      onClick={onClick}
-      title="Има издадена фактура"
+      className="h-6 w-6 text-success hover:bg-success/10 hover:text-success relative" 
+      onClick={handleClick}
+      title={invoiceData.viewedAt ? "Фактурата е прегледана" : "Има издадена фактура (непрегледана)"}
     >
       <FileText className="w-4 h-4" />
+      {/* Red badge indicator */}
+      <span className={`absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[14px] h-[14px] rounded-full text-[9px] font-bold text-white ${
+        invoiceData.viewedAt ? 'bg-success' : 'bg-destructive'
+      }`}>
+        {invoiceData.viewedAt ? '✓✓' : '!'}
+      </span>
     </Button>
   );
 };
@@ -588,7 +617,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                             <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <strong>Количество:</strong> 
                             {order.quantity > 1 ? (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-destructive/15 text-destructive text-xs font-semibold">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-semibold">
                                 {order.quantity} бр.
                               </span>
                             ) : (

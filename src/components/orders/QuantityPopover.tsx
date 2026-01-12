@@ -97,7 +97,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
     <span 
       className={`inline-flex items-center justify-center min-w-[24px] h-6 w-6 rounded-full text-xs font-semibold cursor-pointer ${
         quantity > 1 || hasMultipleProducts
-          ? 'bg-destructive/15 text-destructive' 
+          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
           : 'bg-muted text-muted-foreground'
       }`}
       title={hasMultipleProducts ? `${products.length} различни продукта` : `Количество: ${quantity} бр.`}
@@ -164,7 +164,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
               </div>
               <span className={`inline-flex items-center justify-center min-w-[28px] h-5 px-1.5 rounded-full text-xs font-semibold flex-shrink-0 ${
                 product.quantity > 1 
-                  ? 'bg-destructive/15 text-destructive' 
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
                   : 'bg-muted text-muted-foreground'
               }`}>
                 {product.quantity} бр.
