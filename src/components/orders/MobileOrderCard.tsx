@@ -145,7 +145,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               />
             )}
             {hasInvoice && (
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-success" title="Има издадена фактура">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-success hover:bg-success/10 hover:text-success" title="Има издадена фактура">
                 <FileText className="w-4 h-4" />
               </Button>
             )}
@@ -303,7 +303,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
               >
                 <Search className="w-3 h-3" />
-                <span>{order.courier_tracking_url.match(/\d{10,}/)?.[0] || 'Товарителница'}</span>
+                <span>Товарителница</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             )}

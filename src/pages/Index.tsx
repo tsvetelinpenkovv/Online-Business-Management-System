@@ -685,14 +685,6 @@ const Index = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate('/messages')} className="cursor-pointer">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  {getText('orders_messages_button_label')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/inventory')} className="cursor-pointer">
-                  <Boxes className="w-4 h-4 mr-2" />
-                  {getText('orders_warehouse_button_label')}
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
                   {getText('orders_settings_button_label')}

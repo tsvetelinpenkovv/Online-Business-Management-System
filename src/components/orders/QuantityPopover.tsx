@@ -1,5 +1,5 @@
 import { FC, useMemo, useState } from 'react';
-import { Package, Layers, Barcode, Copy, Check, ChevronDown } from 'lucide-react';
+import { Package, Layers, Barcode, Copy, Check } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -95,7 +95,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
   
   const badge = (
     <span 
-      className={`inline-flex items-center justify-center gap-0.5 min-w-[24px] h-6 px-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all hover:scale-110 ${
+      className={`inline-flex items-center justify-center min-w-[24px] h-6 w-6 rounded-full text-xs font-semibold cursor-pointer transition-all hover:scale-110 ${
         quantity > 1 || hasMultipleProducts
           ? 'bg-destructive/15 text-destructive hover:bg-destructive/25' 
           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -103,7 +103,6 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
       title={hasMultipleProducts ? `${products.length} различни продукта` : `Количество: ${quantity} бр.`}
     >
       {hasMultipleProducts ? `${products.length}×` : quantity}
-      <ChevronDown className="w-3 h-3 flex-shrink-0" />
     </span>
   );
 
@@ -113,15 +112,12 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
       <PopoverTrigger asChild>
         {badge}
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="center" sideOffset={8}>
+      <PopoverContent className="w-80 p-0" align="center" sideOffset={8} showArrow>
         <div className="p-3 border-b bg-muted/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-muted-foreground" />
             <span className="font-normal text-sm">
-              {hasMultipleProducts 
-                ? `${products.length} продукта (${totalItems} бр.)` 
-                : `Количество: ${quantity} бр.`
-              }
+              {hasMultipleProducts ? 'Продукти' : 'Продукт'}
             </span>
           </div>
           <Button
