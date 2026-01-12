@@ -202,6 +202,10 @@
     @apply bg-teal/10 text-teal;
   }
   
+  .status-leasing-unicredit {
+    @apply bg-teal/10 text-teal;
+  }
+  
   .status-sent {
     @apply bg-warning/10 text-warning;
   }

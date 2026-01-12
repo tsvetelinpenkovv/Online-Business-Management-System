@@ -197,6 +197,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
         return `${base} before:bg-purple`;
       case 'На лизинг през TBI':
       case 'На лизинг през BNP':
+      case 'На лизинг през UniCredit':
         return `${base} before:bg-teal`;
       case 'Изпратена':
         return `${base} before:bg-warning`;
