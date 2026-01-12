@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff, UserPlus, Sparkles } from 'lucide-react';
+import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff, UserPlus, Sparkles, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CompanySettings {
@@ -19,6 +19,22 @@ interface CompanySettings {
   footer_link?: string;
   footer_link_text?: string;
   footer_website?: string;
+}
+
+interface RecaptchaSettings {
+  enabled: boolean;
+  siteKey: string;
+  threshold: number;
+}
+
+// Extend window for reCAPTCHA
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
 }
 
 const Auth = () => {
@@ -32,6 +48,12 @@ const Auth = () => {
   const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
   const [isSetupMode, setIsSetupMode] = useState<boolean | null>(null);
   const [checkingSystem, setCheckingSystem] = useState(true);
+  const [recaptchaSettings, setRecaptchaSettings] = useState<RecaptchaSettings>({
+    enabled: false,
+    siteKey: '',
+    threshold: 0.5
+  });
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const { signIn, signOut, user } = useAuth();
   const { logoUrl, loading: logoLoading } = useCompanyLogo();
   const { backgroundUrl } = useLoginBackground();
@@ -62,6 +84,114 @@ const Auth = () => {
 
     checkSystemStatus();
   }, []);
+
+  // Load reCAPTCHA settings
+  useEffect(() => {
+    const loadRecaptchaSettings = async () => {
+      try {
+        const keys = ['recaptcha_enabled', 'recaptcha_site_key', 'recaptcha_threshold'];
+        const { data } = await supabase
+          .from('api_settings')
+          .select('setting_key, setting_value')
+          .in('setting_key', keys);
+        
+        if (data) {
+          const settings: RecaptchaSettings = {
+            enabled: false,
+            siteKey: '',
+            threshold: 0.5
+          };
+          
+          data.forEach(item => {
+            if (item.setting_key === 'recaptcha_enabled') {
+              settings.enabled = item.setting_value === 'true';
+            } else if (item.setting_key === 'recaptcha_site_key') {
+              settings.siteKey = item.setting_value || '';
+            } else if (item.setting_key === 'recaptcha_threshold') {
+              settings.threshold = parseFloat(item.setting_value || '0.5');
+            }
+          });
+          
+          setRecaptchaSettings(settings);
+          
+          // Load reCAPTCHA script if enabled and has site key
+          if (settings.enabled && settings.siteKey) {
+            loadRecaptchaScript(settings.siteKey);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading reCAPTCHA settings:', error);
+      }
+    };
+    
+    loadRecaptchaSettings();
+  }, []);
+
+  // Load reCAPTCHA script dynamically
+  const loadRecaptchaScript = useCallback((siteKey: string) => {
+    if (document.querySelector('script[src*="recaptcha"]')) {
+      setRecaptchaLoaded(true);
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      setRecaptchaLoaded(true);
+    };
+    document.head.appendChild(script);
+  }, []);
+
+  // Verify reCAPTCHA token
+  const verifyRecaptcha = useCallback(async (action: string): Promise<boolean> => {
+    if (!recaptchaSettings.enabled || !recaptchaSettings.siteKey) {
+      return true; // Skip if not enabled
+    }
+    
+    if (!recaptchaLoaded || !window.grecaptcha) {
+      console.warn('reCAPTCHA not loaded yet');
+      return true; // Allow if script hasn't loaded
+    }
+    
+    try {
+      const token = await new Promise<string>((resolve, reject) => {
+        window.grecaptcha.ready(() => {
+          window.grecaptcha
+            .execute(recaptchaSettings.siteKey, { action })
+            .then(resolve)
+            .catch(reject);
+        });
+      });
+      
+      // Verify token with edge function
+      const { data, error } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token, expectedAction: action }
+      });
+      
+      if (error) {
+        console.error('reCAPTCHA verification error:', error);
+        return false;
+      }
+      
+      if (!data.success) {
+        console.error('reCAPTCHA verification failed:', data.error);
+        return false;
+      }
+      
+      // Check score against threshold
+      if (data.score < recaptchaSettings.threshold) {
+        console.warn(`reCAPTCHA score ${data.score} below threshold ${recaptchaSettings.threshold}`);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('reCAPTCHA error:', error);
+      return false;
+    }
+  }, [recaptchaSettings, recaptchaLoaded]);
 
   useEffect(() => {
     const fetchCompanySettings = async () => {
@@ -155,6 +285,18 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    // Verify reCAPTCHA first
+    const recaptchaValid = await verifyRecaptcha('login');
+    if (!recaptchaValid) {
+      toast({
+        title: 'Проверка неуспешна',
+        description: 'reCAPTCHA верификацията не премина. Моля опитайте отново.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
     
     // First check if email is in allowed_users using security definer function
     const { data: isAllowed, error: checkError } = await supabase.rpc('is_allowed_user', { _email: email });
@@ -422,7 +564,7 @@ const Auth = () => {
                     </button>
                   </div>
                 </div>
-                <div className="pt-4">
+                <div className="pt-4 space-y-2">
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
                       <>
@@ -436,6 +578,12 @@ const Auth = () => {
                       </>
                     )}
                   </Button>
+                  {recaptchaSettings.enabled && recaptchaSettings.siteKey && (
+                    <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      Защитено с reCAPTCHA v3
+                    </p>
+                  )}
                 </div>
               </form>
 

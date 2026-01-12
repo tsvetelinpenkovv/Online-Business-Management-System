@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useMemo } from 'react';
 import { 
   Clock, 
   Loader2, 
@@ -41,6 +41,42 @@ const COLOR_MAP: Record<string, { bgClass: string; textClass: string }> = {
   muted: { bgClass: 'bg-muted', textClass: 'text-muted-foreground' },
 };
 
+// Cache keys for leasing statuses
+const LEASING_CACHE_KEY = 'leasing_statuses_cache';
+const LEASING_CACHE_TIMESTAMP_KEY = 'leasing_statuses_cache_timestamp';
+const LEASING_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Get cached leasing statuses
+const getCachedLeasingStatuses = (): string[] | null => {
+  try {
+    const cached = localStorage.getItem(LEASING_CACHE_KEY);
+    const timestamp = localStorage.getItem(LEASING_CACHE_TIMESTAMP_KEY);
+    
+    if (cached && timestamp) {
+      const age = Date.now() - parseInt(timestamp, 10);
+      if (age < LEASING_CACHE_DURATION) {
+        return JSON.parse(cached);
+      }
+    }
+  } catch (error) {
+    console.error('Error reading leasing status cache:', error);
+  }
+  return null;
+};
+
+// Save leasing statuses to cache
+const setCachedLeasingStatuses = (statuses: string[]) => {
+  try {
+    localStorage.setItem(LEASING_CACHE_KEY, JSON.stringify(statuses));
+    localStorage.setItem(LEASING_CACHE_TIMESTAMP_KEY, Date.now().toString());
+  } catch (error) {
+    console.error('Error saving leasing status cache:', error);
+  }
+};
+
+// Default leasing statuses
+const DEFAULT_LEASING_STATUSES = ['На лизинг през TBI', 'На лизинг през BNP', 'На лизинг през UniCredit'];
+
 interface StatusBadgeProps {
   status: string;
   editable?: boolean;
@@ -49,9 +85,13 @@ interface StatusBadgeProps {
 
 export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, onStatusChange }) => {
   const { statuses } = useOrderStatuses();
-  const [leasingStatuses, setLeasingStatuses] = useState<string[]>([]);
+  
+  // Initialize with cached data immediately to prevent delay
+  const [leasingStatuses, setLeasingStatuses] = useState<string[]>(() => {
+    return getCachedLeasingStatuses() || DEFAULT_LEASING_STATUSES;
+  });
 
-  // Load leasing statuses from settings
+  // Load leasing statuses from settings (background refresh)
   useEffect(() => {
     const loadLeasingStatuses = async () => {
       const { data } = await supabase
@@ -62,17 +102,20 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
       
       if (data?.setting_value) {
         try {
-          setLeasingStatuses(JSON.parse(data.setting_value));
+          const parsed = JSON.parse(data.setting_value);
+          setLeasingStatuses(parsed);
+          setCachedLeasingStatuses(parsed);
         } catch {
-          setLeasingStatuses([]);
+          // Keep cached/default values
         }
-      } else {
-        // Default leasing statuses
-        setLeasingStatuses(['На лизинг през TBI', 'На лизинг през BNP', 'На лизинг през UniCredit']);
       }
+      // If no data, keep the cached/default values
     };
     loadLeasingStatuses();
   }, []);
+
+  // Memoize leasing check to avoid recalculation
+  const isLeasing = useMemo(() => leasingStatuses.includes(status), [leasingStatuses, status]);
 
   // Find status config from database or use default
   const statusConfig = statuses.find(s => s.name === status);
@@ -81,7 +124,6 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   
   const Icon = ICON_MAP[iconName] || Clock;
   const colorClasses = COLOR_MAP[colorName] || COLOR_MAP.primary;
-  const isLeasing = leasingStatuses.includes(status);
 
   // Shorten leasing status names for display
   const getShortStatus = (statusName: string) => {
