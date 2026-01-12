@@ -609,12 +609,6 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="icon" onClick={() => navigate('/messages')} title="Съобщения">
-              <MessageCircle className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => navigate('/inventory')} title="Склад">
-              <Boxes className="w-4 h-4" />
-            </Button>
             <ThemeToggle />
             <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
