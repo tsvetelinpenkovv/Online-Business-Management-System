@@ -111,11 +111,11 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
       title={invoiceData.viewedAt ? "Фактурата е прегледана" : "Има издадена фактура (непрегледана)"}
     >
       <FileText className="w-4 h-4" />
-      {/* Red badge indicator */}
+      {/* Badge indicator: red ! if not viewed, single green ✓ if viewed */}
       <span className={`absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[14px] h-[14px] rounded-full text-[9px] font-bold text-white ${
         invoiceData.viewedAt ? 'bg-success' : 'bg-destructive'
       }`}>
-        {invoiceData.viewedAt ? '✓✓' : '!'}
+        {invoiceData.viewedAt ? '✓' : '!'}
       </span>
     </Button>
   );
@@ -577,22 +577,14 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   </TableCell>
                 )}
 <TableCell className="text-[13px]">
-                  <div className="flex items-center gap-1">
-                    <span className="line-clamp-2 max-w-[100px] font-medium text-foreground leading-tight">{order.phone}</span>
-                    <button
-                      onClick={() => handleCopyPhone(order.phone)}
-                      className="p-0.5 hover:bg-muted rounded transition-colors"
-                      title="Копирай телефон"
-                    >
-                      {copiedPhone === order.phone ? (
-                        <Check className="w-3.5 h-3.5 text-success" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                      )}
-                    </button>
+                  <PhoneWithFlag phone={order.phone} />
+                </TableCell>
+                <TableCell className="text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>
+                  <div className="flex flex-col items-center leading-tight">
+                    <span className="text-sm font-medium text-success whitespace-nowrap">{order.total_price.toFixed(2)} €</span>
+                    <span className="text-[10px] text-muted-foreground">с ДДС</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm font-medium text-success whitespace-nowrap text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-sm line-clamp-2 max-w-[120px] font-medium" title={order.product_name}>
@@ -617,7 +609,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                             <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <strong>Количество:</strong> 
                             {order.quantity > 1 ? (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-semibold">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold">
                                 {order.quantity} бр.
                               </span>
                             ) : (
