@@ -245,12 +245,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
 
   const getStockStatus = (product: InventoryProduct) => {
     if (product.current_stock <= 0) {
-      return <Badge variant="destructive">Изчерпан</Badge>;
+      return <Badge variant="destructive" className="pointer-events-none">Изчерпан</Badge>;
     }
     if (product.current_stock <= product.min_stock_level) {
-      return <Badge className="bg-warning text-warning-foreground">Ниска</Badge>;
+      return <Badge className="bg-warning text-warning-foreground pointer-events-none">Ниска</Badge>;
     }
-    return <Badge className="bg-success text-success-foreground">В наличност</Badge>;
+    return <Badge className="bg-success text-success-foreground pointer-events-none">В наличност</Badge>;
   };
 
   const margin = (product: InventoryProduct) => {
@@ -456,15 +456,15 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Марж</p>
-                      <p className="font-medium text-success">{margin(product)}%</p>
+                      <p className="font-medium text-info">{margin(product)}%</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Покупна</p>
-                      <p className="font-medium text-success">{product.purchase_price.toFixed(2)} €</p>
+                      <p className="font-medium text-warning">{product.purchase_price.toFixed(2)} €</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Продажна</p>
-                      <p className="font-medium text-success">{product.sale_price.toFixed(2)} €</p>
+                      <p className="font-medium text-primary">{product.sale_price.toFixed(2)} €</p>
                     </div>
                   </div>
                 </CardContent>
@@ -567,9 +567,9 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                             {product.current_stock} {product.unit?.abbreviation || 'бр.'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right text-success font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
-                        <TableCell className="text-right text-success font-medium">{product.sale_price.toFixed(2)} €</TableCell>
-                        <TableCell className="text-right text-success">{margin(product)}%</TableCell>
+                        <TableCell className="text-right text-warning font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-primary font-medium">{product.sale_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-info font-medium">{margin(product)}%</TableCell>
                         <TableCell>{getStockStatus(product)}</TableCell>
                         <TableCell>
                           <DropdownMenu>
