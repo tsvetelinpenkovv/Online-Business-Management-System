@@ -51,7 +51,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Pencil, Trash2, Package, 
   AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy, Check, Layers, Eye,
-  Hash, FileText, FolderOpen, Boxes, Euro, TrendingUp, Activity, Lock
+  Hash, FileText, FolderOpen, Boxes, Euro, TrendingUp, Activity, Lock, Unlock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -247,12 +247,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
 
   const getStockStatus = (product: InventoryProduct) => {
     if (product.current_stock <= 0) {
-      return <Badge variant="destructive" className="pointer-events-none">Изчерпан</Badge>;
+      return <Badge variant="secondary" className="pointer-events-none bg-destructive/20 text-destructive">Изчерпан</Badge>;
     }
     if (product.current_stock <= product.min_stock_level) {
-      return <Badge className="bg-warning text-warning-foreground pointer-events-none">Ниска</Badge>;
+      return <Badge variant="secondary" className="pointer-events-none bg-warning/20 text-warning">Ниска</Badge>;
     }
-    return <Badge className="bg-success text-success-foreground pointer-events-none">В наличност</Badge>;
+    return <Badge variant="secondary" className="pointer-events-none bg-success/20 text-success">В наличност</Badge>;
   };
 
   const margin = (product: InventoryProduct) => {
@@ -426,6 +426,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                             Виж компоненти
                           </DropdownMenuItem>
                         )}
+                        {(product as any).reserved_stock > 0 && (
+                          <DropdownMenuItem onClick={() => inventory.releaseReservation(product.id)}>
+                            <Unlock className="w-4 h-4 mr-2" />
+                            Освободи резервация
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={() => openEditDialog(product)}>
                           <Pencil className="w-4 h-4 mr-2" />
                           Редактирай
@@ -447,18 +453,27 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         variant="secondary" 
                         className={`mt-0.5 pointer-events-none ${
                           product.current_stock <= 0 
-                            ? 'bg-destructive/15 text-destructive' 
+                            ? 'bg-destructive/20 text-destructive' 
                             : product.current_stock <= product.min_stock_level 
-                              ? 'bg-warning/15 text-warning' 
-                              : 'bg-info/15 text-info'
+                              ? 'bg-warning/20 text-warning' 
+                              : 'bg-success/20 text-success'
                         }`}
                       >
                         {product.current_stock} {product.unit?.abbreviation || 'бр.'}
                       </Badge>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Марж</p>
-                      <p className="font-medium text-info">{margin(product)}%</p>
+                      <p className="text-xs text-muted-foreground">Резерв</p>
+                      {(product as any).reserved_stock > 0 ? (
+                        <Badge 
+                          variant="secondary" 
+                          className="mt-0.5 pointer-events-none bg-destructive/20 text-destructive"
+                        >
+                          {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      )}
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Покупна</p>
@@ -576,10 +591,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                             variant="secondary" 
                             className={`pointer-events-none ${
                               product.current_stock <= 0 
-                                ? 'bg-destructive text-destructive-foreground' 
+                                ? 'bg-destructive/20 text-destructive' 
                                 : product.current_stock <= product.min_stock_level 
-                                  ? 'bg-warning text-white' 
-                                  : 'bg-success text-white'
+                                  ? 'bg-warning/20 text-warning' 
+                                  : 'bg-success/20 text-success'
                             }`}
                           >
                             {product.current_stock} {product.unit?.abbreviation || 'бр.'}
@@ -589,7 +604,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                           {(product as any).reserved_stock > 0 ? (
                             <Badge 
                               variant="secondary" 
-                              className="pointer-events-none bg-destructive text-white"
+                              className="pointer-events-none bg-destructive/20 text-destructive"
                             >
                               {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
                             </Badge>
@@ -613,6 +628,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                                 <DropdownMenuItem onClick={() => openBundleView(product)}>
                                   <Eye className="w-4 h-4 mr-2" />
                                   Виж компоненти
+                                </DropdownMenuItem>
+                              )}
+                              {(product as any).reserved_stock > 0 && (
+                                <DropdownMenuItem onClick={() => inventory.releaseReservation(product.id)}>
+                                  <Unlock className="w-4 h-4 mr-2" />
+                                  Освободи резервация
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem onClick={() => openEditDialog(product)}>

@@ -447,6 +447,38 @@ export function useInventory() {
     return data;
   };
 
+  // Release reservation from product
+  const releaseReservation = async (productId: string, quantity?: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+      toast({ title: 'Грешка', description: 'Продуктът не е намерен', variant: 'destructive' });
+      return false;
+    }
+
+    const currentReserved = (product as any).reserved_stock || 0;
+    if (currentReserved <= 0) {
+      toast({ title: 'Внимание', description: 'Няма резервирана наличност', variant: 'default' });
+      return false;
+    }
+
+    const releaseQty = quantity !== undefined ? Math.min(quantity, currentReserved) : currentReserved;
+    const newReserved = currentReserved - releaseQty;
+
+    const { error } = await supabase
+      .from('inventory_products')
+      .update({ reserved_stock: newReserved })
+      .eq('id', productId);
+
+    if (error) {
+      toast({ title: 'Грешка', description: 'Неуспешно освобождаване на резервация', variant: 'destructive' });
+      return false;
+    }
+
+    toast({ title: 'Успех', description: `Освободени ${releaseQty} бр. от резервацията` });
+    await fetchProducts();
+    return true;
+  };
+
   // Statistics
   const getInventoryStats = useCallback(() => {
     const totalProducts = products.length;
@@ -501,6 +533,7 @@ export function useInventory() {
     createStockMovement,
     createStockDocument,
     createBatch,
+    releaseReservation,
     // Statistics
     getInventoryStats,
   };
