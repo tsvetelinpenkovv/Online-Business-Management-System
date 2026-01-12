@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
-import jsPDF from 'jspdf';
+
 
 const documentationContent = `
 # СИСТЕМА ЗА УПРАВЛЕНИЕ НА ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО
@@ -390,181 +390,198 @@ export const DocumentationTab = () => {
   const handleDownloadPdf = async () => {
     setDownloadingPdf(true);
     try {
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // Add logo if available
-      let startY = 25;
-      if (logoUrl) {
-        try {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-            img.src = logoUrl;
-          });
-          doc.addImage(img, 'PNG', 15, 10, 40, 20);
-          startY = 45;
-        } catch (e) {
-          console.log('Логото не може да бъде добавено към PDF');
-        }
+      // Create a new window for printing with proper Cyrillic support
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        throw new Error('Popup blocked');
       }
 
-      // Title - Note about transliteration
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SISTEMA ZA UPRAVLENIE NA', 105, startY, { align: 'center' });
-      doc.text('PORACHKI I SKLADOVO STOPANSTVO', 105, startY + 8, { align: 'center' });
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Palna dokumentaciya v1.0', 105, startY + 18, { align: 'center' });
-
-      // Note about transliteration
-      doc.setFontSize(9);
-      doc.setTextColor(100, 100, 100);
-      doc.text('* Tekstut e transliteriran ot Kirilica za PDF format', 105, startY + 26, { align: 'center' });
-      doc.text('Za palen tekst na Bulgarski, svalette MD faila', 105, startY + 31, { align: 'center' });
-
-      // Date
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      const dateStr = new Date().toLocaleDateString('bg-BG');
-      doc.text('Generirana na: ' + dateStr, 105, startY + 38, { align: 'center' });
-
-      // Separator line
-      doc.setDrawColor(200, 200, 200);
-      doc.line(15, startY + 44, 195, startY + 44);
-
-      let yPosition = startY + 54;
-      const pageHeight = 280;
-      const lineHeight = 6;
-      const marginLeft = 15;
-      const maxWidth = 180;
-
-      // Bulgarian to Latin transliteration map
-      const transliterate = (text: string): string => {
-        const map: { [key: string]: string } = {
-          'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'zh',
-          'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
-          'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f',
-          'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sht', 'ъ': 'a', 'ь': '',
-          'ю': 'yu', 'я': 'ya',
-          'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ж': 'Zh',
-          'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
-          'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F',
-          'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sht', 'Ъ': 'A', 'Ь': '',
-          'Ю': 'Yu', 'Я': 'Ya'
-        };
-        return text.split('').map(char => map[char] || char).join('');
+      // Convert markdown to styled HTML
+      const convertMarkdownToHtml = (md: string): string => {
+        let html = md
+          // Headers
+          .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+          .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+          .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+          .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+          // Bold
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          // Tables
+          .replace(/^\|(.+)\|$/gm, (match, content) => {
+            const cells = content.split('|').map((c: string) => c.trim());
+            return '<tr>' + cells.map((c: string) => `<td>${c}</td>`).join('') + '</tr>';
+          })
+          // List items
+          .replace(/^- (.+)$/gm, '<li>$1</li>')
+          // Horizontal rule
+          .replace(/^---$/gm, '<hr>')
+          // Line breaks
+          .replace(/\n\n/g, '</p><p>')
+          .replace(/\n/g, '<br>');
+        
+        return html;
       };
 
-      // Process content
-      const lines = documentationContent.split('\n');
-      
-      for (const line of lines) {
-        if (yPosition > pageHeight) {
-          doc.addPage();
-          yPosition = 20;
-        }
+      const htmlContent = convertMarkdownToHtml(documentationContent);
+      const dateStr = new Date().toLocaleDateString('bg-BG');
 
-        const trimmedLine = line.trim();
-        const latinLine = transliterate(trimmedLine);
-        
-        if (trimmedLine.startsWith('# ')) {
-          doc.setFontSize(16);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(180, 50, 50);
-          const text = latinLine.replace('# ', '');
-          doc.text(text, marginLeft, yPosition);
-          yPosition += lineHeight * 1.5;
-        } else if (trimmedLine.startsWith('## ')) {
-          doc.setFontSize(14);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(60, 60, 60);
-          const text = latinLine.replace('## ', '');
-          doc.text(text, marginLeft, yPosition);
-          yPosition += lineHeight * 1.3;
-        } else if (trimmedLine.startsWith('### ')) {
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(80, 80, 80);
-          const text = latinLine.replace('### ', '');
-          doc.text(text, marginLeft, yPosition);
-          yPosition += lineHeight * 1.2;
-        } else if (trimmedLine.startsWith('#### ')) {
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(100, 100, 100);
-          const text = latinLine.replace('#### ', '');
-          doc.text(text, marginLeft, yPosition);
-          yPosition += lineHeight;
-        } else if (trimmedLine.startsWith('- **')) {
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(40, 40, 40);
-          const text = '* ' + latinLine.replace('- **', '').replace('**:', ':').replace('**', '');
-          const splitText = doc.splitTextToSize(text, maxWidth);
-          doc.text(splitText, marginLeft + 5, yPosition);
-          yPosition += lineHeight * splitText.length;
-        } else if (trimmedLine.startsWith('- ')) {
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(40, 40, 40);
-          const text = '* ' + latinLine.replace('- ', '');
-          const splitText = doc.splitTextToSize(text, maxWidth);
-          doc.text(splitText, marginLeft + 5, yPosition);
-          yPosition += lineHeight * splitText.length;
-        } else if (trimmedLine.startsWith('|')) {
-          // Table row
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(60, 60, 60);
-          const text = latinLine.replace(/\|/g, ' | ').trim();
-          const splitText = doc.splitTextToSize(text, maxWidth);
-          doc.text(splitText, marginLeft, yPosition);
-          yPosition += lineHeight * splitText.length;
-        } else if (trimmedLine === '---') {
-          doc.setDrawColor(200, 200, 200);
-          doc.line(marginLeft, yPosition, 195, yPosition);
-          yPosition += lineHeight;
-        } else if (trimmedLine.length > 0) {
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(40, 40, 40);
-          const cleanText = latinLine.replace(/\*\*/g, '').replace(/\*/g, '');
-          const splitText = doc.splitTextToSize(cleanText, maxWidth);
-          doc.text(splitText, marginLeft, yPosition);
-          yPosition += lineHeight * splitText.length;
-        } else {
-          yPosition += lineHeight * 0.5;
-        }
-      }
-
-      // Footer on last page
-      const pageCount = doc.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text('Stranitsa ' + i + ' ot ' + pageCount, 105, 290, { align: 'center' });
-      }
-
-      doc.save('dokumentaciya-sistema-' + new Date().toISOString().split('T')[0] + '.pdf');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="bg">
+        <head>
+          <meta charset="UTF-8">
+          <title>Документация на системата</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+            
+            * {
+              font-family: 'Roboto', Arial, sans-serif;
+              box-sizing: border-box;
+            }
+            
+            body {
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+              line-height: 1.6;
+              color: #333;
+              font-size: 11pt;
+            }
+            
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #e5e7eb;
+            }
+            
+            .header img {
+              max-width: 150px;
+              height: auto;
+              margin-bottom: 15px;
+            }
+            
+            h1 {
+              font-size: 22pt;
+              color: #1f2937;
+              margin: 20px 0 10px;
+              page-break-after: avoid;
+            }
+            
+            h2 {
+              font-size: 16pt;
+              color: #374151;
+              margin: 25px 0 10px;
+              padding-bottom: 5px;
+              border-bottom: 1px solid #e5e7eb;
+              page-break-after: avoid;
+            }
+            
+            h3 {
+              font-size: 13pt;
+              color: #4b5563;
+              margin: 15px 0 8px;
+              page-break-after: avoid;
+            }
+            
+            h4 {
+              font-size: 11pt;
+              color: #6b7280;
+              margin: 10px 0 5px;
+            }
+            
+            p {
+              margin: 8px 0;
+            }
+            
+            li {
+              margin: 4px 0;
+              padding-left: 10px;
+            }
+            
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 10px 0;
+              font-size: 10pt;
+            }
+            
+            td {
+              border: 1px solid #d1d5db;
+              padding: 6px 10px;
+            }
+            
+            tr:first-child td {
+              background: #f3f4f6;
+              font-weight: 500;
+            }
+            
+            hr {
+              border: none;
+              border-top: 1px solid #e5e7eb;
+              margin: 20px 0;
+            }
+            
+            .date {
+              text-align: center;
+              color: #9ca3af;
+              font-size: 10pt;
+              margin-top: 10px;
+            }
+            
+            @media print {
+              body {
+                padding: 20px;
+              }
+              
+              .no-print {
+                display: none;
+              }
+              
+              h1, h2, h3 {
+                page-break-after: avoid;
+              }
+              
+              tr {
+                page-break-inside: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            ${logoUrl ? `<img src="${logoUrl}" alt="Лого" />` : ''}
+            <h1>СИСТЕМА ЗА УПРАВЛЕНИЕ НА ПОРЪЧКИ И СКЛАДОВО СТОПАНСТВО</h1>
+            <p style="font-size: 14pt; color: #6b7280;">Пълна документация v1.2</p>
+            <p class="date">Генерирана на: ${dateStr}</p>
+          </div>
+          
+          <div class="content">
+            ${htmlContent}
+          </div>
+          
+          <script>
+            // Wait for fonts to load, then print
+            document.fonts.ready.then(() => {
+              setTimeout(() => {
+                window.print();
+              }, 500);
+            });
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
       
       toast({
         title: 'Успех',
-        description: 'PDF документацията беше изтеглена успешно',
+        description: 'PDF документацията е готова за печат на български език',
       });
     } catch (error) {
       console.error('PDF generation error:', error);
       toast({
         title: 'Грешка',
-        description: 'Неуспешно генериране на PDF',
+        description: 'Неуспешно генериране на PDF. Моля, разрешете изскачащи прозорци.',
         variant: 'destructive',
       });
     } finally {

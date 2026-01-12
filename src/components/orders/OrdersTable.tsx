@@ -52,6 +52,14 @@ import { EditOrderDialog } from './EditOrderDialog';
 
 type OrderSortKey = 'id' | 'created_at' | 'customer_name' | 'phone' | 'total_price' | 'product_name' | 'catalog_number' | 'quantity' | 'status';
 
+// Helper function to clean product names from quantity indicators like "(x2)"
+const cleanProductName = (name: string): string => {
+  return name
+    .split(', ')
+    .map(part => part.replace(/\s*\(x\d+\)$/i, '').trim())
+    .join(', ');
+};
+
 import { type ColumnKey } from './ColumnVisibilityToggle';
 
 interface OrdersTableProps {
@@ -325,7 +333,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             <h1>Поръчка №${order.id} - ${order.code}</h1>
             <div class="info"><span class="label">Клиент:</span> ${order.customer_name}</div>
             <div class="info"><span class="label">Телефон:</span> ${order.phone}</div>
-            <div class="info"><span class="label">Продукт:</span> ${order.product_name}</div>
+            <div class="info"><span class="label">Продукт:</span> ${cleanProductName(order.product_name)}</div>
             <div class="info"><span class="label">Каталожен номер:</span> ${order.catalog_number || '-'}</div>
             <div class="info"><span class="label">Количество:</span> ${order.quantity}</div>
             <div class="info"><span class="label">Цена:</span> ${order.total_price.toFixed(2)} €</div>
@@ -635,8 +643,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 {visibleColumns.has('product') && (
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <span className="text-[13px] line-clamp-2 max-w-[120px] font-semibold" title={order.product_name}>
-                        {order.product_name}
+                      <span className="text-[13px] line-clamp-2 max-w-[120px] font-semibold" title={cleanProductName(order.product_name)}>
+                        {cleanProductName(order.product_name)}
                       </span>
                       <InfoPopover 
                         title="Детайли на продукта" 
@@ -645,7 +653,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                           <div className="space-y-2">
                             <CopyableText 
                               label="Продукт" 
-                              value={order.product_name}
+                              value={cleanProductName(order.product_name)}
                               icon={<Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
                             />
                             <CopyableText 

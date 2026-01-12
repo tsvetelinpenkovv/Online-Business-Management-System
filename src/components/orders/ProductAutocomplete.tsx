@@ -35,13 +35,15 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedProduct, setSelectedProduct] = useState<InventoryProduct | null>(null);
+  const [userInteracted, setUserInteracted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch products when value changes
+  // Fetch products when value changes - ONLY if user has interacted
   useEffect(() => {
     const searchProducts = async () => {
-      if (value.length < 2) {
+      // Only search if user has interacted with input
+      if (!userInteracted || value.length < 2) {
         setProducts([]);
         setShowSuggestions(false);
         return;
@@ -69,7 +71,7 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
 
     const debounce = setTimeout(searchProducts, 300);
     return () => clearTimeout(debounce);
-  }, [value]);
+  }, [value, userInteracted]);
 
   // Close suggestions on click outside
   useEffect(() => {
@@ -89,6 +91,7 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
     onSelect?.(product);
     setShowSuggestions(false);
     setSelectedIndex(-1);
+    setUserInteracted(false); // Reset after selection
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -126,12 +129,14 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
           ref={inputRef}
           value={value}
           onChange={(e) => {
+            setUserInteracted(true);
             onChange(e.target.value);
             setSelectedIndex(-1);
             setSelectedProduct(null);
           }}
           onFocus={() => {
-            if (products.length > 0) setShowSuggestions(true);
+            // Only show suggestions if user has already interacted
+            if (userInteracted && products.length > 0) setShowSuggestions(true);
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
