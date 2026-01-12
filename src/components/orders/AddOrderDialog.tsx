@@ -277,6 +277,8 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                       if (p.sale_price) updateProduct(index, 'price', p.sale_price);
                     }}
                     placeholder="Търси продукт..."
+                    requiredQuantity={product.quantity}
+                    showStockWarning={true}
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-2 space-y-1">

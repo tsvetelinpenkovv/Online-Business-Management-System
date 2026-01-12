@@ -547,9 +547,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <CorrectStatusIcon isCorrect={order.is_correct} />
                   </TableCell>
                 )}
-                <TableCell className="text-sm">
+                <TableCell className="text-[13px]">
                   <div className="flex items-center gap-1">
-                    <span className="truncate max-w-[100px]">{order.phone}</span>
+                    <span className="truncate max-w-[100px] font-medium text-foreground">{order.phone}</span>
                     <button
                       onClick={() => handleCopyPhone(order.phone)}
                       className="p-0.5 hover:bg-muted rounded transition-colors"

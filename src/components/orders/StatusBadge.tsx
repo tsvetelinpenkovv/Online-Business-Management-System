@@ -84,12 +84,13 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, onStatusChange }) => {
-  const { statuses } = useOrderStatuses();
+  const { statuses, loading: statusesLoading } = useOrderStatuses();
   
   // Initialize with cached data immediately to prevent delay
   const [leasingStatuses, setLeasingStatuses] = useState<string[]>(() => {
     return getCachedLeasingStatuses() || DEFAULT_LEASING_STATUSES;
   });
+  const [leasingLoaded, setLeasingLoaded] = useState(() => !!getCachedLeasingStatuses());
 
   // Load leasing statuses from settings (background refresh)
   useEffect(() => {
@@ -109,6 +110,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
           // Keep cached/default values
         }
       }
+      setLeasingLoaded(true);
       // If no data, keep the cached/default values
     };
     loadLeasingStatuses();
@@ -117,13 +119,16 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   // Memoize leasing check to avoid recalculation
   const isLeasing = useMemo(() => leasingStatuses.includes(status), [leasingStatuses, status]);
 
+  // Don't render anything until data is loaded to prevent flash
+  const isLoading = statusesLoading || !leasingLoaded;
+
   // Find status config from database or use default
   const statusConfig = statuses.find(s => s.name === status);
   const iconName = statusConfig?.icon || 'Clock';
   const colorName = statusConfig?.color || 'primary';
   
   const Icon = ICON_MAP[iconName] || Clock;
-  const colorClasses = COLOR_MAP[colorName] || COLOR_MAP.primary;
+  const colorClasses = isLoading ? COLOR_MAP.muted : (COLOR_MAP[colorName] || COLOR_MAP.primary);
 
   // Shorten leasing status names for display
   const getShortStatus = (statusName: string) => {
