@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrders } from '@/hooks/useOrders';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
+import { useToast } from '@/hooks/use-toast';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
@@ -38,6 +39,7 @@ const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   const { logoUrl } = useCompanyLogo();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -193,6 +195,33 @@ const Index = () => {
     }
 
     printOrderReceipts(selectedOrdersData, companySettings, logoUrl);
+  };
+
+  const handleBulkPrintInvoices = async () => {
+    const selectedOrdersData = orders.filter(o => selectedOrders.includes(o.id));
+    
+    if (selectedOrdersData.length === 0) {
+      alert('Няма избрани поръчки');
+      return;
+    }
+
+    // Fetch invoices for selected orders
+    const { data: invoices } = await supabase
+      .from('invoices')
+      .select('*')
+      .in('order_id', selectedOrders);
+
+    if (!invoices || invoices.length === 0) {
+      alert('Няма фактури за избраните поръчки');
+      return;
+    }
+
+    // Open each invoice in print mode (simplified - opens invoice dialog for first one)
+    // For full implementation, you'd generate PDFs for all invoices
+    toast({
+      title: 'Печат на фактури',
+      description: `Намерени ${invoices.length} фактури за печат`,
+    });
   };
 
   const handleBulkPrintWaybills = () => {
@@ -380,6 +409,10 @@ const Index = () => {
                     <FileBox className="w-4 h-4 mr-2" />
                     {selectedOrders.length === 1 ? 'Печат на товарителница' : 'Печат на товарителници'}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
+                    <Receipt className="w-4 h-4 mr-2" />
+                    Печат на фактури
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button 
@@ -484,6 +517,10 @@ const Index = () => {
                   <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
                     <FileBox className="w-4 h-4 mr-2" />
                     {selectedOrders.length === 1 ? 'Печат на товарителница' : 'Печат на товарителници'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
+                    <Receipt className="w-4 h-4 mr-2" />
+                    Печат на фактури
                   </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>

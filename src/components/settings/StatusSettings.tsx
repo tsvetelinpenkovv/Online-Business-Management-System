@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { 
   Clock, Loader2, PhoneOff, CheckCircle2, CreditCard, Building2, 
   Truck, PackageX, Package, CircleCheck, Undo2, XCircle, Ban,
-  Plus, Trash2, Pencil, Save, X, Warehouse
+  Plus, Trash2, Pencil, Save, X, Warehouse, GripVertical
 } from 'lucide-react';
 import { useOrderStatuses, OrderStatusConfig } from '@/hooks/useOrderStatuses';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +10,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const AVAILABLE_ICONS = [
   { name: 'Clock', icon: Clock },
@@ -51,8 +67,133 @@ const getColorClasses = (colorName: string) => {
   return colorConfig || AVAILABLE_COLORS[0];
 };
 
+interface SortableStatusItemProps {
+  status: OrderStatusConfig;
+  onEdit: (status: OrderStatusConfig) => void;
+  onDelete: (id: string) => void;
+  isEditing: boolean;
+  editForm: Partial<OrderStatusConfig>;
+  setEditForm: (form: Partial<OrderStatusConfig>) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+}
+
+const SortableStatusItem: FC<SortableStatusItemProps> = ({
+  status,
+  onEdit,
+  onDelete,
+  isEditing,
+  editForm,
+  setEditForm,
+  onSaveEdit,
+  onCancelEdit,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: status.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const colorClasses = getColorClasses(status.color);
+  const Icon = getIconComponent(status.icon);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+    >
+      {isEditing ? (
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
+          <Input
+            value={editForm.name || ''}
+            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            className="h-8"
+          />
+          <Select value={editForm.color} onValueChange={(v) => setEditForm({ ...editForm, color: v })}>
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AVAILABLE_COLORS.map((color) => (
+                <SelectItem key={color.name} value={color.name}>
+                  {color.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={editForm.icon} onValueChange={(v) => setEditForm({ ...editForm, icon: v })}>
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AVAILABLE_ICONS.map((iconItem) => {
+                const IconComp = iconItem.icon;
+                return (
+                  <SelectItem key={iconItem.name} value={iconItem.name}>
+                    <div className="flex items-center gap-2">
+                      <IconComp className="w-3 h-3" />
+                      {iconItem.name}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-1">
+            <Button size="sm" variant="ghost" onClick={onSaveEdit}>
+              <Save className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onCancelEdit}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-3">
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+            >
+              <GripVertical className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${colorClasses.bgClass} ${colorClasses.textClass}`}>
+              <Icon className="w-3 h-3" />
+              {status.name}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" onClick={() => onEdit(status)}>
+              <Pencil className="w-4 h-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={() => onDelete(status.id)}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 export const StatusSettings: FC = () => {
-  const { statuses, loading, addStatus, updateStatus, deleteStatus } = useOrderStatuses();
+  const { statuses, loading, addStatus, updateStatus, deleteStatus, reorderStatuses } = useOrderStatuses();
   const { toast } = useToast();
   const [newStatusName, setNewStatusName] = useState('');
   const [newStatusColor, setNewStatusColor] = useState('primary');
@@ -64,6 +205,13 @@ export const StatusSettings: FC = () => {
   // Stock deduction status setting
   const [stockDeductionStatus, setStockDeductionStatus] = useState<string>('Изпратена');
   const [savingStockStatus, setSavingStockStatus] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     // Load saved stock deduction status
@@ -137,6 +285,18 @@ export const StatusSettings: FC = () => {
       await updateStatus(editingId, editForm);
       setEditingId(null);
       setEditForm({});
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = statuses.findIndex((s) => s.id === active.id);
+      const newIndex = statuses.findIndex((s) => s.id === over.id);
+      
+      const newOrder = arrayMove(statuses, oldIndex, newIndex);
+      await reorderStatuses(newOrder.map(s => s.id));
     }
   };
 
@@ -289,96 +449,36 @@ export const StatusSettings: FC = () => {
         <CardHeader>
           <CardTitle>Съществуващи статуси</CardTitle>
           <CardDescription>
-            Управлявайте статусите на поръчките - променяйте име, цвят и иконка
+            Плъзнете статусите, за да ги подредите. Можете да редактирате или изтриете всеки статус.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {statuses.map((status) => {
-              const colorClasses = getColorClasses(status.color);
-              const Icon = getIconComponent(status.icon);
-              const isEditing = editingId === status.id;
-
-              return (
-                <div key={status.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  {isEditing ? (
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
-                      <Input
-                        value={editForm.name || ''}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="h-8"
-                      />
-                      <Select value={editForm.color} onValueChange={(v) => setEditForm({ ...editForm, color: v })}>
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {AVAILABLE_COLORS.map((color) => (
-                            <SelectItem key={color.name} value={color.name}>
-                              {color.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select value={editForm.icon} onValueChange={(v) => setEditForm({ ...editForm, icon: v })}>
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {AVAILABLE_ICONS.map((iconItem) => {
-                            const IconComp = iconItem.icon;
-                            return (
-                              <SelectItem key={iconItem.name} value={iconItem.name}>
-                                <div className="flex items-center gap-2">
-                                  <IconComp className="w-3 h-3" />
-                                  {iconItem.name}
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={saveEditing}>
-                          <Save className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={cancelEditing}>
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${colorClasses.bgClass} ${colorClasses.textClass}`}>
-                          <Icon className="w-3 h-3" />
-                          {status.name}
-                        </span>
-                        {status.is_default && (
-                          <span className="text-xs text-muted-foreground">(стандартен)</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => startEditing(status)}>
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        {!status.is_default && (
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            onClick={() => deleteStatus(status.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={statuses.map(s => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {statuses.map((status) => (
+                  <SortableStatusItem
+                    key={status.id}
+                    status={status}
+                    onEdit={startEditing}
+                    onDelete={deleteStatus}
+                    isEditing={editingId === status.id}
+                    editForm={editForm}
+                    setEditForm={setEditForm}
+                    onSaveEdit={saveEditing}
+                    onCancelEdit={cancelEditing}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         </CardContent>
       </Card>
     </div>
