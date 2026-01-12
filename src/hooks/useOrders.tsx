@@ -116,22 +116,52 @@ export const useOrders = () => {
   const findProduct = async (catalogNumber: string | null, productName: string) => {
     let product = null;
     
+    // First try by catalog number (SKU or barcode)
     if (catalogNumber) {
-      const { data } = await supabase
-        .from('inventory_products')
-        .select('id, current_stock, reserved_stock, name, is_bundle')
-        .or(`sku.eq.${catalogNumber},barcode.eq.${catalogNumber}`)
-        .single();
-      product = data;
+      // Handle multiple catalog numbers separated by comma
+      const catalogNumbers = catalogNumber.split(',').map(c => c.trim()).filter(Boolean);
+      
+      for (const catNum of catalogNumbers) {
+        const { data } = await supabase
+          .from('inventory_products')
+          .select('id, current_stock, reserved_stock, name, is_bundle')
+          .or(`sku.eq.${catNum},barcode.eq.${catNum}`)
+          .maybeSingle();
+        if (data) {
+          product = data;
+          break;
+        }
+      }
     }
     
+    // If not found by catalog number, try by SKU directly from product name
+    // Sometimes product_name contains the SKU (e.g., "BST551516 (x2)")
     if (!product && productName) {
+      // Extract potential SKU from product name (first word or alphanumeric code)
+      const skuMatch = productName.match(/^([A-Z0-9-]+)/i);
+      if (skuMatch) {
+        const potentialSku = skuMatch[1];
+        const { data } = await supabase
+          .from('inventory_products')
+          .select('id, current_stock, reserved_stock, name, is_bundle')
+          .or(`sku.eq.${potentialSku},barcode.eq.${potentialSku}`)
+          .maybeSingle();
+        if (data) {
+          product = data;
+        }
+      }
+    }
+    
+    // Finally, try by name similarity
+    if (!product && productName) {
+      // Clean up product name (remove quantity indicators like "(x2)")
+      const cleanName = productName.replace(/\s*\(x\d+\)\s*/gi, '').trim();
       const { data } = await supabase
         .from('inventory_products')
         .select('id, current_stock, reserved_stock, name, is_bundle')
-        .ilike('name', `%${productName}%`)
+        .ilike('name', `%${cleanName}%`)
         .limit(1)
-        .single();
+        .maybeSingle();
       product = data;
     }
     
