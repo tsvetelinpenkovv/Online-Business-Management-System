@@ -234,7 +234,7 @@ const Messages = () => {
             {msg.template_name || msg.trigger_status || '—'}
             {msg.is_sandbox && (
               <span className="text-[10px] text-warning border border-warning rounded px-1">
-                Sandbox
+                Тест режим
               </span>
             )}
           </div>
@@ -441,7 +441,7 @@ const Messages = () => {
                             {msg.template_name || msg.trigger_status || '—'}
                             {msg.is_sandbox && (
                               <Badge variant="outline" className="ml-2 text-xs text-warning border-warning">
-                                Sandbox
+                                Тест режим
                               </Badge>
                             )}
                           </TableCell>
