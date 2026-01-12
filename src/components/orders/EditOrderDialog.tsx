@@ -71,30 +71,36 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
   const [courierLocked, setCourierLocked] = useState(false);
 
   useEffect(() => {
-    if (order) {
-      setFormData(order);
-      setProducts(parseProducts(order));
-      // Check if courier should be locked based on existing URL
-      if (order.courier_tracking_url) {
-        const detectedCourier = getCourierByUrl(order.courier_tracking_url);
-        setCourierLocked(!!detectedCourier);
-      }
-    }
-  }, [order, getCourierByUrl]);
+    if (!order) return;
+
+    setFormData(order);
+    setProducts(parseProducts(order));
+    // Let the second effect handle courier detection/locking.
+    setCourierLocked(false);
+  }, [order?.id]);
 
   // Auto-detect courier when tracking URL changes and lock if detected
   useEffect(() => {
-    if (formData.courier_tracking_url) {
-      const detectedCourier = getCourierByUrl(formData.courier_tracking_url);
-      if (detectedCourier) {
-        setFormData(prev => ({ ...prev, courier_id: detectedCourier.id }));
-        setCourierLocked(true);
-      } else {
-        setCourierLocked(false);
-      }
-    } else {
+    const url = formData.courier_tracking_url;
+
+    if (!url) {
       setCourierLocked(false);
+      return;
     }
+
+    const detectedCourier = getCourierByUrl(url);
+
+    if (!detectedCourier) {
+      setCourierLocked(false);
+      return;
+    }
+
+    setCourierLocked(true);
+    setFormData((prev) => {
+      // Avoid infinite loops: only update if the courier actually changed.
+      if (prev.courier_id === detectedCourier.id) return prev;
+      return { ...prev, courier_id: detectedCourier.id };
+    });
   }, [formData.courier_tracking_url, getCourierByUrl]);
 
   const addProduct = () => {
