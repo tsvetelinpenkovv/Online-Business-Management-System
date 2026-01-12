@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
 import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
+import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export default function Inventory() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const inventory = useInventory();
+  const { logoUrl } = useCompanyLogo();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
@@ -135,7 +137,16 @@ export default function Inventory() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center gap-2 min-w-0">
-                <Warehouse className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+                {logoUrl ? (
+                  <img 
+                    src={logoUrl} 
+                    alt="Фирмено лого" 
+                    className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0"
+                    loading="eager"
+                  />
+                ) : (
+                  <Warehouse className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+                )}
                 <h1 className="text-lg sm:text-xl font-bold truncate">{inventoryPageTitle}</h1>
               </div>
             </div>

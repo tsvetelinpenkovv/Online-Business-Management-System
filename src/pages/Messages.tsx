@@ -11,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -61,6 +61,12 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [footerSettings, setFooterSettings] = useState<{
+    footer_text: string | null;
+    footer_link_text: string | null;
+    footer_link: string | null;
+    footer_website: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -73,6 +79,20 @@ const Messages = () => {
       fetchMessages();
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchFooterSettings = async () => {
+      const { data } = await supabase
+        .from('company_settings')
+        .select('footer_text, footer_link_text, footer_link, footer_website')
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setFooterSettings(data);
+      }
+    };
+    fetchFooterSettings();
+  }, []);
 
   const fetchMessages = async () => {
     try {
@@ -225,242 +245,277 @@ const Messages = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
-              <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex-1">
+        <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div className="min-w-0">
+                <h1 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-purple shrink-0" />
+                  <span className="truncate">Съобщения</span>
+                </h1>
+                <p className="text-muted-foreground text-xs md:text-sm hidden sm:block">
+                  История на Viber и SMS съобщенията
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
+              {refreshing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              {!isMobile && <span className="ml-2">Обнови</span>}
             </Button>
-            <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-purple shrink-0" />
-                <span className="truncate">Съобщения</span>
-              </h1>
-              <p className="text-muted-foreground text-xs md:text-sm hidden sm:block">
-                История на Viber и SMS съобщенията
-              </p>
-            </div>
           </div>
-          <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
-            {refreshing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-            {!isMobile && <span className="ml-2">Обнови</span>}
-          </Button>
-        </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3">
-          <Card className="p-2 md:p-3">
-            <div className="text-lg md:text-2xl font-bold">{stats.total}</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground">Общо</div>
-          </Card>
-          <Card className="p-2 md:p-3 border-purple/30">
-            <div className="text-lg md:text-2xl font-bold text-purple">{stats.viber}</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
-              <MessageCircle className="w-2.5 h-2.5 md:w-3 md:h-3" /> Viber
-            </div>
-          </Card>
-          <Card className="p-2 md:p-3 border-info/30">
-            <div className="text-lg md:text-2xl font-bold text-info">{stats.sms}</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
-              <Smartphone className="w-2.5 h-2.5 md:w-3 md:h-3" /> SMS
-            </div>
-          </Card>
-          <Card className="p-2 md:p-3">
-            <div className="text-lg md:text-2xl font-bold text-success">{stats.delivered + stats.read}</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
-              <Check className="w-2.5 h-2.5 md:w-3 md:h-3" /> Достав.
-            </div>
-          </Card>
-          <Card className="p-2 md:p-3 hidden lg:block">
-            <div className="text-2xl font-bold text-info">{stats.read}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <CheckCheck className="w-3 h-3" /> Прочетени
-            </div>
-          </Card>
-          <Card className="p-2 md:p-3 hidden lg:block">
-            <div className="text-2xl font-bold text-muted-foreground">{stats.sent}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="w-3 h-3" /> Изпратени
-            </div>
-          </Card>
-          <Card className="p-2 md:p-3 hidden lg:block">
-            <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <XCircle className="w-3 h-3" /> Грешки
-            </div>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <Card>
-          <CardContent className="p-3 md:p-4">
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Търси..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3">
+            <Card className="p-2 md:p-3">
+              <div className="text-lg md:text-2xl font-bold">{stats.total}</div>
+              <div className="text-[10px] md:text-xs text-muted-foreground">Общо</div>
+            </Card>
+            <Card className="p-2 md:p-3 border-purple/30">
+              <div className="text-lg md:text-2xl font-bold text-purple">{stats.viber}</div>
+              <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                <MessageCircle className="w-2.5 h-2.5 md:w-3 md:h-3" /> Viber
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="Статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    <span className="flex items-center gap-2">
-                      <List className="w-4 h-4 text-primary" />
-                      Всички
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="read">
-                    <span className="flex items-center gap-2">
-                      <CheckCheck className="w-4 h-4 text-info" />
-                      <span className="text-info">Прочетени</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="delivered">
-                    <span className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-success" />
-                      <span className="text-success">Доставени</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="sent">
-                    <span className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Изпратени</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="failed">
-                    <span className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-destructive" />
-                      <span className="text-destructive">Грешки</span>
-                    </span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+            </Card>
+            <Card className="p-2 md:p-3 border-info/30">
+              <div className="text-lg md:text-2xl font-bold text-info">{stats.sms}</div>
+              <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                <Smartphone className="w-2.5 h-2.5 md:w-3 md:h-3" /> SMS
+              </div>
+            </Card>
+            <Card className="p-2 md:p-3">
+              <div className="text-lg md:text-2xl font-bold text-success">{stats.delivered + stats.read}</div>
+              <div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                <Check className="w-2.5 h-2.5 md:w-3 md:h-3" /> Достав.
+              </div>
+            </Card>
+            <Card className="p-2 md:p-3 hidden lg:block">
+              <div className="text-2xl font-bold text-info">{stats.read}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <CheckCheck className="w-3 h-3" /> Прочетени
+              </div>
+            </Card>
+            <Card className="p-2 md:p-3 hidden lg:block">
+              <div className="text-2xl font-bold text-muted-foreground">{stats.sent}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Изпратени
+              </div>
+            </Card>
+            <Card className="p-2 md:p-3 hidden lg:block">
+              <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <XCircle className="w-3 h-3" /> Грешки
+              </div>
+            </Card>
+          </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="all" className="gap-1 text-xs md:text-sm">
-              <List className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" />
-              Всички
-              <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{messages.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="viber" className="gap-1 text-xs md:text-sm">
-              <MessageCircle className="w-3 h-3 md:w-3.5 md:h-3.5 text-purple" />
-              Viber
-              <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{stats.viber}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="sms" className="gap-1 text-xs md:text-sm">
-              <Smartphone className="w-3 h-3 md:w-3.5 md:h-3.5 text-info" />
-              SMS
-              <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{stats.sms}</Badge>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Messages Content */}
-        {filteredMessages.length === 0 ? (
+          {/* Filters */}
           <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Няма намерени съобщения</p>
-              <p className="text-sm">Съобщенията ще се появят тук след като изпратите първото</p>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Търси..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue placeholder="Статус" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <span className="flex items-center gap-2">
+                        <List className="w-4 h-4 text-primary" />
+                        Всички
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="read">
+                      <span className="flex items-center gap-2">
+                        <CheckCheck className="w-4 h-4 text-info" />
+                        <span className="text-info">Прочетени</span>
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="delivered">
+                      <span className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-success" />
+                        <span className="text-success">Доставени</span>
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="sent">
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Изпратени</span>
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="failed">
+                      <span className="flex items-center gap-2">
+                        <XCircle className="w-4 h-4 text-destructive" />
+                        <span className="text-destructive">Грешки</span>
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
-        ) : isMobile ? (
-          // Mobile view - cards
-          <div className="space-y-2">
-            {filteredMessages.map((msg) => renderMobileMessageCard(msg))}
-          </div>
-        ) : (
-          // Desktop view - table
-          <Card>
-            <CardContent className="p-0">
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="w-[60px]">Канал</TableHead>
-                      <TableHead className="w-[80px]">Поръчка</TableHead>
-                      <TableHead>Клиент</TableHead>
-                      <TableHead>Телефон</TableHead>
-                      <TableHead>Шаблон</TableHead>
-                      <TableHead className="w-[110px]">Статус</TableHead>
-                      <TableHead className="w-[150px]">Изпратено</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMessages.map((msg) => (
-                      <TableRow key={msg.id} className="hover:bg-muted/30">
-                        <TableCell>
-                          <div className="flex items-center justify-center">
-                            {getChannelIcon(msg.channel)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {msg.order_id ? (
-                            <Button 
-                              variant="link" 
-                              className="p-0 h-auto text-primary"
-                              onClick={() => navigate(`/?search=${msg.order_id}`)}
-                            >
-                              #{msg.order_id}
-                            </Button>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {msg.customer_name || '—'}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {msg.phone}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {msg.template_name || msg.trigger_status || '—'}
-                          {msg.is_sandbox && (
-                            <Badge variant="outline" className="ml-2 text-xs text-warning border-warning">
-                              Sandbox
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            {getStatusIcon(msg.status)}
-                            {getStatusBadge(msg.status)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          <div>
-                            {format(new Date(msg.sent_at), 'dd.MM.yyyy', { locale: bg })}
-                          </div>
-                          <div>
-                            {format(new Date(msg.sent_at), 'HH:mm:ss', { locale: bg })}
-                          </div>
-                        </TableCell>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="all" className="gap-1 text-xs md:text-sm">
+                <List className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" />
+                Всички
+                <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{messages.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="viber" className="gap-1 text-xs md:text-sm">
+                <MessageCircle className="w-3 h-3 md:w-3.5 md:h-3.5 text-purple" />
+                Viber
+                <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{stats.viber}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="sms" className="gap-1 text-xs md:text-sm">
+                <Smartphone className="w-3 h-3 md:w-3.5 md:h-3.5 text-info" />
+                SMS
+                <Badge variant="secondary" className="text-[10px] md:text-xs hidden sm:inline-flex">{stats.sms}</Badge>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Messages Content */}
+          {filteredMessages.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p className="font-medium">Няма намерени съобщения</p>
+                <p className="text-sm">Съобщенията ще се появят тук след като изпратите първото</p>
+              </CardContent>
+            </Card>
+          ) : isMobile ? (
+            // Mobile view - cards
+            <div className="space-y-2">
+              {filteredMessages.map((msg) => renderMobileMessageCard(msg))}
+            </div>
+          ) : (
+            // Desktop view - table
+            <Card>
+              <CardContent className="p-0">
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="w-[60px]">Канал</TableHead>
+                        <TableHead className="w-[80px]">Поръчка</TableHead>
+                        <TableHead>Клиент</TableHead>
+                        <TableHead>Телефон</TableHead>
+                        <TableHead>Шаблон</TableHead>
+                        <TableHead className="w-[110px]">Статус</TableHead>
+                        <TableHead className="w-[150px]">Изпратено</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    </TableHeader>
+                    <TableBody>
+                      {filteredMessages.map((msg) => (
+                        <TableRow key={msg.id} className="hover:bg-muted/30">
+                          <TableCell>
+                            <div className="flex items-center justify-center">
+                              {getChannelIcon(msg.channel)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {msg.order_id ? (
+                              <Button 
+                                variant="link" 
+                                className="p-0 h-auto text-primary"
+                                onClick={() => navigate(`/?search=${msg.order_id}`)}
+                              >
+                                #{msg.order_id}
+                              </Button>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {msg.customer_name || '—'}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {msg.phone}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {msg.template_name || msg.trigger_status || '—'}
+                            {msg.is_sandbox && (
+                              <Badge variant="outline" className="ml-2 text-xs text-warning border-warning">
+                                Sandbox
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {getStatusIcon(msg.status)}
+                              {getStatusBadge(msg.status)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            <div>
+                              {format(new Date(msg.sent_at), 'dd.MM.yyyy', { locale: bg })}
+                            </div>
+                            <div>
+                              {format(new Date(msg.sent_at), 'HH:mm:ss', { locale: bg })}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-auto border-t bg-card py-4">
+        <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
+          <span>
+            {footerSettings?.footer_text || 'Разработен от'}{' '}
+            {footerSettings?.footer_link && footerSettings?.footer_link_text ? (
+              <a 
+                href={footerSettings.footer_link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                {footerSettings.footer_link_text}
+              </a>
+            ) : (
+              <span className="font-medium">{footerSettings?.footer_link_text || 'Цветелин Пенков'}</span>
+            )}
+          </span>
+          {footerSettings?.footer_website && (
+            <div className="mt-1">
+              <a 
+                href={footerSettings.footer_website.startsWith('http') ? footerSettings.footer_website : `https://${footerSettings.footer_website}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {footerSettings.footer_website}
+              </a>
+            </div>
+          )}
+        </div>
+      </footer>
     </div>
   );
 };

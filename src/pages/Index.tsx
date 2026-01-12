@@ -294,11 +294,14 @@ const Index = () => {
         <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3">
             {logoUrl ? (
-              <img 
-                src={logoUrl} 
-                alt="Фирмено лого" 
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0"
-              />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 relative">
+                <img 
+                  src={logoUrl} 
+                  alt="Фирмено лого" 
+                  className="w-full h-full object-contain"
+                  loading="eager"
+                />
+              </div>
             ) : (
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                 <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
