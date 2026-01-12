@@ -481,7 +481,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Продажна</p>
-                      <p className="font-medium text-primary">{product.sale_price.toFixed(2)} €</p>
+                      <p className="font-medium text-success">{product.sale_price.toFixed(2)} €</p>
                     </div>
                   </div>
                 </CardContent>
@@ -613,7 +613,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                           )}
                         </TableCell>
                         <TableCell className="text-right text-warning font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
-                        <TableCell className="text-right text-primary font-medium">{product.sale_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-success font-medium">{product.sale_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right text-info font-medium">{margin(product)}%</TableCell>
                         <TableCell>{getStockStatus(product)}</TableCell>
                         <TableCell>
