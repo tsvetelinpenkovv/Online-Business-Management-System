@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
@@ -1495,6 +1495,143 @@ const Settings = () => {
             {settings.nekorekten_enabled === 'true' && (
               <NekorektenStatistics />
             )}
+          </CardContent>
+        </Card>
+
+        {/* reCAPTCHA Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Google reCAPTCHA v3
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Защитете логин страницата от ботове и спам
+                  <a 
+                    href="https://developers.google.com/recaptcha/docs/v3" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 ml-2 text-primary hover:underline"
+                  >
+                    Документация <ExternalLink className="w-3 h-3" />
+                  </a>
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${settings.recaptcha_enabled === 'true' ? 'text-success' : 'text-muted-foreground'}`}>
+                  {settings.recaptcha_enabled === 'true' ? 'Активен' : 'Неактивен'}
+                </span>
+                <Switch
+                  checked={settings.recaptcha_enabled === 'true'}
+                  onCheckedChange={(checked) => setSettings({ ...settings, recaptcha_enabled: checked ? 'true' : 'false' })}
+                  className="shrink-0"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg text-sm space-y-2">
+              <p className="font-medium">Как да получите ключове за reCAPTCHA:</p>
+              <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                <li>Отидете на <a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google reCAPTCHA Admin Console</a></li>
+                <li>Създайте нов сайт с тип <strong>reCAPTCHA v3</strong></li>
+                <li>Добавете домейна на вашия сайт</li>
+                <li>Копирайте <strong>Site Key</strong> и <strong>Secret Key</strong></li>
+              </ol>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="recaptcha_site_key">Site Key (публичен ключ)</Label>
+              <Input
+                id="recaptcha_site_key"
+                placeholder="6LcXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                value={settings.recaptcha_site_key || ''}
+                onChange={(e) => setSettings({ ...settings, recaptcha_site_key: e.target.value })}
+                disabled={settings.recaptcha_enabled !== 'true'}
+              />
+              <p className="text-sm text-muted-foreground">
+                Този ключ се използва в браузъра за генериране на токени
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="recaptcha_secret_key">Secret Key (таен ключ)</Label>
+              <Input
+                id="recaptcha_secret_key"
+                type="password"
+                placeholder="6LcXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                value={settings.recaptcha_secret_key || ''}
+                onChange={(e) => setSettings({ ...settings, recaptcha_secret_key: e.target.value })}
+                disabled={settings.recaptcha_enabled !== 'true'}
+              />
+              <p className="text-sm text-muted-foreground">
+                Този ключ се използва на сървъра за верификация на токените
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="recaptcha_threshold">Праг за блокиране (0.0 - 1.0)</Label>
+              <Input
+                id="recaptcha_threshold"
+                type="number"
+                step="0.1"
+                min="0"
+                max="1"
+                placeholder="0.5"
+                value={settings.recaptcha_threshold || '0.5'}
+                onChange={(e) => setSettings({ ...settings, recaptcha_threshold: e.target.value })}
+                disabled={settings.recaptcha_enabled !== 'true'}
+                className="w-32"
+              />
+              <p className="text-sm text-muted-foreground">
+                Резултат под този праг ще блокира опита за вход. По-високи стойности = по-строга защита.
+              </p>
+            </div>
+
+            {/* Test and Save buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  if (!settings.recaptcha_site_key || !settings.recaptcha_secret_key) {
+                    toast({
+                      title: 'Внимание',
+                      description: 'Моля въведете Site Key и Secret Key',
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
+                  toast({
+                    title: 'Информация',
+                    description: 'reCAPTCHA ще бъде тестван при следващия опит за логин',
+                  });
+                }}
+                disabled={settings.recaptcha_enabled !== 'true'}
+                className="flex-1 sm:flex-none"
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                Информация за тест
+              </Button>
+              <Button 
+                onClick={handleSave} 
+                disabled={saving}
+                className="flex-1 sm:flex-none"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Запазване...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Запази
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
