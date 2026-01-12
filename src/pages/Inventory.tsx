@@ -1,17 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
 import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -30,6 +32,7 @@ export default function Inventory() {
   const { user, loading: authLoading } = useAuth();
   const inventory = useInventory();
   const { logoUrl } = useCompanyLogo();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
@@ -41,6 +44,7 @@ export default function Inventory() {
   const [footerLinkText, setFooterLinkText] = useState<string>('Цветелин Пенков');
   const [footerLink, setFooterLink] = useState<string>('');
   const [footerWebsite, setFooterWebsite] = useState<string>('');
+  const [hasShownLowStockAlert, setHasShownLowStockAlert] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -101,6 +105,31 @@ export default function Inventory() {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
+
+  // Calculate critical stock counts
+  const criticalStockInfo = useMemo(() => {
+    const lowStock = inventory.products.filter(
+      p => p.current_stock <= p.min_stock_level && p.current_stock > 0
+    );
+    const outOfStock = inventory.products.filter(p => p.current_stock <= 0);
+    return {
+      lowStockCount: lowStock.length,
+      outOfStockCount: outOfStock.length,
+      totalCritical: lowStock.length + outOfStock.length,
+    };
+  }, [inventory.products]);
+
+  // Show toast notification for low stock on first load
+  useEffect(() => {
+    if (!inventory.loading && !hasShownLowStockAlert && criticalStockInfo.totalCritical > 0) {
+      setHasShownLowStockAlert(true);
+      toast({
+        title: '⚠️ Внимание: Ниска наличност',
+        description: `${criticalStockInfo.outOfStockCount} изчерпани и ${criticalStockInfo.lowStockCount} с ниска наличност. Проверете таба "Прогнози".`,
+        variant: 'destructive',
+      });
+    }
+  }, [inventory.loading, hasShownLowStockAlert, criticalStockInfo, toast]);
 
   if (authLoading || inventory.loading) {
     return (
@@ -288,10 +317,18 @@ export default function Inventory() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="forecast" 
-                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
+                  className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
                 >
                   <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Прогнози</span>
+                  {criticalStockInfo.totalCritical > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1 flex items-center justify-center text-[10px] font-bold animate-pulse"
+                    >
+                      {criticalStockInfo.totalCritical}
+                    </Badge>
+                  )}
                 </TabsTrigger>
               </TabsList>
             </div>

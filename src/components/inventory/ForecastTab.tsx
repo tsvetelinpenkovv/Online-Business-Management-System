@@ -1,17 +1,26 @@
 import { useState, useMemo } from 'react';
 import { format, subDays, differenceInDays, addDays } from 'date-fns';
 import { bg } from 'date-fns/locale';
-import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X, ChevronDown, FolderTree, ArrowUpDown } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Package, ShoppingCart, Download, Copy, Check, X, ChevronDown, FolderTree, ArrowUpDown, AlertTriangle, Clock, FileText, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useInventory } from '@/hooks/useInventory';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 type ForecastSortKey = 'name' | 'category' | 'soldQuantity' | 'currentStock' | 'projectedSales' | 'neededQuantity';
 type SortDirection = 'asc' | 'desc';
@@ -33,6 +42,9 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<ForecastSortKey>('neededQuantity');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [selectedForOrder, setSelectedForOrder] = useState<Set<string>>(new Set());
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [orderNotes, setOrderNotes] = useState('');
   const { toast } = useToast();
 
   const handleSort = (key: ForecastSortKey) => {
@@ -153,6 +165,98 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
     return { totalSold, totalNeeded, productsNeedingOrder, criticalProducts };
   }, [forecastData]);
 
+  // Products that need ordering with recommendations
+  const orderRecommendations = useMemo(() => {
+    return forecastData
+      .filter(p => p.neededQuantity > 0 || (p.daysUntilStockout < 14 && p.daysUntilStockout !== Infinity))
+      .map(p => ({
+        ...p,
+        urgency: p.daysUntilStockout <= 3 ? 'critical' : p.daysUntilStockout <= 7 ? 'high' : p.daysUntilStockout <= 14 ? 'medium' : 'low',
+        recommendedOrderDate: p.daysUntilStockout <= 7 ? 'Сега' : `До ${format(addDays(today, Math.max(0, p.daysUntilStockout - 7)), 'd MMM', { locale: bg })}`,
+        recommendedQuantity: Math.max(p.neededQuantity, Math.ceil(p.dailySalesRate * 30)), // At least 30 days stock
+      }))
+      .sort((a, b) => a.daysUntilStockout - b.daysUntilStockout);
+  }, [forecastData]);
+
+  const toggleSelectForOrder = (id: string) => {
+    const newSelected = new Set(selectedForOrder);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedForOrder(newSelected);
+  };
+
+  const selectAllForOrder = () => {
+    if (selectedForOrder.size === orderRecommendations.length) {
+      setSelectedForOrder(new Set());
+    } else {
+      setSelectedForOrder(new Set(orderRecommendations.map(p => p.id)));
+    }
+  };
+
+  const generateOrderDocument = async () => {
+    const itemsToOrder = orderRecommendations.filter(p => selectedForOrder.has(p.id));
+    if (itemsToOrder.length === 0) {
+      toast({ title: 'Грешка', description: 'Няма избрани артикули', variant: 'destructive' });
+      return;
+    }
+
+    // Create a receiving document with 0 quantities (as a pending order)
+    const items = itemsToOrder.map(item => ({
+      productId: item.id,
+      quantity: item.recommendedQuantity,
+      unitPrice: 0, // Will be filled when actually received
+    }));
+
+    const doc = await inventory.createStockDocument(
+      'receiving',
+      items,
+      undefined,
+      undefined,
+      `Заявка от прогнози\n${orderNotes}\n\nАртикули:\n${itemsToOrder.map(i => `- ${i.name} (${i.sku}): ${i.recommendedQuantity} бр.`).join('\n')}`
+    );
+
+    if (doc) {
+      toast({
+        title: 'Заявка създадена',
+        description: `Документ ${doc.document_number} е създаден с ${itemsToOrder.length} артикула`,
+      });
+      setSelectedForOrder(new Set());
+      setShowOrderDialog(false);
+      setOrderNotes('');
+    }
+  };
+
+  const exportOrderToCSV = () => {
+    const itemsToOrder = orderRecommendations.filter(p => selectedForOrder.has(p.id));
+    if (itemsToOrder.length === 0) {
+      toast({ title: 'Грешка', description: 'Няма избрани артикули', variant: 'destructive' });
+      return;
+    }
+
+    const headers = ['Артикул', 'SKU', 'Категория', 'Налични', 'Дни до изчерпване', 'Препоръчано количество', 'Препоръчана дата'];
+    const rows = itemsToOrder.map(p => [
+      p.name,
+      p.sku,
+      p.category,
+      p.currentStock,
+      p.daysUntilStockout === Infinity ? 'N/A' : p.daysUntilStockout,
+      p.recommendedQuantity,
+      p.recommendedOrderDate,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `zayavka-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    
+    toast({ title: 'Експортирано', description: 'Заявката е експортирана в CSV' });
+  };
+
   const exportToCSV = () => {
     const headers = ['Артикул', 'SKU', 'Категория', 'Продадени (период)', 'Налични', 'Прогнозни продажби', 'За поръчка'];
     const rows = forecastData.map(p => [
@@ -175,6 +279,19 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
 
   const historyDays = differenceInDays(historyDateTo || defaultHistoryTo, historyDateFrom || defaultHistoryFrom) || 1;
   const forecastDays = differenceInDays(forecastDate || defaultForecastDate, today);
+
+  const getUrgencyBadge = (urgency: string) => {
+    switch (urgency) {
+      case 'critical':
+        return <Badge variant="destructive" className="animate-pulse">Критично</Badge>;
+      case 'high':
+        return <Badge className="bg-orange-500 hover:bg-orange-600">Високо</Badge>;
+      case 'medium':
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black">Средно</Badge>;
+      default:
+        return <Badge variant="secondary">Ниско</Badge>;
+    }
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -383,6 +500,102 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
         </Card>
       </div>
 
+      {/* Order Recommendations Section */}
+      {orderRecommendations.length > 0 && (
+        <Card className="border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                  <AlertTriangle className="w-5 h-5" />
+                  Препоръки за поръчка
+                </CardTitle>
+                <CardDescription className="text-orange-600/80 dark:text-orange-400/80">
+                  Артикули, които трябва да бъдат поръчани за да не се изчерпат
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={selectAllForOrder}
+                  className="text-xs"
+                >
+                  {selectedForOrder.size === orderRecommendations.length ? 'Премахни всички' : 'Избери всички'}
+                </Button>
+                {selectedForOrder.size > 0 && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={exportOrderToCSV}
+                      className="text-xs"
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      CSV
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={() => setShowOrderDialog(true)}
+                      className="text-xs bg-orange-600 hover:bg-orange-700"
+                    >
+                      <FileText className="w-3 h-3 mr-1" />
+                      Създай заявка ({selectedForOrder.size})
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {orderRecommendations.map((item) => (
+                <div 
+                  key={item.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                    selectedForOrder.has(item.id) 
+                      ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-400' 
+                      : 'bg-background border-border hover:border-orange-300'
+                  }`}
+                >
+                  <Checkbox
+                    checked={selectedForOrder.has(item.id)}
+                    onCheckedChange={() => toggleSelectForOrder(item.id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium truncate">{item.name}</span>
+                      <span className="text-xs text-muted-foreground font-mono">{item.sku}</span>
+                      {getUrgencyBadge(item.urgency)}
+                    </div>
+                    <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <Package className="w-3 h-3" />
+                        Налични: <strong className={item.currentStock <= 0 ? 'text-red-500' : ''}>{item.currentStock}</strong>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {item.daysUntilStockout === Infinity 
+                          ? 'Няма продажби' 
+                          : item.daysUntilStockout <= 0 
+                            ? <strong className="text-red-500">Изчерпан</strong>
+                            : <>Остават: <strong className={item.daysUntilStockout <= 7 ? 'text-orange-500' : ''}>{item.daysUntilStockout} дни</strong></>
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-xs text-muted-foreground">Препоръка</div>
+                    <div className="font-bold text-orange-600 dark:text-orange-400">{item.recommendedQuantity} бр.</div>
+                    <div className="text-xs text-muted-foreground">{item.recommendedOrderDate}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Export Button */}
       <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={exportToCSV}>
@@ -390,6 +603,51 @@ export const ForecastTab = ({ inventory }: ForecastTabProps) => {
           Експорт CSV
         </Button>
       </div>
+
+      {/* Order Dialog */}
+      <Dialog open={showOrderDialog} onOpenChange={setShowOrderDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Truck className="w-5 h-5" />
+              Създаване на заявка
+            </DialogTitle>
+            <DialogDescription>
+              Ще бъде създаден документ за заявка с {selectedForOrder.size} артикула
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Бележки (по избор)</Label>
+              <Input
+                placeholder="Допълнителни бележки..."
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+              />
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 space-y-1 max-h-[200px] overflow-y-auto">
+              {orderRecommendations
+                .filter(p => selectedForOrder.has(p.id))
+                .map(item => (
+                  <div key={item.id} className="flex justify-between text-sm">
+                    <span className="truncate">{item.name}</span>
+                    <span className="font-medium text-orange-600">{item.recommendedQuantity} бр.</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowOrderDialog(false)}>
+              Отказ
+            </Button>
+            <Button onClick={generateOrderDocument} className="bg-orange-600 hover:bg-orange-700">
+              <FileText className="w-4 h-4 mr-2" />
+              Създай документ
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Forecast Table - Desktop */}
       <div className="hidden md:block">
