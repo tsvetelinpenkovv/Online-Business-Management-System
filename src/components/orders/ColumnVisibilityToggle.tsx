@@ -91,7 +91,7 @@ export const ColumnVisibilityToggle: FC<ColumnVisibilityToggleProps> = ({
           Колони
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DropdownMenuLabel>Покажи/скрий колони</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {availableColumns.map((column) => (
@@ -99,6 +99,7 @@ export const ColumnVisibilityToggle: FC<ColumnVisibilityToggleProps> = ({
             key={column.key}
             checked={visibleColumns.has(column.key)}
             onCheckedChange={() => onToggle(column.key)}
+            onSelect={(e) => e.preventDefault()}
           >
             {visibleColumns.has(column.key) ? (
               <Eye className="w-3 h-3 mr-2 text-success" />

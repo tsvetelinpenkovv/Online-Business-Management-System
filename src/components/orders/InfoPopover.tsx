@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { formatPhone } from './PhoneWithFlag';
 
 interface InfoPopoverProps {
   title: string;
@@ -30,37 +31,45 @@ const BulgarianFlag: FC<{ className?: string }> = ({ className = "w-4 h-3" }) =>
   </svg>
 );
 
-// Format phone number for display
-const formatPhoneNumber = (phone: string): { formatted: string; isBulgarian: boolean; cleanNumber: string } => {
-  const cleanNumber = phone.replace(/[\s\-\(\)\.]/g, '');
-  
-  const bulgarianPrefixes = ['088', '0888', '0878', '0879', '089', '087', '098'];
-  const isBulgarianMobile = bulgarianPrefixes.some(prefix => cleanNumber.startsWith(prefix));
-  const alreadyFormatted = cleanNumber.startsWith('+359') || cleanNumber.startsWith('00359');
-  
-  if (isBulgarianMobile && !alreadyFormatted) {
-    const withoutLeadingZero = cleanNumber.replace(/^0/, '');
-    return {
-      formatted: `+359${withoutLeadingZero}`,
-      isBulgarian: true,
-      cleanNumber: `+359${withoutLeadingZero}`
-    };
+// Greek Flag SVG component
+const GreekFlag: FC<{ className?: string }> = ({ className = "w-4 h-3" }) => (
+  <svg 
+    viewBox="0 0 640 480" 
+    className={className}
+    aria-label="Гръцки телефон"
+  >
+    <rect fill="#0D5EAF" width="640" height="480"/>
+    <rect fill="#fff" y="53.3" width="640" height="53.3"/>
+    <rect fill="#fff" y="160" width="640" height="53.3"/>
+    <rect fill="#fff" y="266.7" width="640" height="53.3"/>
+    <rect fill="#fff" y="373.3" width="640" height="53.3"/>
+    <rect fill="#0D5EAF" width="266.7" height="266.7"/>
+    <rect fill="#fff" x="106.7" width="53.3" height="266.7"/>
+    <rect fill="#fff" y="106.7" width="266.7" height="53.3"/>
+  </svg>
+);
+
+// Romanian Flag SVG component
+const RomanianFlag: FC<{ className?: string }> = ({ className = "w-4 h-3" }) => (
+  <svg 
+    viewBox="0 0 640 480" 
+    className={className}
+    aria-label="Румънски телефон"
+  >
+    <rect fill="#002B7F" width="213.3" height="480"/>
+    <rect fill="#FCD116" x="213.3" width="213.3" height="480"/>
+    <rect fill="#CE1126" x="426.6" width="213.4" height="480"/>
+  </svg>
+);
+
+// Get flag component by country code
+const getFlagComponent = (countryCode: string | null): FC<{ className?: string }> | null => {
+  switch (countryCode) {
+    case 'BG': return BulgarianFlag;
+    case 'GR': return GreekFlag;
+    case 'RO': return RomanianFlag;
+    default: return null;
   }
-  
-  if (alreadyFormatted) {
-    const normalized = cleanNumber.replace(/^00359/, '+359');
-    return {
-      formatted: normalized,
-      isBulgarian: true,
-      cleanNumber: normalized
-    };
-  }
-  
-  return {
-    formatted: cleanNumber,
-    isBulgarian: false,
-    cleanNumber
-  };
 };
 
 // Helper component for copyable text
@@ -75,7 +84,7 @@ export const CopyableText: FC<{
 
   const phoneData = useMemo(() => {
     if (formatAsPhone && value) {
-      return formatPhoneNumber(value);
+      return formatPhone(value);
     }
     return null;
   }, [formatAsPhone, value]);
@@ -91,6 +100,7 @@ export const CopyableText: FC<{
 
   const displayValue = phoneData ? phoneData.formatted : value;
   const copyValue = phoneData ? phoneData.cleanNumber : value;
+  const FlagComponent = phoneData ? getFlagComponent(phoneData.countryCode) : null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(copyValue);
@@ -107,7 +117,7 @@ export const CopyableText: FC<{
       {icon}
       <span className="flex-1 flex items-center gap-1">
         <strong>{label}:</strong> 
-        {phoneData?.isBulgarian && <BulgarianFlag className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" />}
+        {FlagComponent && <FlagComponent className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" />}
         {displayValue}
       </span>
       <button

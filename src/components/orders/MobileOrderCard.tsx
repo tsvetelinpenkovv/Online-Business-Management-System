@@ -52,7 +52,6 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   nekorektenEnabled = true,
 }) => {
   const { toast } = useToast();
-  const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedCatalog, setCopiedCatalog] = useState(false);
   const [hasInvoice, setHasInvoice] = useState(false);
 
@@ -68,16 +67,6 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
     };
     checkInvoice();
   }, [order.id]);
-
-  const handleCopyPhone = () => {
-    navigator.clipboard.writeText(order.phone);
-    setCopiedPhone(true);
-    setTimeout(() => setCopiedPhone(false), 2000);
-    toast({
-      title: 'Копирано',
-      description: `Телефон ${order.phone} е копиран`,
-    });
-  };
 
   const handleCopyCatalog = () => {
     if (order.catalog_number) {
@@ -225,18 +214,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <span className="font-medium text-foreground text-[13px]">{order.phone}</span>
-            <button
-              onClick={handleCopyPhone}
-              className="p-0.5 hover:bg-muted rounded transition-colors"
-              title="Копирай телефон"
-            >
-              {copiedPhone ? (
-                <Check className="w-3.5 h-3.5 text-success" />
-              ) : (
-                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-              )}
-            </button>
+            <PhoneWithFlag phone={order.phone} />
           </div>
           {order.customer_email && (
             <div className="flex items-center gap-2">
