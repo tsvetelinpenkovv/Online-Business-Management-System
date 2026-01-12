@@ -102,11 +102,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-[160px] justify-between overflow-hidden">
-              <div className="flex items-center min-w-0">
+              <div className="flex items-center min-w-0 flex-1">
                 <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="truncate max-w-[100px]">{getStatusLabel()}</span>
+                <span className="truncate">{getStatusLabel()}</span>
               </div>
-              <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+              <ChevronDown className="w-4 h-4 ml-1 flex-shrink-0 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[200px]">
@@ -289,12 +289,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9 justify-between overflow-hidden">
-                <div className="flex items-center min-w-0">
+              <Button variant="outline" className="h-9 justify-between overflow-hidden flex-1 sm:flex-auto">
+                <div className="flex items-center min-w-0 flex-1">
                   <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate text-sm max-w-[80px]">{getStatusLabel()}</span>
+                  <span className="truncate text-sm">{getStatusLabel()}</span>
                 </div>
-                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+                <ChevronDown className="w-4 h-4 ml-1 flex-shrink-0 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">

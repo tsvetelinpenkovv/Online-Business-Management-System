@@ -761,6 +761,18 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         Проверка в Nekorekten
                       </DropdownMenuItem>
                       <DropdownMenuItem 
+                        onClick={() => {
+                          // Ръчна проверка - в бъдеще ще използва API
+                          toast({
+                            title: 'Проверка',
+                            description: 'API за Некоректен не е вързано. Моля конфигурирайте го в Настройки.',
+                          });
+                        }}
+                      >
+                        <Search className="w-4 h-4 mr-2" />
+                        Ръчна проверка в Некоректен
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
                         onClick={() => setDeleteId(order.id)}
                         className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                       >

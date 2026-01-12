@@ -458,7 +458,7 @@ const Index = () => {
                       <Printer className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
                       <Printer className="w-4 h-4 mr-2" />
                       Печат на поръчки
@@ -466,6 +466,10 @@ const Index = () => {
                     <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
                       <FileBox className="w-4 h-4 mr-2" />
                       {getText('orders_print_waybills_label')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
+                      <Receipt className="w-4 h-4 mr-2" />
+                      {getText('orders_print_invoices_label')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
