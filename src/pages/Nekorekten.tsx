@@ -285,14 +285,36 @@ const Nekorekten = () => {
                 </p>
               </div>
             </div>
-            <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshCustomers} disabled={refreshing}>
-              {refreshing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
+            <div className="flex items-center gap-2">
+              {stats.unknown > 0 && (
+                <Button 
+                  variant="default" 
+                  size={isMobile ? "icon" : "default"} 
+                  onClick={() => {
+                    const uncheckedCustomers = customers.filter(c => c.is_correct === null);
+                    uncheckedCustomers.forEach(customer => {
+                      window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(customer.phone)}`, '_blank');
+                    });
+                    toast({
+                      title: 'Масова проверка',
+                      description: `Отворени са ${uncheckedCustomers.length} проверки в нови табове`,
+                    });
+                  }}
+                  title="Провери всички непроверени клиенти"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  {!isMobile && <span className="ml-2">Провери всички ({stats.unknown})</span>}
+                </Button>
               )}
-              {!isMobile && <span className="ml-2">Обнови</span>}
-            </Button>
+              <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshCustomers} disabled={refreshing}>
+                {refreshing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                {!isMobile && <span className="ml-2">Обнови</span>}
+              </Button>
+            </div>
           </div>
 
           {/* Statistics Cards */}
