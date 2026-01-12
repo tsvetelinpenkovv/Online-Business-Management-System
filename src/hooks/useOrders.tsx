@@ -3,25 +3,45 @@ import { supabase } from '@/integrations/supabase/client';
 import { Order } from '@/types/order';
 import { useToast } from '@/hooks/use-toast';
 
-// Default status that triggers stock deduction
+// Default statuses
 const DEFAULT_SHIPPED_STATUS = 'Изпратена';
+const DEFAULT_CANCELLED_STATUS = 'Отказана';
+
+interface StockSettings {
+  deductionStatus: string;
+  restoreStatus: string;
+}
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [shippedStatus, setShippedStatus] = useState(DEFAULT_SHIPPED_STATUS);
+  const [stockSettings, setStockSettings] = useState<StockSettings>({
+    deductionStatus: DEFAULT_SHIPPED_STATUS,
+    restoreStatus: DEFAULT_CANCELLED_STATUS,
+  });
   const { toast } = useToast();
 
-  // Load the stock deduction status from settings
-  const loadShippedStatus = useCallback(async () => {
+  // Load stock settings from database
+  const loadStockSettings = useCallback(async () => {
     const { data } = await supabase
       .from('api_settings')
-      .select('setting_value')
-      .eq('setting_key', 'stock_deduction_status')
-      .single();
+      .select('setting_key, setting_value')
+      .in('setting_key', ['stock_deduction_status', 'stock_restore_status']);
     
-    if (data?.setting_value) {
-      setShippedStatus(data.setting_value);
+    if (data) {
+      const settings: StockSettings = {
+        deductionStatus: DEFAULT_SHIPPED_STATUS,
+        restoreStatus: DEFAULT_CANCELLED_STATUS,
+      };
+      data.forEach(item => {
+        if (item.setting_key === 'stock_deduction_status' && item.setting_value) {
+          settings.deductionStatus = item.setting_value;
+        }
+        if (item.setting_key === 'stock_restore_status' && item.setting_value) {
+          settings.restoreStatus = item.setting_value;
+        }
+      });
+      setStockSettings(settings);
     }
   }, []);
 
@@ -92,31 +112,149 @@ export const useOrders = () => {
     }
   };
 
-  // Deduct stock when order is shipped
-  const deductStockForOrder = async (order: Order) => {
+  // Find product by SKU, barcode, or name
+  const findProduct = async (catalogNumber: string | null, productName: string) => {
+    let product = null;
+    
+    if (catalogNumber) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, current_stock, reserved_stock, name, is_bundle')
+        .or(`sku.eq.${catalogNumber},barcode.eq.${catalogNumber}`)
+        .single();
+      product = data;
+    }
+    
+    if (!product && productName) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, current_stock, reserved_stock, name, is_bundle')
+        .ilike('name', `%${productName}%`)
+        .limit(1)
+        .single();
+      product = data;
+    }
+    
+    return product;
+  };
+
+  // Process order items (for orders with multiple products)
+  const processOrderItems = async (orderId: number, operation: 'deduct' | 'restore' | 'reserve' | 'unreserve') => {
+    const { data: orderItems } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', orderId);
+    
+    if (!orderItems || orderItems.length === 0) return [];
+    
+    const results = [];
+    for (const item of orderItems) {
+      const product = await findProduct(item.catalog_number, item.product_name);
+      if (product) {
+        const result = await processProductStock(product, item.quantity, operation, `Поръчка артикул: ${item.product_name}`);
+        results.push({ ...result, itemName: item.product_name });
+      }
+    }
+    return results;
+  };
+
+  // Process stock for a single product
+  const processProductStock = async (
+    product: { id: string; current_stock: number; reserved_stock: number; name: string; is_bundle: boolean },
+    quantity: number,
+    operation: 'deduct' | 'restore' | 'reserve' | 'unreserve',
+    reason: string
+  ) => {
     try {
-      // Try to find product by catalog_number (SKU) or by name
-      let product = null;
+      const stockBefore = product.current_stock;
       
-      if (order.catalog_number) {
-        const { data } = await supabase
+      if (operation === 'deduct') {
+        const stockAfter = stockBefore - quantity;
+        
+        // Create stock movement - trigger will handle bundle components
+        await supabase.from('stock_movements').insert({
+          product_id: product.id,
+          movement_type: 'out',
+          quantity: quantity,
+          stock_before: stockBefore,
+          stock_after: stockAfter,
+          reason: reason,
+        });
+
+        // Update product stock and clear reservation
+        await supabase
           .from('inventory_products')
-          .select('id, current_stock, name')
-          .or(`sku.eq.${order.catalog_number},barcode.eq.${order.catalog_number}`)
-          .single();
-        product = data;
+          .update({ 
+            current_stock: stockAfter,
+            reserved_stock: Math.max(0, (product.reserved_stock || 0) - quantity)
+          })
+          .eq('id', product.id);
+
+        return { success: true, productName: product.name, quantity, operation };
       }
       
-      // If not found by catalog number, try by product name
-      if (!product && order.product_name) {
-        const { data } = await supabase
+      if (operation === 'restore') {
+        const stockAfter = stockBefore + quantity;
+        
+        // Create return movement
+        await supabase.from('stock_movements').insert({
+          product_id: product.id,
+          movement_type: 'return',
+          quantity: quantity,
+          stock_before: stockBefore,
+          stock_after: stockAfter,
+          reason: reason,
+        });
+
+        await supabase
           .from('inventory_products')
-          .select('id, current_stock, name')
-          .ilike('name', `%${order.product_name}%`)
-          .limit(1)
-          .single();
-        product = data;
+          .update({ current_stock: stockAfter })
+          .eq('id', product.id);
+
+        return { success: true, productName: product.name, quantity, operation };
       }
+      
+      if (operation === 'reserve') {
+        await supabase
+          .from('inventory_products')
+          .update({ reserved_stock: (product.reserved_stock || 0) + quantity })
+          .eq('id', product.id);
+        return { success: true, productName: product.name, quantity, operation };
+      }
+      
+      if (operation === 'unreserve') {
+        await supabase
+          .from('inventory_products')
+          .update({ reserved_stock: Math.max(0, (product.reserved_stock || 0) - quantity) })
+          .eq('id', product.id);
+        return { success: true, productName: product.name, quantity, operation };
+      }
+
+      return { success: false, reason: 'unknown_operation' };
+    } catch (error) {
+      console.error('Error processing stock:', error);
+      return { success: false, reason: 'error' };
+    }
+  };
+
+  // Main function to handle stock for an order
+  const handleOrderStock = async (order: Order, operation: 'deduct' | 'restore' | 'reserve' | 'unreserve') => {
+    try {
+      // First, check if order has multiple items
+      const itemResults = await processOrderItems(order.id, operation);
+      
+      if (itemResults.length > 0) {
+        const successCount = itemResults.filter(r => r.success).length;
+        return { 
+          success: successCount > 0, 
+          processedItems: successCount,
+          totalItems: itemResults.length,
+          isMultiItem: true
+        };
+      }
+      
+      // If no order_items, use the main order product
+      const product = await findProduct(order.catalog_number, order.product_name);
       
       if (!product) {
         console.log(`Продуктът "${order.product_name}" не е намерен в склада`);
@@ -124,43 +262,71 @@ export const useOrders = () => {
       }
 
       const quantity = order.quantity || 1;
-      const stockBefore = product.current_stock;
-      const stockAfter = stockBefore - quantity;
-
-      // Create stock movement for the dispatch
-      const { error: movementError } = await supabase
-        .from('stock_movements')
-        .insert({
-          product_id: product.id,
-          movement_type: 'out',
-          quantity: quantity,
-          stock_before: stockBefore,
-          stock_after: stockAfter,
-          reason: `Поръчка #${order.code} - ${order.customer_name}`,
-        });
-
-      if (movementError) throw movementError;
-
-      // Update product stock (the trigger should handle this, but we'll do it explicitly too)
-      const { error: updateError } = await supabase
-        .from('inventory_products')
-        .update({ current_stock: stockAfter })
-        .eq('id', product.id);
-
-      if (updateError) throw updateError;
-
-      return { success: true, productName: product.name, quantity };
+      const reason = `Поръчка #${order.code} - ${order.customer_name}`;
+      
+      const result = await processProductStock(product, quantity, operation, reason);
+      return result;
     } catch (error) {
-      console.error('Error deducting stock:', error);
+      console.error('Error handling order stock:', error);
       return { success: false, reason: 'error' };
     }
   };
 
+  // Reserve stock when order is created
+  const reserveStockForOrder = async (order: Order) => {
+    const result = await handleOrderStock(order, 'reserve');
+    if (result.success) {
+      console.log(`Reserved stock for order ${order.code}`);
+    }
+    return result;
+  };
+
+  // Deduct stock when order is shipped
+  const deductStockForOrder = async (order: Order) => {
+    const result = await handleOrderStock(order, 'deduct');
+    
+    // Mark order as stock deducted
+    if (result.success) {
+      await supabase
+        .from('orders')
+        .update({ stock_deducted: true })
+        .eq('id', order.id);
+    }
+    
+    return result;
+  };
+
+  // Restore stock when order is cancelled
+  const restoreStockForOrder = async (order: Order) => {
+    // Only restore if stock was already deducted
+    const { data: orderData } = await supabase
+      .from('orders')
+      .select('stock_deducted')
+      .eq('id', order.id)
+      .single();
+    
+    if (!orderData?.stock_deducted) {
+      // If stock wasn't deducted, just unreserve
+      return handleOrderStock(order, 'unreserve');
+    }
+    
+    const result = await handleOrderStock(order, 'restore');
+    
+    if (result.success) {
+      await supabase
+        .from('orders')
+        .update({ stock_deducted: false })
+        .eq('id', order.id);
+    }
+    
+    return result;
+  };
+
   const updateOrder = async (order: Order) => {
     try {
-      // Check if status is changing to the shipped status
       const oldOrder = orders.find(o => o.id === order.id);
-      const isBeingShipped = oldOrder && oldOrder.status !== shippedStatus && order.status === shippedStatus;
+      const isBeingShipped = oldOrder && oldOrder.status !== stockSettings.deductionStatus && order.status === stockSettings.deductionStatus;
+      const isBeingCancelled = oldOrder && oldOrder.status !== stockSettings.restoreStatus && order.status === stockSettings.restoreStatus;
 
       const { error } = await supabase
         .from('orders')
@@ -185,19 +351,36 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Deduct stock if order is being shipped
+      // Handle stock changes based on status
       if (isBeingShipped) {
         const result = await deductStockForOrder(order);
         if (result.success) {
-          toast({
-            title: 'Склад актуализиран',
-            description: `Изписани ${result.quantity} бр. от "${result.productName}"`,
-          });
-        } else if (result.reason === 'not_found') {
+          if ('isMultiItem' in result && result.isMultiItem) {
+            toast({
+              title: 'Склад актуализиран',
+              description: `Изписани наличности за ${result.processedItems}/${result.totalItems} артикула`,
+            });
+          } else if ('productName' in result) {
+            toast({
+              title: 'Склад актуализиран',
+              description: `Изписани ${result.quantity} бр. от "${result.productName}"`,
+            });
+          }
+        } else if ('reason' in result && result.reason === 'not_found') {
           toast({
             title: 'Внимание',
             description: `Продуктът "${order.product_name}" не е намерен в склада`,
             variant: 'destructive',
+          });
+        }
+      }
+
+      if (isBeingCancelled) {
+        const result = await restoreStockForOrder(order);
+        if (result.success) {
+          toast({
+            title: 'Склад актуализиран',
+            description: 'Наличността беше възстановена',
           });
         }
       }
@@ -218,9 +401,12 @@ export const useOrders = () => {
 
   const updateOrdersStatus = async (ids: number[], status: string) => {
     try {
-      // Get orders that are being shipped
-      const ordersToShip = status === shippedStatus 
-        ? orders.filter(o => ids.includes(o.id) && o.status !== shippedStatus)
+      const ordersToShip = status === stockSettings.deductionStatus 
+        ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.deductionStatus)
+        : [];
+      
+      const ordersToCancel = status === stockSettings.restoreStatus
+        ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.restoreStatus)
         : [];
 
       const { error } = await supabase
@@ -230,7 +416,7 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Deduct stock for each shipped order
+      // Handle stock deduction for shipped orders
       if (ordersToShip.length > 0) {
         let stockUpdated = 0;
         for (const order of ordersToShip) {
@@ -242,6 +428,22 @@ export const useOrders = () => {
           toast({
             title: 'Склад актуализиран',
             description: `Изписани наличности за ${stockUpdated} поръчки`,
+          });
+        }
+      }
+
+      // Handle stock restoration for cancelled orders
+      if (ordersToCancel.length > 0) {
+        let stockRestored = 0;
+        for (const order of ordersToCancel) {
+          const result = await restoreStockForOrder(order);
+          if (result.success) stockRestored++;
+        }
+        
+        if (stockRestored > 0) {
+          toast({
+            title: 'Склад актуализиран',
+            description: `Възстановени наличности за ${stockRestored} поръчки`,
           });
         }
       }
@@ -280,18 +482,24 @@ export const useOrders = () => {
           comment: orderData.comment,
           source: orderData.source || 'phone',
           is_correct: orderData.is_correct,
+          stock_deducted: false,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setOrders([data as Order, ...orders]);
+      const newOrder = data as Order;
+      
+      // Reserve stock for the new order
+      await reserveStockForOrder(newOrder);
+
+      setOrders([newOrder, ...orders]);
       toast({
         title: 'Успех',
         description: 'Поръчката беше създадена',
       });
-      return data as Order;
+      return newOrder;
     } catch (error: any) {
       toast({
         title: 'Грешка',
@@ -304,8 +512,18 @@ export const useOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-    loadShippedStatus();
-  }, [loadShippedStatus]);
+    loadStockSettings();
+  }, [loadStockSettings]);
 
-  return { orders, loading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch: fetchOrders };
+  return { 
+    orders, 
+    loading, 
+    createOrder, 
+    deleteOrder, 
+    deleteOrders, 
+    updateOrder, 
+    updateOrdersStatus, 
+    refetch: fetchOrders,
+    stockSettings
+  };
 };
