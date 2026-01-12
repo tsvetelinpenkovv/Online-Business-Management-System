@@ -65,6 +65,8 @@ interface TextConfig {
   orders_print_invoices_label: string;
   orders_change_status_label: string;
   orders_delete_selected_label: string;
+  orders_columns_label: string;
+  orders_columns_header_label: string;
   
   // Orders table headers
   orders_table_id_header: string;
@@ -234,6 +236,8 @@ const defaultTexts: TextConfig = {
   orders_print_invoices_label: 'Печат на фактури',
   orders_change_status_label: 'Смени статус',
   orders_delete_selected_label: 'Изтрий избраните',
+  orders_columns_label: 'Колони',
+  orders_columns_header_label: 'Покажи/скрий колони',
   
   // Orders table headers
   orders_table_id_header: 'ID',
@@ -543,6 +547,8 @@ export const InterfaceTextEditor: FC = () => {
     { key: 'orders_print_invoices_label', label: 'Печат фактури' },
     { key: 'orders_change_status_label', label: 'Смени статус' },
     { key: 'orders_delete_selected_label', label: 'Изтрий избраните' },
+    { key: 'orders_columns_label', label: 'Бутон Колони' },
+    { key: 'orders_columns_header_label', label: 'Заглавие на меню Колони' },
   ] as const;
 
   const ordersTableTexts = [

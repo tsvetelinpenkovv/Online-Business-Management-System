@@ -623,29 +623,36 @@ export const ConnectixSettings: FC = () => {
       {/* Templates & Rules Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="space-y-3">
             <div>
               <CardTitle>Шаблони и Правила</CardTitle>
               <CardDescription>
                 Управление на шаблони от Connectix и правила за автоматично изпращане
               </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 variant="outline" 
                 onClick={fetchTemplates}
                 disabled={fetchingTemplates || !config.api_token}
+                className="w-full sm:w-auto"
+                size="sm"
               >
                 {fetchingTemplates ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                   <Download className="w-4 h-4 mr-2" />
                 )}
-                Изтегли шаблоните от Connectix
+                <span className="truncate">Изтегли шаблоните</span>
               </Button>
-              <Button onClick={openAddRuleDialog} disabled={templates.length === 0}>
+              <Button 
+                onClick={openAddRuleDialog} 
+                disabled={templates.length === 0}
+                className="w-full sm:w-auto"
+                size="sm"
+              >
                 <Plus className="w-4 h-4 mr-2" />
-                Добави ново правило
+                <span className="truncate">Добави правило</span>
               </Button>
             </div>
           </div>
@@ -702,14 +709,14 @@ export const ConnectixSettings: FC = () => {
                 {rules.map((rule) => (
                   <div 
                     key={rule.id} 
-                    className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-muted/30 rounded-lg border"
                   >
-                    <div className="space-y-1 flex-1">
+                    <div className="space-y-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{rule.channel}:</span>
-                        <span>{rule.template_name || rule.name}</span>
+                        <span className="truncate">{rule.template_name || rule.name}</span>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <Badge variant="secondary" className="text-xs">
                           {getTriggerLabel(rule.trigger_type)}
                         </Badge>
@@ -726,22 +733,23 @@ export const ConnectixSettings: FC = () => {
                         <Badge 
                           className={rule.is_enabled ? 'bg-success text-white' : 'bg-muted text-muted-foreground'}
                         >
-                          {rule.is_enabled ? 'Включено' : 'Изключено'}
+                          {rule.is_enabled ? 'Вкл.' : 'Изкл.'}
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 self-end sm:self-center shrink-0">
                       <Button 
                         size="icon" 
                         variant="ghost"
                         onClick={() => openEditRuleDialog(rule)}
+                        className="h-8 w-8"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button 
                         size="icon" 
                         variant="ghost"
-                        className="text-destructive hover:text-destructive"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
                         onClick={() => setDeleteRuleId(rule.id)}
                       >
                         <Trash2 className="w-4 h-4" />

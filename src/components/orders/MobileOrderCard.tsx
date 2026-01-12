@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { 
   User, Phone, Euro, Package, Truck, MessageCircle, 
   MoreHorizontal, Pencil, Trash2, Printer, Calendar,
-  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check, FileText
+  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check, FileText, AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Order, OrderStatus } from '@/types/order';
@@ -53,17 +53,23 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
 }) => {
   const { toast } = useToast();
   const [copiedCatalog, setCopiedCatalog] = useState(false);
-  const [hasInvoice, setHasInvoice] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<{ hasInvoice: boolean; viewedAt: string | null }>({ hasInvoice: false, viewedAt: null });
 
   // Check if order has invoice
   useEffect(() => {
     const checkInvoice = async () => {
       const { data } = await supabase
         .from('invoices')
-        .select('id')
+        .select('id, created_at')
         .eq('order_id', order.id)
         .maybeSingle();
-      setHasInvoice(!!data);
+      
+      if (data) {
+        // Check localStorage to see if this invoice was viewed
+        const viewedKey = `invoice_viewed_${data.id}`;
+        const viewedAt = localStorage.getItem(viewedKey);
+        setInvoiceData({ hasInvoice: true, viewedAt });
+      }
     };
     checkInvoice();
   }, [order.id]);
@@ -133,9 +139,19 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 sentAt={messageInfo.sentAt}
               />
             )}
-            {hasInvoice && (
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-success hover:bg-success/10 hover:text-success" title="Има издадена фактура">
+            {invoiceData.hasInvoice && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6 text-success hover:bg-success/10 hover:text-success relative" 
+                title={invoiceData.viewedAt ? "Фактурата е прегледана" : "Има издадена фактура (непрегледана)"}
+              >
                 <FileText className="w-4 h-4" />
+                <span className={`absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[14px] h-[14px] rounded-full text-[9px] font-bold text-white ${
+                  invoiceData.viewedAt ? 'bg-success' : 'bg-destructive'
+                }`}>
+                  {invoiceData.viewedAt ? '✓' : '!'}
+                </span>
               </Button>
             )}
           </div>
