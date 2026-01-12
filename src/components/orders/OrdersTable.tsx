@@ -9,6 +9,7 @@ import { Order, ORDER_STATUSES } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
+import { QuantityPopover } from './QuantityPopover';
 import { PhoneWithFlag } from './PhoneWithFlag';
 import { InfoPopover, CopyableText } from './InfoPopover';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
@@ -508,9 +509,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <span>{format(new Date(order.created_at), 'HH:mm')}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-xs">
+                <TableCell className="text-sm">
                   <div className="flex items-center gap-1">
-                    <span className="truncate max-w-[85px]" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
+                    <span className="truncate max-w-[100px] font-medium" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
                     <InfoPopover 
                       title="Данни за клиента" 
                       icon="eye"
@@ -546,9 +547,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <CorrectStatusIcon isCorrect={order.is_correct} />
                   </TableCell>
                 )}
-                <TableCell className="text-xs">
+                <TableCell className="text-sm">
                   <div className="flex items-center gap-1">
-                    <span className="truncate max-w-[90px]">{order.phone}</span>
+                    <span className="truncate max-w-[100px]">{order.phone}</span>
                     <button
                       onClick={() => handleCopyPhone(order.phone)}
                       className="p-0.5 hover:bg-muted rounded transition-colors"
@@ -565,7 +566,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-sm font-medium text-success whitespace-nowrap text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1">
-                    <span className="text-xs line-clamp-2 max-w-[100px]" title={order.product_name}>
+                    <span className="text-sm line-clamp-2 max-w-[120px] font-medium" title={order.product_name}>
                       {order.product_name}
                     </span>
                     <InfoPopover 
@@ -625,16 +626,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     '-'
                   )}
                 </TableCell>
-                <TableCell className="text-center" title={`Количество: ${order.quantity} бр.`}>
-                  {order.quantity > 1 ? (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-destructive/15 text-destructive text-xs font-semibold">
-                      {order.quantity}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                      {order.quantity}
-                    </span>
-                  )}
+                <TableCell className="text-center">
+                  <QuantityPopover 
+                    productName={order.product_name}
+                    quantity={order.quantity}
+                    catalogNumber={order.catalog_number}
+                  />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
