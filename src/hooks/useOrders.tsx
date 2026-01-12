@@ -6,10 +6,12 @@ import { useToast } from '@/hooks/use-toast';
 // Default statuses
 const DEFAULT_SHIPPED_STATUS = 'Изпратена';
 const DEFAULT_CANCELLED_STATUS = 'Отказана';
+const DEFAULT_RESERVE_STATUS = 'В обработка';
 
 interface StockSettings {
   deductionStatus: string;
   restoreStatus: string;
+  reserveStatus: string;
 }
 
 export const useOrders = () => {
@@ -18,6 +20,7 @@ export const useOrders = () => {
   const [stockSettings, setStockSettings] = useState<StockSettings>({
     deductionStatus: DEFAULT_SHIPPED_STATUS,
     restoreStatus: DEFAULT_CANCELLED_STATUS,
+    reserveStatus: DEFAULT_RESERVE_STATUS,
   });
   const { toast } = useToast();
 
@@ -26,12 +29,13 @@ export const useOrders = () => {
     const { data } = await supabase
       .from('api_settings')
       .select('setting_key, setting_value')
-      .in('setting_key', ['stock_deduction_status', 'stock_restore_status']);
+      .in('setting_key', ['stock_deduction_status', 'stock_restore_status', 'stock_reserve_status']);
     
     if (data) {
       const settings: StockSettings = {
         deductionStatus: DEFAULT_SHIPPED_STATUS,
         restoreStatus: DEFAULT_CANCELLED_STATUS,
+        reserveStatus: DEFAULT_RESERVE_STATUS,
       };
       data.forEach(item => {
         if (item.setting_key === 'stock_deduction_status' && item.setting_value) {
@@ -39,6 +43,9 @@ export const useOrders = () => {
         }
         if (item.setting_key === 'stock_restore_status' && item.setting_value) {
           settings.restoreStatus = item.setting_value;
+        }
+        if (item.setting_key === 'stock_reserve_status' && item.setting_value) {
+          settings.reserveStatus = item.setting_value;
         }
       });
       setStockSettings(settings);
@@ -357,6 +364,7 @@ export const useOrders = () => {
       const oldOrder = orders.find(o => o.id === order.id);
       const isBeingShipped = oldOrder && oldOrder.status !== stockSettings.deductionStatus && order.status === stockSettings.deductionStatus;
       const isBeingCancelled = oldOrder && oldOrder.status !== stockSettings.restoreStatus && order.status === stockSettings.restoreStatus;
+      const isBeingReserved = oldOrder && oldOrder.status !== stockSettings.reserveStatus && order.status === stockSettings.reserveStatus;
 
       const { error } = await supabase
         .from('orders')
@@ -381,7 +389,25 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Handle stock changes based on status
+      // Handle stock reservation when status changes to reserve status
+      if (isBeingReserved) {
+        const result = await reserveStockForOrder(order);
+        if (result.success) {
+          if ('isMultiItem' in result && result.isMultiItem) {
+            toast({
+              title: 'Резервация',
+              description: `Резервирани наличности за ${result.processedItems}/${result.totalItems} артикула`,
+            });
+          } else if ('productName' in result) {
+            toast({
+              title: 'Резервация',
+              description: `Резервирани ${result.quantity} бр. от "${result.productName}"`,
+            });
+          }
+        }
+      }
+
+      // Handle stock deduction when shipped
       if (isBeingShipped) {
         const result = await deductStockForOrder(order);
         if (result.success) {
@@ -405,6 +431,7 @@ export const useOrders = () => {
         }
       }
 
+      // Handle stock restoration when cancelled
       if (isBeingCancelled) {
         const result = await restoreStockForOrder(order);
         if (result.success) {

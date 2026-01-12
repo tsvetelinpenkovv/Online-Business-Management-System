@@ -206,8 +206,10 @@ export const StatusSettings: FC = () => {
   // Stock deduction status setting
   const [stockDeductionStatus, setStockDeductionStatus] = useState<string>('Изпратена');
   const [stockRestoreStatus, setStockRestoreStatus] = useState<string>('Отказана');
+  const [stockReserveStatus, setStockReserveStatus] = useState<string>('В обработка');
   const [savingStockStatus, setSavingStockStatus] = useState(false);
   const [savingRestoreStatus, setSavingRestoreStatus] = useState(false);
+  const [savingReserveStatus, setSavingReserveStatus] = useState(false);
   
   // Leasing statuses setting
   const [leasingStatuses, setLeasingStatuses] = useState<string[]>(['На лизинг през TBI', 'На лизинг през BNP', 'На лизинг през UniCredit']);
@@ -223,9 +225,10 @@ export const StatusSettings: FC = () => {
   useEffect(() => {
     // Load saved settings
     const loadSettings = async () => {
-      const [stockData, restoreData, leasingData] = await Promise.all([
+      const [stockData, restoreData, reserveData, leasingData] = await Promise.all([
         supabase.from('api_settings').select('setting_value').eq('setting_key', 'stock_deduction_status').maybeSingle(),
         supabase.from('api_settings').select('setting_value').eq('setting_key', 'stock_restore_status').maybeSingle(),
+        supabase.from('api_settings').select('setting_value').eq('setting_key', 'stock_reserve_status').maybeSingle(),
         supabase.from('api_settings').select('setting_value').eq('setting_key', 'leasing_statuses').maybeSingle(),
       ]);
       
@@ -234,6 +237,9 @@ export const StatusSettings: FC = () => {
       }
       if (restoreData.data?.setting_value) {
         setStockRestoreStatus(restoreData.data.setting_value);
+      }
+      if (reserveData.data?.setting_value) {
+        setStockReserveStatus(reserveData.data.setting_value);
       }
       if (leasingData.data?.setting_value) {
         try {
@@ -297,6 +303,33 @@ export const StatusSettings: FC = () => {
       });
     } finally {
       setSavingRestoreStatus(false);
+    }
+  };
+
+  const saveStockReserveStatus = async (status: string) => {
+    setSavingReserveStatus(true);
+    try {
+      await supabase
+        .from('api_settings')
+        .upsert({
+          setting_key: 'stock_reserve_status',
+          setting_value: status,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'setting_key' });
+      
+      setStockReserveStatus(status);
+      toast({
+        title: 'Запазено',
+        description: `Статус за резервиране на наличност: "${status}"`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно запазване на настройката',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingReserveStatus(false);
     }
   };
 
@@ -435,6 +468,40 @@ export const StatusSettings: FC = () => {
             </p>
           </div>
           
+          {/* Stock Reserve */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end border-t pt-4">
+            <div className="space-y-2 flex-1">
+              <Label>Статус за резервиране</Label>
+              <Select 
+                value={stockReserveStatus} 
+                onValueChange={saveStockReserveStatus}
+                disabled={savingReserveStatus}
+              >
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder="Изберете статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statuses.map((status) => {
+                    const colorClasses = getColorClasses(status.color);
+                    const Icon = getIconComponent(status.icon);
+                    return (
+                      <SelectItem key={status.id} value={status.name}>
+                        <span className={`inline-flex items-center gap-1 ${colorClasses.textClass}`}>
+                          <Icon className="w-3 h-3" />
+                          {status.name}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Когато поръчка смени статуса си на "<strong>{stockReserveStatus}</strong>", 
+              количеството ще бъде резервирано в склада.
+            </p>
+          </div>
+
           {/* Stock Restore */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end border-t pt-4">
             <div className="space-y-2 flex-1">

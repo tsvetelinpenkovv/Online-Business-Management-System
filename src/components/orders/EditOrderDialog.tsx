@@ -206,7 +206,7 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
           <div className="col-span-2 space-y-3">
             <div className="flex items-center justify-between">
               <Label>Продукти</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addProduct}>
+              <Button type="button" variant="default" size="sm" onClick={addProduct}>
                 <Plus className="w-4 h-4 mr-1" />
                 Добави продукт
               </Button>
@@ -273,6 +273,7 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                       newProducts[index] = { ...newProducts[index], price: parseFloat(e.target.value) || 0 };
                       setProducts(newProducts);
                     }}
+                    className="text-success"
                   />
                 </div>
                 <div className="col-span-12 sm:col-span-1 flex justify-end sm:justify-center">
