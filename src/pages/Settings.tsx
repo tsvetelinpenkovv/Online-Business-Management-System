@@ -594,11 +594,13 @@ const Settings = () => {
                 <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-6 lg:flex-1 lg:justify-center">Статуси</TabsTrigger>
                 <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-7 lg:flex-1 lg:justify-center">Фирма</TabsTrigger>
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8 lg:flex-1 lg:justify-center">Потребители</TabsTrigger>}
-                <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center" title="Редактор на интерфейса">
+                <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1" title="Редактор на интерфейса">
                   <Type className="w-4 h-4" />
+                  <span className="hidden lg:inline">Интерфейс</span>
                 </TabsTrigger>
-                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center" title="Документация">
+                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-rose-500" />
+                  <span className="hidden lg:inline">Документация</span>
                 </TabsTrigger>
               </TabsList>
             </div>
