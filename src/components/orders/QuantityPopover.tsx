@@ -123,7 +123,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
       <PopoverContent className="w-80 p-0" align="center" sideOffset={8} showArrow>
         <div className="p-3 border-b bg-muted/30 flex items-center justify-between">
           <span className="font-medium text-sm">
-            {hasMultipleProducts ? 'Продукти' : 'Продукт'}
+            {hasMultipleProducts ? 'Детайли на продуктите' : totalItems > 1 ? 'Детайли на продуктите' : 'Детайли на продукта'}
           </span>
           <Button
             variant="ghost"
