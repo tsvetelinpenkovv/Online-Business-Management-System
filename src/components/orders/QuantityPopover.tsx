@@ -88,7 +88,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
   
   const badge = (
     <span 
-      className={`inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-110 ${
+      className={`inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all hover:scale-110 ${
         quantity > 1 || hasMultipleProducts
           ? 'bg-destructive/15 text-destructive hover:bg-destructive/25' 
           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -150,7 +150,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
                   </p>
                 )}
               </div>
-              <span className={`inline-flex items-center justify-center min-w-[28px] h-5 px-1.5 rounded-full text-xs font-medium flex-shrink-0 ${
+              <span className={`inline-flex items-center justify-center min-w-[28px] h-5 px-1.5 rounded-full text-xs font-semibold flex-shrink-0 ${
                 product.quantity > 1 
                   ? 'bg-destructive/15 text-destructive' 
                   : 'bg-muted text-muted-foreground'
