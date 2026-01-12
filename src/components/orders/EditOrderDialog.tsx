@@ -262,7 +262,7 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                   />
                 </div>
                 <div className="col-span-3 sm:col-span-3 space-y-1">
-                  <Label className="text-xs text-muted-foreground">Цена (€)</Label>
+                  <Label className="text-xs text-muted-foreground">Цена (€) <span className="text-[10px] opacity-70">с ДДС</span></Label>
                   <Input
                     type="number"
                     min="0"
