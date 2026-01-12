@@ -594,6 +594,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                               label="Телефон" 
                               value={order.phone}
                               icon={<Phone className="w-4 h-4 text-muted-foreground" />}
+                              formatAsPhone
                             />
                             <CopyableText 
                               label="Адрес" 
