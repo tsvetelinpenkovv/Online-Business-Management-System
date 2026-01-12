@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import { Order, ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { useCouriers } from '@/hooks/useCouriers';
 import { StatusBadge } from './StatusBadge';
+import { ProductAutocomplete } from './ProductAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -179,7 +180,7 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
           <div className="space-y-2">
             <Label htmlFor="status">Статус</Label>
             <Select
-              value={formData.status}
+              value={formData.status || 'Нова'}
               onValueChange={(value) => setFormData({ ...formData, status: value as OrderStatus })}
             >
               <SelectTrigger className="cursor-pointer">
@@ -209,10 +210,15 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
               <div key={index} className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30">
                 <div className="col-span-12 sm:col-span-4 space-y-1">
                   <Label className="text-xs text-muted-foreground">Продукт</Label>
-                  <Input
+                  <ProductAutocomplete
                     value={product.product_name}
-                    onChange={(e) => updateProduct(index, 'product_name', e.target.value)}
-                    placeholder="Име на продукта"
+                    onChange={(val) => updateProduct(index, 'product_name', val)}
+                    onSelect={(p) => {
+                      updateProduct(index, 'product_name', p.name);
+                      updateProduct(index, 'catalog_number', p.sku);
+                      if (p.sale_price) updateProduct(index, 'price', p.sale_price);
+                    }}
+                    placeholder="Търси продукт..."
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-2 space-y-1">
