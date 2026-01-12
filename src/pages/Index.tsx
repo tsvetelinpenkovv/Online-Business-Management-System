@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { OrdersTable } from '@/components/orders/OrdersTable';
+import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, type ColumnKey } from '@/components/orders/ColumnVisibilityToggle';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ const Index = () => {
   const ordersPerPage = 100;
   const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
   const [nekorektenEnabled, setNekorektenEnabled] = useState(true);
+  const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(getDefaultVisibleColumns);
   const [companySettings, setCompanySettings] = useState<{
     company_name: string | null;
     registered_address: string | null;
@@ -736,6 +738,23 @@ const Index = () => {
           </div>
         ) : (
           <div className="w-full space-y-4">
+            {/* Column visibility toggle */}
+            <div className="flex justify-end">
+              <ColumnVisibilityToggle
+                visibleColumns={visibleColumns}
+                onToggle={(column) => {
+                  const newColumns = new Set(visibleColumns);
+                  if (newColumns.has(column)) {
+                    newColumns.delete(column);
+                  } else {
+                    newColumns.add(column);
+                  }
+                  setVisibleColumns(newColumns);
+                  saveVisibleColumns(newColumns);
+                }}
+                nekorektenEnabled={nekorektenEnabled}
+              />
+            </div>
             <div className="overflow-x-auto">
               <OrdersTable
                 orders={paginatedOrders}
@@ -744,6 +763,7 @@ const Index = () => {
                 selectedOrders={selectedOrders}
                 onSelectionChange={setSelectedOrders}
                 nekorektenEnabled={nekorektenEnabled}
+                visibleColumns={visibleColumns}
               />
             </div>
             

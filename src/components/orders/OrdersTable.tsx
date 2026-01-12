@@ -52,6 +52,8 @@ import { EditOrderDialog } from './EditOrderDialog';
 
 type OrderSortKey = 'id' | 'created_at' | 'customer_name' | 'phone' | 'total_price' | 'product_name' | 'catalog_number' | 'quantity' | 'status';
 
+import { type ColumnKey } from './ColumnVisibilityToggle';
+
 interface OrdersTableProps {
   orders: Order[];
   onDelete: (id: number) => void;
@@ -59,6 +61,7 @@ interface OrdersTableProps {
   selectedOrders: number[];
   onSelectionChange: (ids: number[]) => void;
   nekorektenEnabled?: boolean;
+  visibleColumns?: Set<ColumnKey>;
 }
 
 // Invoice icon button component - checks if order has invoice and tracks if it was viewed
@@ -121,13 +124,17 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
   );
 };
 
+// Default visible columns (all)
+const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'delivery', 'tracking', 'status', 'comment']);
+
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
   onDelete, 
   onUpdate,
   selectedOrders,
   onSelectionChange,
-  nekorektenEnabled = true
+  nekorektenEnabled = true,
+  visibleColumns = defaultVisibleColumns
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
@@ -447,69 +454,95 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   className={isSomeSelected ? 'opacity-50' : ''}
                 />
               </TableHead>
-              <SortableHead columnKey="id" className="w-[80px]">
-                ID
-              </SortableHead>
-              <TableHead className="w-[50px] text-center" title="Източник">
-                <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
-              </TableHead>
-              <SortableHead columnKey="created_at" className="w-[90px]">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Дата
-                </div>
-              </SortableHead>
-              <SortableHead columnKey="customer_name" className="w-[100px]">
-                <div className="flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Клиент
-                </div>
-              </SortableHead>
-              {nekorektenEnabled && (
+              {visibleColumns.has('id') && (
+                <SortableHead columnKey="id" className="w-[80px]">
+                  ID
+                </SortableHead>
+              )}
+              {visibleColumns.has('source') && (
+                <TableHead className="w-[50px] text-center" title="Източник">
+                  <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                </TableHead>
+              )}
+              {visibleColumns.has('date') && (
+                <SortableHead columnKey="created_at" className="w-[90px]">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    Дата
+                  </div>
+                </SortableHead>
+              )}
+              {visibleColumns.has('customer') && (
+                <SortableHead columnKey="customer_name" className="w-[100px]">
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    Клиент
+                  </div>
+                </SortableHead>
+              )}
+              {nekorektenEnabled && visibleColumns.has('correct') && (
                 <TableHead className="w-[50px] text-center" title="Коректност на клиента">
                   <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
-              <SortableHead columnKey="phone" className="w-[115px]">
-                <div className="flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Телефон
-                </div>
-              </SortableHead>
-              <SortableHead columnKey="total_price" className="w-[80px]" align="center">
-                <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Цена
-              </SortableHead>
-              <SortableHead columnKey="product_name" className="w-[125px]" align="center">
-                <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Продукт
-              </SortableHead>
-              <SortableHead columnKey="catalog_number" className="w-[100px]" align="center">
-                <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Кат.№
-              </SortableHead>
-              <TableHead className="w-[50px] text-center" title="Количество">
-                <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
-              </TableHead>
-              <TableHead className="w-[120px]">
-                <div className="flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Доставка
-                </div>
-              </TableHead>
-              <TableHead className="w-[70px] text-center" title="Товарителница">
-                <ExternalLink className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
-              </TableHead>
-              <SortableHead columnKey="status" className="w-[140px]">
-                <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Статус
-              </SortableHead>
-              <TableHead className="w-[160px]">
-                <div className="flex items-center gap-1.5">
-                  <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Коментар
-                </div>
-              </TableHead>
+              {visibleColumns.has('phone') && (
+                <SortableHead columnKey="phone" className="w-[160px]">
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    Телефон
+                  </div>
+                </SortableHead>
+              )}
+              {visibleColumns.has('price') && (
+                <SortableHead columnKey="total_price" className="w-[80px]" align="center">
+                  <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Цена
+                </SortableHead>
+              )}
+              {visibleColumns.has('product') && (
+                <SortableHead columnKey="product_name" className="w-[125px]" align="center">
+                  <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Продукт
+                </SortableHead>
+              )}
+              {visibleColumns.has('catalog') && (
+                <SortableHead columnKey="catalog_number" className="w-[100px]" align="center">
+                  <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Кат.№
+                </SortableHead>
+              )}
+              {visibleColumns.has('quantity') && (
+                <TableHead className="w-[50px] text-center" title="Количество">
+                  <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                </TableHead>
+              )}
+              {visibleColumns.has('delivery') && (
+                <TableHead className="w-[120px]">
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    Доставка
+                  </div>
+                </TableHead>
+              )}
+              {visibleColumns.has('tracking') && (
+                <TableHead className="w-[70px] text-center" title="Товарителница">
+                  <ExternalLink className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                </TableHead>
+              )}
+              {visibleColumns.has('status') && (
+                <SortableHead columnKey="status" className="w-[140px]">
+                  <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  Статус
+                </SortableHead>
+              )}
+              {visibleColumns.has('comment') && (
+                <TableHead className="w-[160px]">
+                  <div className="flex items-center gap-1.5">
+                    <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    Коментар
+                  </div>
+                </TableHead>
+              )}
               <TableHead className="w-[50px] text-center">
                 <Settings2 className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
@@ -525,209 +558,234 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     aria-label={`Избери поръчка ${order.id}`}
                   />
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
-                  № {order.id}
-                </TableCell>
-                <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
-                  <SourceIcon source={order.source} className="w-5 h-5" />
-                </TableCell>
-                
-                <TableCell className="text-xs text-muted-foreground" title={`Дата на поръчка: ${format(new Date(order.created_at), 'dd.MM.yyyy HH:mm')}`}>
-                  <div className="flex flex-col items-center">
-                    <span>{format(new Date(order.created_at), 'dd.MM.yyyy')}</span>
-                    <span>{format(new Date(order.created_at), 'HH:mm')}</span>
-                  </div>
-                </TableCell>
-<TableCell className="text-sm">
-                  <div className="flex items-center gap-1">
-                    <span className="line-clamp-2 max-w-[100px] font-medium leading-tight" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
-                    <InfoPopover 
-                      title="Данни за клиента" 
-                      icon="eye"
-                      content={
-                        <div className="space-y-2">
-                          <CopyableText 
-                            label="Име" 
-                            value={order.customer_name}
-                            icon={<User className="w-4 h-4 text-muted-foreground" />}
-                          />
-                          <CopyableText 
-                            label="Телефон" 
-                            value={order.phone}
-                            icon={<Phone className="w-4 h-4 text-muted-foreground" />}
-                          />
-                          <CopyableText 
-                            label="Адрес" 
-                            value={order.delivery_address || '-'}
-                            icon={<Truck className="w-4 h-4 text-muted-foreground" />}
-                          />
-                          <CopyableText 
-                            label="Имейл" 
-                            value={order.customer_email || '-'}
-                            icon={<Globe className="w-4 h-4 text-muted-foreground" />}
-                          />
-                        </div>
-                      }
-                    />
-                  </div>
-                </TableCell>
-                {nekorektenEnabled && (
+                {visibleColumns.has('id') && (
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
+                    № {order.id}
+                  </TableCell>
+                )}
+                {visibleColumns.has('source') && (
+                  <TableCell title={`Източник: ${order.source === 'google' ? 'Google' : order.source === 'facebook' ? 'Facebook' : 'WooCommerce'}`}>
+                    <SourceIcon source={order.source} className="w-5 h-5" />
+                  </TableCell>
+                )}
+                {visibleColumns.has('date') && (
+                  <TableCell className="text-xs text-muted-foreground" title={`Дата на поръчка: ${format(new Date(order.created_at), 'dd.MM.yyyy HH:mm')}`}>
+                    <div className="flex flex-col items-center">
+                      <span>{format(new Date(order.created_at), 'dd.MM.yyyy')}</span>
+                      <span>{format(new Date(order.created_at), 'HH:mm')}</span>
+                    </div>
+                  </TableCell>
+                )}
+                {visibleColumns.has('customer') && (
+                  <TableCell className="text-[13px]">
+                    <div className="flex items-center gap-1">
+                      <span className="line-clamp-2 max-w-[100px] font-semibold leading-tight" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
+                      <InfoPopover 
+                        title="Данни за клиента" 
+                        icon="eye"
+                        content={
+                          <div className="space-y-2">
+                            <CopyableText 
+                              label="Име" 
+                              value={order.customer_name}
+                              icon={<User className="w-4 h-4 text-muted-foreground" />}
+                            />
+                            <CopyableText 
+                              label="Телефон" 
+                              value={order.phone}
+                              icon={<Phone className="w-4 h-4 text-muted-foreground" />}
+                            />
+                            <CopyableText 
+                              label="Адрес" 
+                              value={order.delivery_address || '-'}
+                              icon={<Truck className="w-4 h-4 text-muted-foreground" />}
+                            />
+                            <CopyableText 
+                              label="Имейл" 
+                              value={order.customer_email || '-'}
+                              icon={<Globe className="w-4 h-4 text-muted-foreground" />}
+                            />
+                          </div>
+                        }
+                      />
+                    </div>
+                  </TableCell>
+                )}
+                {nekorektenEnabled && visibleColumns.has('correct') && (
                   <TableCell>
                     <CorrectStatusIcon isCorrect={order.is_correct} />
                   </TableCell>
                 )}
-<TableCell className="text-[13px]">
-                  <PhoneWithFlag phone={order.phone} />
-                </TableCell>
-                <TableCell className="text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>
-                  <div className="flex flex-col items-center leading-tight">
-                    <span className="text-sm font-medium text-success whitespace-nowrap">{order.total_price.toFixed(2)} €</span>
-                    <span className="text-[10px] text-muted-foreground">с ДДС</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-sm line-clamp-2 max-w-[120px] font-medium" title={order.product_name}>
-                      {order.product_name}
-                    </span>
-                    <InfoPopover 
-                      title="Детайли на продукта" 
-                      icon="eye"
-                      content={
-                        <div className="space-y-2">
-                          <CopyableText 
-                            label="Продукт" 
-                            value={order.product_name}
-                            icon={<Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
-                          />
-                          <CopyableText 
-                            label="Кат. номер" 
-                            value={order.catalog_number || '-'}
-                            icon={<Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
-                          />
-                          <p className="flex items-center gap-2">
-                            <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <strong>Количество:</strong> 
-                            {order.quantity > 1 ? (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold">
-                                {order.quantity} бр.
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                                {order.quantity} бр.
-                              </span>
-                            )}
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span><strong>Цена:</strong> <span className="text-success font-medium">{order.total_price.toFixed(2)} €</span></span>
-                          </p>
-                        </div>
-                      }
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap text-center">
-                  {order.catalog_number ? (
-                    <div className="flex items-center justify-center gap-1">
-                      <span className="truncate max-w-[80px]" title={order.catalog_number}>
-                        {order.catalog_number.includes(',') 
-                          ? `${order.catalog_number.split(',')[0].trim()}...`
-                          : order.catalog_number
-                        }
-                      </span>
-                      <button
-                        onClick={() => handleCopyCatalog(order.catalog_number!)}
-                        className="p-0.5 hover:bg-muted rounded transition-colors flex-shrink-0"
-                        title="Копирай каталожен номер"
-                      >
-                        {copiedCatalog === order.catalog_number ? (
-                          <Check className="w-3.5 h-3.5 text-success" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                        )}
-                      </button>
+                {visibleColumns.has('phone') && (
+                  <TableCell className="text-[13px]">
+                    <PhoneWithFlag phone={order.phone} />
+                  </TableCell>
+                )}
+                {visibleColumns.has('price') && (
+                  <TableCell className="text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>
+                    <div className="flex flex-col items-center leading-tight">
+                      <span className="text-sm font-medium text-success whitespace-nowrap">{order.total_price.toFixed(2)} €</span>
+                      <span className="text-[10px] text-muted-foreground">с ДДС</span>
                     </div>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  <QuantityPopover 
-                    productName={order.product_name}
-                    quantity={order.quantity}
-                    catalogNumber={order.catalog_number}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground line-clamp-2 max-w-[100px]" title={order.delivery_address || ''}>
-                      {order.delivery_address || '-'}
-                    </span>
-                    {order.delivery_address && (
+                  </TableCell>
+                )}
+                {visibleColumns.has('product') && (
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-[13px] line-clamp-2 max-w-[120px] font-semibold" title={order.product_name}>
+                        {order.product_name}
+                      </span>
                       <InfoPopover 
-                        title="Адрес за доставка" 
+                        title="Детайли на продукта" 
                         icon="eye"
                         content={
-                          <CopyableText 
-                            label="Адрес" 
-                            value={order.delivery_address}
-                            icon={<Truck className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />}
-                          />
+                          <div className="space-y-2">
+                            <CopyableText 
+                              label="Продукт" 
+                              value={order.product_name}
+                              icon={<Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+                            />
+                            <CopyableText 
+                              label="Кат. номер" 
+                              value={order.catalog_number || '-'}
+                              icon={<Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+                            />
+                            <p className="flex items-center gap-2">
+                              <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                              <strong>Количество:</strong> 
+                              {order.quantity > 1 ? (
+                                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold">
+                                  {order.quantity} бр.
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
+                                  {order.quantity} бр.
+                                </span>
+                              )}
+                            </p>
+                            <p className="flex items-center gap-2">
+                              <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                              <span><strong>Цена:</strong> <span className="text-success font-medium">{order.total_price.toFixed(2)} €</span></span>
+                            </p>
+                          </div>
                         }
                       />
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell title={order.courier_tracking_url ? `Проследяване на пратка` : 'Няма товарителница'}>
-                  {order.courier_tracking_url || order.courier_id ? (
-                    <div className="flex items-center justify-center gap-1">
-                      <CourierLogo 
-                        trackingUrl={order.courier_tracking_url} 
-                        courierId={order.courier_id}
-                        className="w-8 h-8" 
-                      />
-                      {order.courier_tracking_url && (
-                        <a 
-                          href={order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-600 hover:text-purple-800 transition-colors"
-                          title="Отвори проследяване в нов таб"
+                    </div>
+                  </TableCell>
+                )}
+                {visibleColumns.has('catalog') && (
+                  <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap text-center">
+                    {order.catalog_number ? (
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="truncate max-w-[80px]" title={order.catalog_number}>
+                          {order.catalog_number.includes(',') 
+                            ? `${order.catalog_number.split(',')[0].trim()}...`
+                            : order.catalog_number
+                          }
+                        </span>
+                        <button
+                          onClick={() => handleCopyCatalog(order.catalog_number!)}
+                          className="p-0.5 hover:bg-muted rounded transition-colors flex-shrink-0"
+                          title="Копирай каталожен номер"
                         >
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
+                          {copiedCatalog === order.catalog_number ? (
+                            <Check className="w-3.5 h-3.5 text-success" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                          )}
+                        </button>
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+                )}
+                {visibleColumns.has('quantity') && (
+                  <TableCell className="text-center">
+                    <QuantityPopover 
+                      productName={order.product_name}
+                      quantity={order.quantity}
+                      catalogNumber={order.catalog_number}
+                    />
+                  </TableCell>
+                )}
+                {visibleColumns.has('delivery') && (
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground line-clamp-2 max-w-[100px]" title={order.delivery_address || ''}>
+                        {order.delivery_address || '-'}
+                      </span>
+                      {order.delivery_address && (
+                        <InfoPopover 
+                          title="Адрес за доставка" 
+                          icon="eye"
+                          content={
+                            <CopyableText 
+                              label="Адрес" 
+                              value={order.delivery_address}
+                              icon={<Truck className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />}
+                            />
+                          }
+                        />
                       )}
                     </div>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge 
-                    status={order.status} 
-                    editable 
-                    onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus as any })}
-                  />
-                </TableCell>
-                <TableCell>
-                  {order.comment ? (
-                    <InfoPopover 
-                      title="Коментар" 
-                      icon="info"
-                      content={
-                        <div className="flex items-start gap-2">
-                          <MessageCircle className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span>{order.comment}</span>
-                        </div>
-                      }
-                    >
-                      <span className="comment-bubble line-clamp-2 cursor-pointer">
-                        {order.comment}
-                      </span>
-                    </InfoPopover>
-                  ) : null}
-                </TableCell>
+                  </TableCell>
+                )}
+                {visibleColumns.has('tracking') && (
+                  <TableCell title={order.courier_tracking_url ? `Проследяване на пратка` : 'Няма товарителница'}>
+                    {order.courier_tracking_url || order.courier_id ? (
+                      <div className="flex items-center justify-center gap-1">
+                        <CourierLogo 
+                          trackingUrl={order.courier_tracking_url} 
+                          courierId={order.courier_id}
+                          className="w-8 h-8" 
+                        />
+                        {order.courier_tracking_url && (
+                          <a 
+                            href={order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-800 transition-colors"
+                            title="Отвори проследяване в нов таб"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+                )}
+                {visibleColumns.has('status') && (
+                  <TableCell>
+                    <StatusBadge 
+                      status={order.status} 
+                      editable 
+                      onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus as any })}
+                    />
+                  </TableCell>
+                )}
+                {visibleColumns.has('comment') && (
+                  <TableCell>
+                    {order.comment ? (
+                      <InfoPopover 
+                        title="Коментар" 
+                        icon="info"
+                        content={
+                          <div className="flex items-start gap-2">
+                            <MessageCircle className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <span>{order.comment}</span>
+                          </div>
+                        }
+                      >
+                        <span className="comment-bubble line-clamp-2 cursor-pointer">
+                          {order.comment}
+                        </span>
+                      </InfoPopover>
+                    ) : null}
+                  </TableCell>
+                )}
                 <TableCell>
                   <div className="flex flex-col items-center gap-0.5">
                     {/* Invoice icon above the three dots */}
