@@ -250,36 +250,6 @@ export default function Inventory() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           {/* Scrollable tabs with fade indicators */}
           <div className="relative">
-            {/* Left fade & arrow (show on mobile and tablet) */}
-            {showLeftArrow && (
-              <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center lg:hidden">
-                <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none" />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-6 w-6 rounded-full bg-card/90 backdrop-blur-sm shadow-sm border"
-                  onClick={() => scrollTabs('left')}
-                >
-                  <ChevronLeft className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
-            
-            {/* Right fade & arrow (show on mobile and tablet) */}
-            {showRightArrow && (
-              <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center lg:hidden">
-                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-6 w-6 rounded-full bg-card/90 backdrop-blur-sm shadow-sm border"
-                  onClick={() => scrollTabs('right')}
-                >
-                  <ChevronRight className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
-
             <div 
               ref={tabsContainerRef}
               className="overflow-x-auto -mx-3 lg:mx-0 px-3 lg:px-0" 
