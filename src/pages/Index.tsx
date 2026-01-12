@@ -34,9 +34,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 
 type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
@@ -697,17 +694,21 @@ const Index = () => {
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {/* Column visibility submenu */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <Columns3 className="w-4 h-4 mr-2" />
+                {/* Column visibility - using Collapsible instead of SubMenu for better mobile touch support */}
+                <div className="px-2 py-1.5">
+                  <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                    <Columns3 className="w-4 h-4" />
                     Колони
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="w-48 max-h-[300px] overflow-y-auto">
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 max-h-[200px] overflow-y-auto">
                     {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || nekorektenEnabled).map((column) => (
-                      <DropdownMenuItem 
+                      <button
                         key={column.key}
-                        onClick={() => {
+                        type="button"
+                        className="flex items-center gap-1.5 px-2 py-1.5 text-xs rounded-md hover:bg-muted transition-colors cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           const newColumns = new Set(visibleColumns);
                           if (newColumns.has(column.key)) {
                             newColumns.delete(column.key);
@@ -717,19 +718,18 @@ const Index = () => {
                           setVisibleColumns(newColumns);
                           saveVisibleColumns(newColumns);
                         }}
-                        onSelect={(e) => e.preventDefault()}
-                        className="cursor-pointer"
                       >
                         {visibleColumns.has(column.key) ? (
-                          <Eye className="w-4 h-4 mr-2 text-success" />
+                          <Eye className="w-3 h-3 text-success flex-shrink-0" />
                         ) : (
-                          <EyeOff className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <EyeOff className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                         )}
-                        {column.label}
-                      </DropdownMenuItem>
+                        <span className="truncate">{column.label}</span>
+                      </button>
                     ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                   <LogOut className="w-4 h-4 mr-2" />
                   {getText('orders_logout_button_label')}
