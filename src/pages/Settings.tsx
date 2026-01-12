@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
@@ -21,6 +21,7 @@ import { PlatformApiSettings } from '@/components/settings/PlatformApiSettings';
 import { ConnectixSettings } from '@/components/settings/ConnectixSettings';
 import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
+import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -592,7 +593,11 @@ const Settings = () => {
                 <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-6 lg:flex-1 lg:justify-center">Статуси</TabsTrigger>
                 <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-7 lg:flex-1 lg:justify-center">Фирма</TabsTrigger>
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8 lg:flex-1 lg:justify-center">Потребители</TabsTrigger>}
-                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center" title="Документация">
+                <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center">
+                  <Type className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Редактор</span>
+                </TabsTrigger>
+                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center" title="Документация">
                   <BookOpen className="w-4 h-4 text-rose-500" />
                 </TabsTrigger>
               </TabsList>
@@ -1550,6 +1555,10 @@ const Settings = () => {
             </>
           )}
         </Button>
+          </TabsContent>
+
+          <TabsContent value="interface" className="space-y-6">
+            <InterfaceTextEditor />
           </TabsContent>
 
           <TabsContent value="docs" className="space-y-6">
