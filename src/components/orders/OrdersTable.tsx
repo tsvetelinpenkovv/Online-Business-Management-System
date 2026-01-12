@@ -403,6 +403,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 }}
                 messageInfo={messageInfo}
                 nekorektenEnabled={nekorektenEnabled}
+                visibleColumns={visibleColumns}
               />
             );
           })}

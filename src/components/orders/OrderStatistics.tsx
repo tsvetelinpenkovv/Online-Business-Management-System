@@ -14,7 +14,6 @@ import {
   Loader2,
   Euro,
   FileText,
-  Receipt,
   CalendarDays,
   Download,
   Calendar as CalendarIcon,
@@ -603,7 +602,7 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
                   <p className="text-xl font-bold text-teal-600">{formatCurrency(invoiceStats.totalAmount)}</p>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
-                  <Receipt className="w-4 h-4 text-teal-600" />
+                  <Euro className="w-4 h-4 text-teal-600" />
                 </div>
               </div>
             </div>
