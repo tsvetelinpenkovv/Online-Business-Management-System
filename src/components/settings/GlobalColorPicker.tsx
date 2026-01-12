@@ -156,7 +156,7 @@ export const GlobalColorPicker: FC = () => {
           <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
             <div className="flex flex-wrap gap-2">
               <Button size="sm">Примерен бутон</Button>
-              <Button size="sm" variant="outline">Outline бутон</Button>
+              <Button size="sm" variant="outline">Контурен бутон</Button>
             </div>
             <div 
               className="px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
