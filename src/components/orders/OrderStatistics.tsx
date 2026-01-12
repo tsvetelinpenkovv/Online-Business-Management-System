@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Order } from '@/types/order';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -9,7 +9,10 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Euro
+  Euro,
+  FileText,
+  Receipt,
+  CalendarDays
 } from 'lucide-react';
 import {
   BarChart,
@@ -23,9 +26,25 @@ import {
   Cell,
   Legend
 } from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { bg } from 'date-fns/locale';
 
 interface OrderStatisticsProps {
   orders: Order[];
+}
+
+interface InvoiceStats {
+  totalCount: number;
+  totalAmount: number;
+  lastInvoice: {
+    number: number;
+    date: string;
+    amount: number;
+    buyerName: string;
+  } | null;
+  todayCount: number;
+  monthCount: number;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -40,6 +59,58 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
+  const [invoiceStats, setInvoiceStats] = useState<InvoiceStats>({
+    totalCount: 0,
+    totalAmount: 0,
+    lastInvoice: null,
+    todayCount: 0,
+    monthCount: 0
+  });
+
+  // Fetch invoice statistics
+  useEffect(() => {
+    const fetchInvoiceStats = async () => {
+      try {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // Get all invoices
+        const { data: invoices, error } = await supabase
+          .from('invoices')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (invoices && invoices.length > 0) {
+          const totalAmount = invoices.reduce((sum, inv) => sum + Number(inv.total_amount), 0);
+          const todayCount = invoices.filter(inv => new Date(inv.created_at) >= today).length;
+          const monthCount = invoices.filter(inv => new Date(inv.created_at) >= monthStart).length;
+          
+          const lastInv = invoices[0];
+          
+          setInvoiceStats({
+            totalCount: invoices.length,
+            totalAmount,
+            lastInvoice: {
+              number: lastInv.invoice_number,
+              date: lastInv.issue_date,
+              amount: Number(lastInv.total_amount),
+              buyerName: lastInv.buyer_name
+            },
+            todayCount,
+            monthCount
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching invoice stats:', err);
+      }
+    };
+
+    fetchInvoiceStats();
+  }, []);
+
   const stats = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -271,6 +342,72 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
           </CardHeader>
           <CardContent className="pt-2">
             <p className="text-2xl font-bold text-purple-600">{formatCurrency(stats.monthValue)}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Invoice Statistics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 border-indigo-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Общо фактури</p>
+                <p className="text-2xl font-bold text-indigo-600">{invoiceStats.totalCount}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-indigo-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border-teal-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Обща сума фактури</p>
+                <p className="text-2xl font-bold text-teal-600">{formatCurrency(invoiceStats.totalAmount)}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center">
+                <Receipt className="w-5 h-5 text-teal-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-rose-500/10 to-rose-600/5 border-rose-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Фактури този месец</p>
+                <p className="text-2xl font-bold text-rose-600">{invoiceStats.monthCount}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center">
+                <CalendarDays className="w-5 h-5 text-rose-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-violet-500/10 to-violet-600/5 border-violet-500/20">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-muted-foreground font-medium">Последна фактура</p>
+              {invoiceStats.lastInvoice ? (
+                <>
+                  <p className="text-lg font-bold text-violet-600">№ {invoiceStats.lastInvoice.number}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(invoiceStats.lastInvoice.date), 'dd.MM.yyyy')} • {formatCurrency(invoiceStats.lastInvoice.amount)}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate" title={invoiceStats.lastInvoice.buyerName}>
+                    {invoiceStats.lastInvoice.buyerName}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Няма издадени</p>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
