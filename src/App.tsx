@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import Inventory from "./pages/Inventory";
 import Messages from "./pages/Messages";
+import Nekorekten from "./pages/Nekorekten";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/nekorekten" element={<Nekorekten />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
