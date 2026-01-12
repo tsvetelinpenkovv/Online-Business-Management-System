@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Settings2, Eye, EyeOff } from 'lucide-react';
+import { Columns3, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -87,8 +87,8 @@ export const ColumnVisibilityToggle: FC<ColumnVisibilityToggleProps> = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Settings2 className="w-4 h-4" />
-          Колони
+          <Columns3 className="w-4 h-4" />
+          <span className="hidden sm:inline">Колони</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48" onCloseAutoFocus={(e) => e.preventDefault()}>
