@@ -13,20 +13,77 @@ export interface OrderStatusConfig {
   updated_at: string;
 }
 
+const CACHE_KEY = 'order_statuses_cache';
+const CACHE_TIMESTAMP_KEY = 'order_statuses_cache_timestamp';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Get cached statuses from localStorage
+const getCachedStatuses = (): OrderStatusConfig[] | null => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+    
+    if (cached && timestamp) {
+      const age = Date.now() - parseInt(timestamp, 10);
+      if (age < CACHE_DURATION) {
+        return JSON.parse(cached);
+      }
+    }
+  } catch (error) {
+    console.error('Error reading status cache:', error);
+  }
+  return null;
+};
+
+// Save statuses to localStorage cache
+const setCachedStatuses = (statuses: OrderStatusConfig[]) => {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(statuses));
+    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+  } catch (error) {
+    console.error('Error saving status cache:', error);
+  }
+};
+
+// Clear cache
+const clearStatusCache = () => {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+  } catch (error) {
+    console.error('Error clearing status cache:', error);
+  }
+};
+
 export const useOrderStatuses = () => {
-  const [statuses, setStatuses] = useState<OrderStatusConfig[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Initialize with cached data immediately (stale-while-revalidate pattern)
+  const [statuses, setStatuses] = useState<OrderStatusConfig[]>(() => {
+    return getCachedStatuses() || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    // Only show loading if we don't have cached data
+    return getCachedStatuses() === null;
+  });
   const { toast } = useToast();
 
   const fetchStatuses = useCallback(async () => {
     try {
+      // If we have cached data, don't set loading to true (stale-while-revalidate)
+      const hasCached = getCachedStatuses() !== null;
+      if (!hasCached) {
+        setLoading(true);
+      }
+
       const { data, error } = await supabase
         .from('order_statuses')
         .select('*')
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
-      setStatuses(data || []);
+      
+      const newStatuses = data || [];
+      setStatuses(newStatuses);
+      setCachedStatuses(newStatuses);
     } catch (error) {
       console.error('Error fetching statuses:', error);
     } finally {
@@ -55,7 +112,10 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      setStatuses([...statuses, data]);
+      const newStatuses = [...statuses, data];
+      setStatuses(newStatuses);
+      setCachedStatuses(newStatuses);
+      
       toast({
         title: 'Успех',
         description: 'Статусът беше добавен',
@@ -83,7 +143,10 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      setStatuses(statuses.map(s => s.id === id ? { ...s, ...updates } : s));
+      const newStatuses = statuses.map(s => s.id === id ? { ...s, ...updates } : s);
+      setStatuses(newStatuses);
+      setCachedStatuses(newStatuses);
+      
       toast({
         title: 'Успех',
         description: 'Статусът беше обновен',
@@ -106,7 +169,10 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      setStatuses(statuses.filter(s => s.id !== id));
+      const newStatuses = statuses.filter(s => s.id !== id);
+      setStatuses(newStatuses);
+      setCachedStatuses(newStatuses);
+      
       toast({
         title: 'Успех',
         description: 'Статусът беше изтрит',
@@ -139,6 +205,7 @@ export const useOrderStatuses = () => {
         .map((s, index) => ({ ...s, sort_order: index + 1 }));
       
       setStatuses(reorderedStatuses);
+      setCachedStatuses(reorderedStatuses);
       
       toast({
         title: 'Успех',
@@ -161,5 +228,6 @@ export const useOrderStatuses = () => {
     deleteStatus,
     reorderStatuses,
     refetch: fetchStatuses,
+    clearCache: clearStatusCache,
   };
 };
