@@ -90,7 +90,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         comment: formData.comment || null,
         status: formData.status,
         source: formData.source,
-        is_correct: true,
+        is_correct: null,
         courier_tracking_url: null,
         courier_id: null,
       });

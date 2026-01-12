@@ -664,9 +664,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         {order.comment}
                       </span>
                     </InfoPopover>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">-</span>
-                  )}
+                  ) : null}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col items-center gap-0.5">
