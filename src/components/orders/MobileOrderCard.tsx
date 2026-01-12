@@ -244,8 +244,8 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
 
         {/* Product info */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2">
+            <Package className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
             <div className="flex-1">
               <span className="text-sm">{order.product_name}</span>
               {order.catalog_number && (
