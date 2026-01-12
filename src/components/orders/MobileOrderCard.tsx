@@ -225,7 +225,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <span>{order.phone}</span>
+            <span className="font-medium text-foreground text-[13px]">{order.phone}</span>
             <button
               onClick={handleCopyPhone}
               className="p-0.5 hover:bg-muted rounded transition-colors"
