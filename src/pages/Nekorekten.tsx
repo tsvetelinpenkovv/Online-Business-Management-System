@@ -25,6 +25,7 @@ interface CustomerCheck {
   id: number;
   customer_name: string;
   phone: string;
+  customer_email: string | null;
   is_correct: boolean | null;
   created_at: string;
   source: string | null;
@@ -77,7 +78,7 @@ const Nekorekten = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, customer_name, phone, is_correct, created_at, source')
+        .select('id, customer_name, phone, customer_email, is_correct, created_at, source')
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -127,13 +128,13 @@ const Nekorekten = () => {
     if (activeTab === 'incorrect' && cust.is_correct !== false) return false;
     if (activeTab === 'unknown' && cust.is_correct !== null) return false;
 
-    // Search filter
+    // Search filter - by email, name, or phone
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
         cust.phone.toLowerCase().includes(query) ||
         cust.customer_name?.toLowerCase().includes(query) ||
-        cust.id?.toString().includes(query)
+        (cust.customer_email && cust.customer_email.toLowerCase().includes(query))
       );
     }
 
@@ -169,7 +170,8 @@ const Nekorekten = () => {
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">#{customer.id}</span>
+            <User className="w-3 h-3 text-muted-foreground" />
+            <span className="font-medium text-sm">{customer.customer_name}</span>
           </div>
           <div className="flex items-center gap-1.5">
             {getStatusIcon(customer.is_correct)}
@@ -177,12 +179,11 @@ const Nekorekten = () => {
           </div>
         </div>
         
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-1.5">
-            <User className="w-3 h-3 text-muted-foreground" />
-            <span className="font-medium">{customer.customer_name}</span>
+        {customer.customer_email && (
+          <div className="text-xs text-muted-foreground">
+            {customer.customer_email}
           </div>
-        </div>
+        )}
         
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
@@ -268,7 +269,7 @@ const Nekorekten = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Търси по име, телефон или номер на поръчка..."
+                  placeholder="Търси по име, имейл или телефон..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -324,8 +325,8 @@ const Nekorekten = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/50">
-                        <TableHead className="w-[80px]">Поръчка</TableHead>
                         <TableHead>Клиент</TableHead>
+                        <TableHead>Имейл</TableHead>
                         <TableHead>Телефон</TableHead>
                         <TableHead>Източник</TableHead>
                         <TableHead className="w-[110px]">Статус</TableHead>
@@ -336,16 +337,8 @@ const Nekorekten = () => {
                     <TableBody>
                       {filteredCustomers.map((customer) => (
                         <TableRow key={customer.id} className="hover:bg-muted/30">
-                          <TableCell>
-                            <Button 
-                              variant="link" 
-                              className="p-0 h-auto text-sm text-primary"
-                              onClick={() => navigate(`/?search=${customer.id}`)}
-                            >
-                              #{customer.id}
-                            </Button>
-                          </TableCell>
                           <TableCell className="font-medium">{customer.customer_name}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{customer.customer_email || '—'}</TableCell>
                           <TableCell className="font-mono text-sm">{customer.phone}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{customer.source || '—'}</TableCell>
                           <TableCell>
