@@ -83,7 +83,7 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
     <Button 
       variant="ghost" 
       size="icon" 
-      className="h-6 w-6 text-success" 
+      className="h-6 w-6 text-success hover:bg-success/10 hover:text-success" 
       onClick={onClick}
       title="Има издадена фактура"
     >
@@ -509,9 +509,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <span>{format(new Date(order.created_at), 'HH:mm')}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm">
+<TableCell className="text-sm">
                   <div className="flex items-center gap-1">
-                    <span className="truncate max-w-[100px] font-medium" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
+                    <span className="line-clamp-2 max-w-[100px] font-medium leading-tight" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
                     <InfoPopover 
                       title="Данни за клиента" 
                       icon="eye"
@@ -547,9 +547,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <CorrectStatusIcon isCorrect={order.is_correct} />
                   </TableCell>
                 )}
-                <TableCell className="text-[13px]">
+<TableCell className="text-[13px]">
                   <div className="flex items-center gap-1">
-                    <span className="truncate max-w-[100px] font-medium text-foreground">{order.phone}</span>
+                    <span className="line-clamp-2 max-w-[100px] font-medium text-foreground leading-tight">{order.phone}</span>
                     <button
                       onClick={() => handleCopyPhone(order.phone)}
                       className="p-0.5 hover:bg-muted rounded transition-colors"
