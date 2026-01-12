@@ -360,7 +360,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 onStatusChange={(orderId, newStatus) => {
                   const orderToUpdate = orders.find(o => o.id === orderId);
                   if (orderToUpdate) {
-                    onUpdate({ ...orderToUpdate, status: newStatus });
+                    onUpdate({ ...orderToUpdate, status: newStatus as any });
                   }
                 }}
                 messageInfo={messageInfo}
@@ -684,7 +684,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   <StatusBadge 
                     status={order.status} 
                     editable 
-                    onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus })}
+                    onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus as any })}
                   />
                 </TableCell>
                 <TableCell>
