@@ -93,13 +93,21 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
     setTimeout(() => setCopiedSku(null), 2000);
   };
   
+  // Red for single product qty > 1, amber for multiple products (2x, 3x, etc.)
+  const getBadgeClasses = () => {
+    if (hasMultipleProducts) {
+      // Multiple products: amber/yellow for 2x, 3x, etc.
+      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    } else if (quantity > 1) {
+      // Single product with qty > 1: red
+      return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    }
+    return 'bg-muted text-muted-foreground';
+  };
+
   const badge = (
     <span 
-      className={`inline-flex items-center justify-center min-w-[24px] h-6 w-6 rounded-full text-xs font-semibold cursor-pointer ${
-        quantity > 1 || hasMultipleProducts
-          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
-          : 'bg-muted text-muted-foreground'
-      }`}
+      className={`inline-flex items-center justify-center min-w-[24px] h-6 w-6 rounded-full text-xs font-semibold cursor-pointer ${getBadgeClasses()}`}
       title={hasMultipleProducts ? `${products.length} различни продукта` : `Количество: ${quantity} бр.`}
     >
       {hasMultipleProducts ? `${products.length}×` : quantity}
@@ -164,7 +172,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
               </div>
               <span className={`inline-flex items-center justify-center min-w-[28px] h-5 px-1.5 rounded-full text-xs font-semibold flex-shrink-0 ${
                 product.quantity > 1 
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' 
                   : 'bg-muted text-muted-foreground'
               }`}>
                 {product.quantity} бр.
