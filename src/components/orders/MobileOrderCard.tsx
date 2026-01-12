@@ -182,23 +182,15 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => {
-                    window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(order.phone)}`, '_blank');
-                  }}
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Проверка в Nekorekten
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
                     // Ръчна проверка - в бъдеще ще използва API
                     toast({
-                      title: 'Проверка',
+                      title: 'Проверка в Некоректен',
                       description: 'API за Некоректен не е вързано. Моля конфигурирайте го в Настройки.',
                     });
                   }}
                 >
                   <Search className="w-4 h-4 mr-2" />
-                  Ръчна проверка в Некоректен
+                  Проверка в Nekorekten
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
                   <Trash2 className="w-4 h-4 mr-2" />

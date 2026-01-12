@@ -83,16 +83,24 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   const colorClasses = COLOR_MAP[colorName] || COLOR_MAP.primary;
   const isLeasing = leasingStatuses.includes(status);
 
-  // Truncate long status names on desktop/tablet
-  const truncatedStatus = status.length > 15 ? status.substring(0, 12) + '...' : status;
+  // Shorten leasing status names for display
+  const getShortStatus = (statusName: string) => {
+    if (statusName === 'На лизинг през TBI') return 'TBI лизинг';
+    if (statusName === 'На лизинг през BNP') return 'BNP лизинг';
+    if (statusName === 'На лизинг през UniCredit') return 'UniCredit';
+    if (statusName.length > 14) return statusName.substring(0, 11) + '...';
+    return statusName;
+  };
+
+  const displayStatus = getShortStatus(status);
 
   const badge = (
     <span 
-      className={`status-badge ${colorClasses.bgClass} ${colorClasses.textClass} ${editable ? 'cursor-pointer' : ''} max-w-[180px] md:max-w-[160px] lg:max-w-[200px]`} 
+      className={`status-badge ${colorClasses.bgClass} ${colorClasses.textClass} ${editable ? 'cursor-pointer' : ''} max-w-[140px] md:max-w-[130px] lg:max-w-[150px]`} 
       title={`Статус: ${status}`}
     >
       <Icon className="w-3 h-3 flex-shrink-0" />
-      <span className="truncate">{truncatedStatus}</span>
+      <span className="truncate text-[11px]">{displayStatus}</span>
       {isLeasing && (
         <span className="ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-destructive text-destructive-foreground flex-shrink-0" title="Лизинг">
           <Check className="w-2 h-2" strokeWidth={3} />
