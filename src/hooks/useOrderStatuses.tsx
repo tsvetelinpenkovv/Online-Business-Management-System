@@ -98,16 +98,6 @@ export const useOrderStatuses = () => {
   };
 
   const deleteStatus = async (id: string) => {
-    const statusToDelete = statuses.find(s => s.id === id);
-    if (statusToDelete?.is_default) {
-      toast({
-        title: 'Грешка',
-        description: 'Не можете да изтриете стандартен статус',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
       const { error } = await supabase
         .from('order_statuses')
@@ -130,12 +120,46 @@ export const useOrderStatuses = () => {
     }
   };
 
+  const reorderStatuses = async (orderedIds: string[]) => {
+    try {
+      // Update sort_order for each status
+      const updates = orderedIds.map((id, index) => 
+        supabase
+          .from('order_statuses')
+          .update({ sort_order: index + 1, updated_at: new Date().toISOString() })
+          .eq('id', id)
+      );
+
+      await Promise.all(updates);
+      
+      // Update local state
+      const reorderedStatuses = orderedIds
+        .map(id => statuses.find(s => s.id === id))
+        .filter((s): s is OrderStatusConfig => s !== undefined)
+        .map((s, index) => ({ ...s, sort_order: index + 1 }));
+      
+      setStatuses(reorderedStatuses);
+      
+      toast({
+        title: 'Успех',
+        description: 'Редът на статусите беше запазен',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Грешка',
+        description: error.message || 'Неуспешно пренареждане на статуси',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return {
     statuses,
     loading,
     addStatus,
     updateStatus,
     deleteStatus,
+    reorderStatuses,
     refetch: fetchStatuses,
   };
 };

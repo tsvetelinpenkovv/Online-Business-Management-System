@@ -31,20 +31,31 @@ interface EditOrderDialogProps {
 export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<Order>>({});
   const { couriers, getCourierByUrl } = useCouriers();
+  const [courierLocked, setCourierLocked] = useState(false);
 
   useEffect(() => {
     if (order) {
       setFormData(order);
+      // Check if courier should be locked based on existing URL
+      if (order.courier_tracking_url) {
+        const detectedCourier = getCourierByUrl(order.courier_tracking_url);
+        setCourierLocked(!!detectedCourier);
+      }
     }
-  }, [order]);
+  }, [order, getCourierByUrl]);
 
-  // Auto-detect courier when tracking URL changes
+  // Auto-detect courier when tracking URL changes and lock if detected
   useEffect(() => {
-    if (formData.courier_tracking_url && !formData.courier_id) {
+    if (formData.courier_tracking_url) {
       const detectedCourier = getCourierByUrl(formData.courier_tracking_url);
       if (detectedCourier) {
         setFormData(prev => ({ ...prev, courier_id: detectedCourier.id }));
+        setCourierLocked(true);
+      } else {
+        setCourierLocked(false);
       }
+    } else {
+      setCourierLocked(false);
     }
   }, [formData.courier_tracking_url, getCourierByUrl]);
 
@@ -193,8 +204,9 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
             <Select
               value={formData.courier_id || 'none'}
               onValueChange={(value) => setFormData({ ...formData, courier_id: value === 'none' ? null : value })}
+              disabled={courierLocked}
             >
-              <SelectTrigger>
+              <SelectTrigger className={courierLocked ? 'opacity-60 cursor-not-allowed' : ''}>
                 <SelectValue placeholder="Избери куриер" />
               </SelectTrigger>
               <SelectContent>
@@ -207,7 +219,9 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Ако въведете пълен URL, куриерът се разпознава автоматично. При номер - изберете ръчно.
+              {courierLocked 
+                ? 'Куриерът е заключен, защото е разпознат от линка. Премахнете линка, за да отключите.'
+                : 'Ако въведете пълен URL, куриерът се разпознава автоматично и се заключва.'}
             </p>
           </div>
 

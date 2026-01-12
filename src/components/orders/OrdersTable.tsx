@@ -10,7 +10,7 @@ import { SourceIcon } from '@/components/icons/SourceIcon';
 import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
 import { PhoneWithFlag } from './PhoneWithFlag';
-import { InfoPopover } from './InfoPopover';
+import { InfoPopover, CopyableText } from './InfoPopover';
 import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { MobileOrderCard } from './MobileOrderCard';
 import { InvoiceDialog } from './InvoiceDialog';
@@ -516,22 +516,26 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       icon="eye"
                       content={
                         <div className="space-y-2">
-                          <p className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Име:</strong> {order.customer_name}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Телефон:</strong> {order.phone}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Truck className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Адрес:</strong> {order.delivery_address || '-'}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Globe className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Имейл:</strong> {order.customer_email || '-'}</span>
-                          </p>
+                          <CopyableText 
+                            label="Име" 
+                            value={order.customer_name}
+                            icon={<User className="w-4 h-4 text-muted-foreground" />}
+                          />
+                          <CopyableText 
+                            label="Телефон" 
+                            value={order.phone}
+                            icon={<Phone className="w-4 h-4 text-muted-foreground" />}
+                          />
+                          <CopyableText 
+                            label="Адрес" 
+                            value={order.delivery_address || '-'}
+                            icon={<Truck className="w-4 h-4 text-muted-foreground" />}
+                          />
+                          <CopyableText 
+                            label="Имейл" 
+                            value={order.customer_email || '-'}
+                            icon={<Globe className="w-4 h-4 text-muted-foreground" />}
+                          />
                         </div>
                       }
                     />
@@ -569,14 +573,16 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       icon="eye"
                       content={
                         <div className="space-y-2">
-                          <p className="flex items-center gap-2">
-                            <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span><strong>Продукт:</strong> {order.product_name}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span><strong>Кат. номер:</strong> {order.catalog_number || '-'}</span>
-                          </p>
+                          <CopyableText 
+                            label="Продукт" 
+                            value={order.product_name}
+                            icon={<Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+                          />
+                          <CopyableText 
+                            label="Кат. номер" 
+                            value={order.catalog_number || '-'}
+                            icon={<Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+                          />
                           <p className="flex items-center gap-2">
                             <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <strong>Количество:</strong> 
@@ -640,10 +646,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         title="Адрес за доставка" 
                         icon="eye"
                         content={
-                          <div className="flex items-start gap-2">
-                            <Truck className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                            <span>{order.delivery_address}</span>
-                          </div>
+                          <CopyableText 
+                            label="Адрес" 
+                            value={order.delivery_address}
+                            icon={<Truck className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />}
+                          />
                         }
                       />
                     )}
