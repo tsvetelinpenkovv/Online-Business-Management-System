@@ -22,6 +22,7 @@ import { ConnectixSettings } from '@/components/settings/ConnectixSettings';
 import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
 import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
+import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -1229,6 +1230,8 @@ const Settings = () => {
           )}
 
           <TabsContent value="branding" className="space-y-6">
+            <GlobalColorPicker />
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

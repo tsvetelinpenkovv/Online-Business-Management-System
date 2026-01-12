@@ -61,6 +61,7 @@ const Index = () => {
   const ordersPerPage = 100;
   const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
   const [nekorektenEnabled, setNekorektenEnabled] = useState(true);
+  const [connectixEnabled, setConnectixEnabled] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(getDefaultVisibleColumns);
   const [companySettings, setCompanySettings] = useState<{
     company_name: string | null;
@@ -132,8 +133,30 @@ const Index = () => {
       }
     };
 
+    const fetchConnectixEnabled = async () => {
+      try {
+        const { data } = await supabase
+          .from('api_settings')
+          .select('setting_value')
+          .eq('setting_key', 'connectix_config')
+          .maybeSingle();
+        
+        if (data?.setting_value) {
+          try {
+            const config = JSON.parse(data.setting_value);
+            setConnectixEnabled(config.is_enabled === true);
+          } catch {
+            setConnectixEnabled(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching connectix enabled:', error);
+      }
+    };
+
     fetchCompanySettings();
     fetchNekorektenEnabled();
+    fetchConnectixEnabled();
   }, []);
 
   // Auto-refresh logic
@@ -570,18 +593,24 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              title="Обнови"
+              onClick={() => {
+                refetch();
+                toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
+              }}
+            >
+              <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" title="Обнови">
-                  <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
+                <Button variant="outline" size="icon" title="Авто-обновяване">
+                  <Clock className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'text-primary' : ''}`} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => refetch()} className="cursor-pointer">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  {getText('orders_refresh_label')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => setAutoRefreshInterval(0)} 
                   className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
@@ -630,18 +659,25 @@ const Index = () => {
 
           {/* Mobile menu (show up to md breakpoint) */}
           <div className="flex md:hidden items-center gap-1">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-8 w-8" 
+              title={getText('orders_refresh_label')}
+              onClick={() => {
+                refetch();
+                toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
+              }}
+            >
+              <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8" title={getText('orders_refresh_label')}>
-                  <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
+                <Button variant="outline" size="icon" className="h-8 w-8" title="Авто-обновяване">
+                  <Clock className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'text-primary' : ''}`} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => refetch()} className="cursor-pointer">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  {getText('orders_refresh_label')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => setAutoRefreshInterval(0)} 
                   className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
@@ -756,6 +792,7 @@ const Index = () => {
           onToggleStatistics={() => setShowStatistics(!showStatistics)}
           showStatistics={showStatistics}
           nekorektenEnabled={nekorektenEnabled}
+          connectixEnabled={connectixEnabled}
         />
 
         {/* Statistics Dashboard */}
