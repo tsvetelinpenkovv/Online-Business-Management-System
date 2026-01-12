@@ -37,6 +37,7 @@ interface OrderFiltersProps {
   onToggleStatistics?: () => void;
   showStatistics?: boolean;
   nekorektenEnabled?: boolean;
+  connectixEnabled?: boolean;
 }
 
 export const OrderFilters: FC<OrderFiltersProps> = ({
@@ -54,6 +55,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   onToggleStatistics,
   showStatistics,
   nekorektenEnabled = false,
+  connectixEnabled = false,
 }) => {
   const navigate = useNavigate();
   const { getText } = useInterfaceTexts();
@@ -233,14 +235,16 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           Склад
         </Button>
 
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/messages')}
-          className="bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
-        >
-          <MessageCircle className="w-4 h-4 mr-2" />
-          Съобщения
-        </Button>
+        {connectixEnabled && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/messages')}
+            className="bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Съобщения
+          </Button>
+        )}
 
         {nekorektenEnabled && (
           <Button 
@@ -429,14 +433,16 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </Button>
 
           {/* Messages button for mobile */}
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/messages')}
-            className="col-span-1 sm:w-auto h-9 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
-          >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Съобщения
-          </Button>
+          {connectixEnabled && (
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/messages')}
+              className="col-span-1 sm:w-auto h-9 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Съобщения
+            </Button>
+          )}
 
           {/* Nekorekten button for mobile */}
           {nekorektenEnabled && (
