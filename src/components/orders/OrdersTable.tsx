@@ -609,10 +609,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap text-center">
                   {order.catalog_number ? (
                     <div className="flex items-center justify-center gap-1">
-                      <span>{order.catalog_number}</span>
+                      <span className="truncate max-w-[80px]" title={order.catalog_number}>
+                        {order.catalog_number.includes(',') 
+                          ? `${order.catalog_number.split(',')[0].trim()}...`
+                          : order.catalog_number
+                        }
+                      </span>
                       <button
                         onClick={() => handleCopyCatalog(order.catalog_number!)}
-                        className="p-0.5 hover:bg-muted rounded transition-colors"
+                        className="p-0.5 hover:bg-muted rounded transition-colors flex-shrink-0"
                         title="Копирай каталожен номер"
                       >
                         {copiedCatalog === order.catalog_number ? (

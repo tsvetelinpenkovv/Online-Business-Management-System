@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ProductAutocomplete } from './ProductAutocomplete';
 import { Plus, Trash2 } from 'lucide-react';
 import {
   Dialog,
@@ -267,11 +268,15 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
               <div key={index} className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30">
                 <div className="col-span-12 sm:col-span-4 space-y-1">
                   <Label className="text-xs text-muted-foreground">Продукт</Label>
-                  <Input
+                  <ProductAutocomplete
                     value={product.product_name}
-                    onChange={(e) => updateProduct(index, 'product_name', e.target.value)}
-                    placeholder="Име на продукта"
-                    required={index === 0}
+                    onChange={(val) => updateProduct(index, 'product_name', val)}
+                    onSelect={(p) => {
+                      updateProduct(index, 'product_name', p.name);
+                      updateProduct(index, 'catalog_number', p.sku);
+                      if (p.sale_price) updateProduct(index, 'price', p.sale_price);
+                    }}
+                    placeholder="Търси продукт..."
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-2 space-y-1">
