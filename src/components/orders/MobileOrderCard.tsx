@@ -25,6 +25,14 @@ import {
 import { format } from 'date-fns';
 import { type ColumnKey } from './ColumnVisibilityToggle';
 
+// Helper function to clean product names from quantity indicators like "(x2)"
+const cleanProductName = (name: string): string => {
+  return name
+    .split(', ')
+    .map(part => part.replace(/\s*\(x\d+\)$/i, '').trim())
+    .join(', ');
+};
+
 interface MobileOrderCardProps {
   order: Order;
   isSelected: boolean;
@@ -309,7 +317,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
 
               <div className="flex-1">
                 {columns.has('product') && (
-                  <span className="text-sm">{order.product_name}</span>
+                  <span className="text-sm">{cleanProductName(order.product_name)}</span>
                 )}
 
                 {columns.has('catalog') && order.catalog_number && (
