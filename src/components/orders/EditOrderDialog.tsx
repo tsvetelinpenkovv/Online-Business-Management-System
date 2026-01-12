@@ -212,11 +212,20 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                   <Label className="text-xs text-muted-foreground">Продукт</Label>
                   <ProductAutocomplete
                     value={product.product_name}
-                    onChange={(val) => updateProduct(index, 'product_name', val)}
+                    onChange={(val) => {
+                      const newProducts = [...products];
+                      newProducts[index] = { ...newProducts[index], product_name: val };
+                      setProducts(newProducts);
+                    }}
                     onSelect={(p) => {
-                      updateProduct(index, 'product_name', p.name);
-                      updateProduct(index, 'catalog_number', p.sku);
-                      if (p.sale_price) updateProduct(index, 'price', p.sale_price);
+                      const newProducts = [...products];
+                      newProducts[index] = { 
+                        ...newProducts[index], 
+                        product_name: p.name,
+                        catalog_number: p.sku,
+                        price: p.sale_price || newProducts[index].price
+                      };
+                      setProducts(newProducts);
                     }}
                     placeholder="Търси продукт..."
                   />
@@ -225,7 +234,11 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                   <Label className="text-xs text-muted-foreground">Каталожен №</Label>
                   <Input
                     value={product.catalog_number}
-                    onChange={(e) => updateProduct(index, 'catalog_number', e.target.value)}
+                    onChange={(e) => {
+                      const newProducts = [...products];
+                      newProducts[index] = { ...newProducts[index], catalog_number: e.target.value };
+                      setProducts(newProducts);
+                    }}
                     placeholder="SKU"
                   />
                 </div>
@@ -235,7 +248,11 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                     type="number"
                     min="1"
                     value={product.quantity}
-                    onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value) || 1)}
+                    onChange={(e) => {
+                      const newProducts = [...products];
+                      newProducts[index] = { ...newProducts[index], quantity: parseInt(e.target.value) || 1 };
+                      setProducts(newProducts);
+                    }}
                   />
                 </div>
                 <div className="col-span-3 sm:col-span-3 space-y-1">
@@ -245,28 +262,26 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                     min="0"
                     step="0.01"
                     value={product.price}
-                    onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const newProducts = [...products];
+                      newProducts[index] = { ...newProducts[index], price: parseFloat(e.target.value) || 0 };
+                      setProducts(newProducts);
+                    }}
                   />
                 </div>
-                {products.length > 1 && (
-                  <div className="col-span-12 sm:col-span-1 flex justify-end sm:justify-center">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => removeProduct(index)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+                <div className="col-span-12 sm:col-span-1 flex justify-end sm:justify-center">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => removeProduct(index)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
-            
-            <div className="flex justify-end text-sm font-medium">
-              Обща цена: {calculateTotalPrice().toFixed(2)} €
-            </div>
           </div>
 
           <div className="col-span-2 space-y-2">
