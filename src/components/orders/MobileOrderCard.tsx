@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
+import { type ColumnKey } from './ColumnVisibilityToggle';
 
 interface MobileOrderCardProps {
   order: Order;
@@ -39,7 +40,25 @@ interface MobileOrderCardProps {
     sentAt?: string;
   } | null;
   nekorektenEnabled?: boolean;
+  visibleColumns?: Set<ColumnKey>;
 }
+
+const defaultVisibleColumns = new Set<ColumnKey>([
+  'id',
+  'source',
+  'date',
+  'customer',
+  'correct',
+  'phone',
+  'price',
+  'product',
+  'catalog',
+  'quantity',
+  'delivery',
+  'tracking',
+  'status',
+  'comment',
+]);
 
 export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   order,
@@ -52,10 +71,12 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onStatusChange,
   messageInfo,
   nekorektenEnabled = true,
+  visibleColumns,
 }) => {
   const { toast } = useToast();
   const [copiedCatalog, setCopiedCatalog] = useState(false);
   const [invoiceData, setInvoiceData] = useState<{ hasInvoice: boolean; viewedAt: string | null }>({ hasInvoice: false, viewedAt: null });
+  const columns = visibleColumns ?? defaultVisibleColumns;
 
   // Check if order has invoice
   useEffect(() => {
@@ -133,7 +154,13 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               onCheckedChange={onSelect}
               aria-label={`Избери поръчка ${order.id}`}
             />
-            <span className="text-xs text-muted-foreground font-medium whitespace-nowrap inline-flex items-center gap-1 min-w-[70px]">№ {order.id}</span>
+
+            {columns.has('id') && (
+              <span className="text-xs text-muted-foreground font-medium whitespace-nowrap inline-flex items-center gap-1 min-w-[70px]">
+                № {order.id}
+              </span>
+            )}
+
             {messageInfo && (
               <MessageStatusIcon 
                 channel={messageInfo.channel} 
@@ -141,6 +168,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 sentAt={messageInfo.sentAt}
               />
             )}
+
             {invoiceData.hasInvoice && (
               <Button 
                 variant="ghost" 
@@ -158,9 +186,16 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               </Button>
             )}
           </div>
+
           <div className="flex items-center gap-2">
-            <SourceIcon source={order.source} className="w-5 h-5" />
-            {nekorektenEnabled && <CorrectStatusIcon isCorrect={order.is_correct} />}
+            {columns.has('source') && (
+              <SourceIcon source={order.source} className="w-5 h-5" />
+            )}
+
+            {nekorektenEnabled && columns.has('correct') && (
+              <CorrectStatusIcon isCorrect={order.is_correct} />
+            )}
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -214,73 +249,105 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         </div>
 
         {/* Date and Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="w-4 h-4" />
-            <div className="flex flex-col">
-              <span>{format(new Date(order.created_at), 'dd.MM.yyyy')}</span>
-              <span className="text-xs opacity-70">{format(new Date(order.created_at), 'HH:mm')}</span>
+        {(columns.has('date') || columns.has('status')) && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              {columns.has('date') && (
+                <>
+                  <Calendar className="w-4 h-4" />
+                  <div className="flex flex-col">
+                    <span>{format(new Date(order.created_at), 'dd.MM.yyyy')}</span>
+                    <span className="text-xs opacity-70">{format(new Date(order.created_at), 'HH:mm')}</span>
+                  </div>
+                </>
+              )}
             </div>
+
+            {columns.has('status') && (
+              <StatusBadge 
+                status={order.status} 
+                editable={!!onStatusChange}
+                onStatusChange={(newStatus) => onStatusChange?.(order.id, newStatus)}
+              />
+            )}
           </div>
-          <StatusBadge 
-            status={order.status} 
-            editable={!!onStatusChange}
-            onStatusChange={(newStatus) => onStatusChange?.(order.id, newStatus)}
-          />
-        </div>
+        )}
 
         {/* Customer info */}
-        <div className="space-y-2 py-2 border-t border-b">
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <span className="font-medium">{order.customer_name}</span>
+        {(columns.has('customer') || columns.has('phone')) && (
+          <div className="space-y-2 py-2 border-t border-b">
+            {columns.has('customer') && (
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <span className="font-medium">{order.customer_name}</span>
+              </div>
+            )}
+
+            {columns.has('phone') && (
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <PhoneWithFlag phone={order.phone} />
+              </div>
+            )}
+
+            {columns.has('customer') && order.customer_email && (
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-sm text-muted-foreground">{order.customer_email}</span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <PhoneWithFlag phone={order.phone} />
-          </div>
-          {order.customer_email && (
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm text-muted-foreground">{order.customer_email}</span>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Product info */}
-        <div className="space-y-2">
-          <div className="flex items-start gap-2">
-            <Package className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
-            <div className="flex-1">
-              <span className="text-sm">{order.product_name}</span>
-              {order.catalog_number && (
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground font-mono">{order.catalog_number}</span>
-                  <button
-                    onClick={handleCopyCatalog}
-                    className="p-0.5 hover:bg-muted rounded transition-colors"
-                    title="Копирай каталожен номер"
-                  >
-                    {copiedCatalog ? (
-                      <Check className="w-3 h-3 text-success" />
-                    ) : (
-                      <Copy className="w-3 h-3 text-muted-foreground hover:text-primary" />
-                    )}
-                  </button>
+        {(columns.has('product') || columns.has('catalog') || columns.has('quantity') || columns.has('price')) && (
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              {(columns.has('product') || columns.has('catalog')) && (
+                <Package className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+              )}
+
+              <div className="flex-1">
+                {columns.has('product') && (
+                  <span className="text-sm">{order.product_name}</span>
+                )}
+
+                {columns.has('catalog') && order.catalog_number && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground font-mono">{order.catalog_number}</span>
+                    <button
+                      onClick={handleCopyCatalog}
+                      className="p-0.5 hover:bg-muted rounded transition-colors"
+                      title="Копирай каталожен номер"
+                    >
+                      {copiedCatalog ? (
+                        <Check className="w-3 h-3 text-success" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-muted-foreground hover:text-primary" />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {(columns.has('quantity') || columns.has('price')) && (
+                <div className="flex items-center gap-2">
+                  {columns.has('quantity') && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${order.quantity > 1 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-muted text-muted-foreground'} font-semibold`}>
+                      {order.quantity} бр.
+                    </span>
+                  )}
+                  {columns.has('price') && (
+                    <span className="font-semibold text-green-600 dark:text-green-400">{order.total_price.toFixed(2)} €</span>
+                  )}
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs px-2 py-0.5 rounded-full ${order.quantity > 1 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-muted text-muted-foreground'} font-semibold`}>
-                {order.quantity} бр.
-              </span>
-              <span className="font-semibold text-green-600 dark:text-green-400">{order.total_price.toFixed(2)} €</span>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Delivery info */}
-        {order.delivery_address && (
+        {columns.has('delivery') && order.delivery_address && (
           <div className="flex items-start gap-2 text-sm">
             <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
             <span className="text-muted-foreground">{order.delivery_address}</span>
@@ -288,7 +355,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         )}
 
         {/* Courier info */}
-        {(order.courier_tracking_url || order.courier_id) && (
+        {columns.has('tracking') && (order.courier_tracking_url || order.courier_id) && (
           <div className="flex items-center gap-2">
             <CourierLogo 
               trackingUrl={order.courier_tracking_url} 
@@ -312,7 +379,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         )}
 
         {/* Comment */}
-        {order.comment && (
+        {columns.has('comment') && order.comment && (
           <div className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
             <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
             <span className="text-sm text-muted-foreground">{order.comment}</span>
