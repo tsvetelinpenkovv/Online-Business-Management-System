@@ -126,6 +126,11 @@
     max-width: 100vw;
   }
 
+  /* Prevent layout shift from scrollbar appearing/disappearing */
+  html {
+    overflow-y: scroll;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
