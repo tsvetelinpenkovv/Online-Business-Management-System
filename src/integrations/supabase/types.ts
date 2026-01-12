@@ -482,6 +482,50 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          catalog_number: string | null
+          created_at: string
+          id: string
+          order_id: number
+          product_name: string
+          quantity: number
+          total_price: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          catalog_number?: string | null
+          created_at?: string
+          id?: string
+          order_id: number
+          product_name: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          catalog_number?: string | null
+          created_at?: string
+          id?: string
+          order_id?: number
+          product_name?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_statuses: {
         Row: {
           color: string
