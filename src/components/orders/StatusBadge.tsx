@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { 
   Clock, 
   Loader2, 
@@ -13,9 +13,11 @@ import {
   Undo2, 
   XCircle, 
   Ban,
-  ChevronDown
+  ChevronDown,
+  Check
 } from 'lucide-react';
-import { OrderStatus, ORDER_STATUSES } from '@/types/order';
+import { supabase } from '@/integrations/supabase/client';
+import { useOrderStatuses, OrderStatusConfig } from '@/hooks/useOrderStatuses';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,90 +25,77 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface StatusBadgeProps {
-  status: OrderStatus;
-  editable?: boolean;
-  onStatusChange?: (newStatus: OrderStatus) => void;
-}
-
-const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string; isLeasing?: boolean }> = {
-  'Нова': {
-    icon: Clock,
-    className: 'status-badge status-new',
-  },
-  'В обработка': {
-    icon: Loader2,
-    className: 'status-badge status-processing',
-  },
-  'Неуспешна връзка': {
-    icon: PhoneOff,
-    className: 'status-badge status-no-contact',
-  },
-  'Потвърдена': {
-    icon: CheckCircle2,
-    className: 'status-badge status-confirmed',
-  },
-  'Платена с карта': {
-    icon: CreditCard,
-    className: 'status-badge status-paid-card',
-  },
-  'На лизинг през TBI': {
-    icon: Building2,
-    className: 'status-badge status-leasing-tbi',
-    isLeasing: true,
-  },
-  'На лизинг през BNP': {
-    icon: Building2,
-    className: 'status-badge status-leasing-bnp',
-    isLeasing: true,
-  },
-  'На лизинг през UniCredit': {
-    icon: Building2,
-    className: 'status-badge status-leasing-unicredit',
-    isLeasing: true,
-  },
-  'Изпратена': {
-    icon: Truck,
-    className: 'status-badge status-sent',
-  },
-  'Неуспешна доставка': {
-    icon: PackageX,
-    className: 'status-badge status-failed-delivery',
-  },
-  'Доставена': {
-    icon: Package,
-    className: 'status-badge status-delivered',
-  },
-  'Завършена': {
-    icon: CircleCheck,
-    className: 'status-badge status-completed',
-  },
-  'Върната': {
-    icon: Undo2,
-    className: 'status-badge status-returned',
-  },
-  'Отказана': {
-    icon: XCircle,
-    className: 'status-badge status-cancelled',
-  },
-  'Анулирана': {
-    icon: Ban,
-    className: 'status-badge status-voided',
-  },
+const ICON_MAP: Record<string, typeof Clock> = {
+  Clock, Loader2, PhoneOff, CheckCircle2, CreditCard, Building2, 
+  Truck, PackageX, Package, CircleCheck, Undo2, XCircle, Ban
 };
 
+const COLOR_MAP: Record<string, { bgClass: string; textClass: string }> = {
+  primary: { bgClass: 'bg-primary/10', textClass: 'text-primary' },
+  info: { bgClass: 'bg-info/10', textClass: 'text-info' },
+  success: { bgClass: 'bg-success/10', textClass: 'text-success' },
+  warning: { bgClass: 'bg-warning/10', textClass: 'text-warning' },
+  destructive: { bgClass: 'bg-destructive/10', textClass: 'text-destructive' },
+  purple: { bgClass: 'bg-purple/10', textClass: 'text-purple' },
+  teal: { bgClass: 'bg-teal/10', textClass: 'text-teal' },
+  muted: { bgClass: 'bg-muted', textClass: 'text-muted-foreground' },
+};
+
+interface StatusBadgeProps {
+  status: string;
+  editable?: boolean;
+  onStatusChange?: (newStatus: string) => void;
+}
+
 export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, onStatusChange }) => {
-  const config = statusConfig[status] || statusConfig['Нова'];
-  const Icon = config.icon;
+  const { statuses } = useOrderStatuses();
+  const [leasingStatuses, setLeasingStatuses] = useState<string[]>([]);
+
+  // Load leasing statuses from settings
+  useEffect(() => {
+    const loadLeasingStatuses = async () => {
+      const { data } = await supabase
+        .from('api_settings')
+        .select('setting_value')
+        .eq('setting_key', 'leasing_statuses')
+        .maybeSingle();
+      
+      if (data?.setting_value) {
+        try {
+          setLeasingStatuses(JSON.parse(data.setting_value));
+        } catch {
+          setLeasingStatuses([]);
+        }
+      } else {
+        // Default leasing statuses
+        setLeasingStatuses(['На лизинг през TBI', 'На лизинг през BNP', 'На лизинг през UniCredit']);
+      }
+    };
+    loadLeasingStatuses();
+  }, []);
+
+  // Find status config from database or use default
+  const statusConfig = statuses.find(s => s.name === status);
+  const iconName = statusConfig?.icon || 'Clock';
+  const colorName = statusConfig?.color || 'primary';
+  
+  const Icon = ICON_MAP[iconName] || Clock;
+  const colorClasses = COLOR_MAP[colorName] || COLOR_MAP.primary;
+  const isLeasing = leasingStatuses.includes(status);
 
   const badge = (
-    <span className={`${config.className} ${editable ? 'cursor-pointer' : ''}`} title={`Статус: ${status}`}>
-      <Icon className="w-3 h-3" />
-      {status}
-      {config.isLeasing && (
-        <span className="ml-1 inline-flex items-center justify-center w-3 h-3 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold">✓</span>
+    <span 
+      className={`status-badge ${colorClasses.bgClass} ${colorClasses.textClass} ${editable ? 'cursor-pointer' : ''}`} 
+      title={`Статус: ${status}`}
+    >
+      <Icon className="w-3 h-3 flex-shrink-0" />
+      <span className="break-words">{status}</span>
+      {isLeasing && (
+        <span className="ml-1 inline-flex items-center justify-center min-w-[14px] h-[14px] rounded-full bg-destructive text-destructive-foreground flex-shrink-0">
+          <Check className="w-2.5 h-2.5" strokeWidth={3} />
+        </span>
       )}
-      {editable && <ChevronDown className="w-3 h-3 ml-1" />}
+      {editable && <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />}
     </span>
   );
 
@@ -120,18 +109,25 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
         {badge}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto bg-popover z-50 p-1">
-        {ORDER_STATUSES.map((s) => {
-          const sConfig = statusConfig[s];
-          const SIcon = sConfig.icon;
+        {statuses.map((s) => {
+          const SIcon = ICON_MAP[s.icon] || Clock;
+          const sColorClasses = COLOR_MAP[s.color] || COLOR_MAP.primary;
+          const sIsLeasing = leasingStatuses.includes(s.name);
+          
           return (
             <DropdownMenuItem
-              key={s}
-              onClick={() => onStatusChange(s)}
-              className={`p-1.5 rounded-md cursor-pointer ${s === status ? 'bg-muted' : 'hover:bg-muted/50'}`}
+              key={s.id}
+              onClick={() => onStatusChange(s.name)}
+              className={`p-1.5 rounded-md cursor-pointer ${s.name === status ? 'bg-muted' : 'hover:bg-muted/50'}`}
             >
-              <span className={sConfig.className}>
-                <SIcon className="w-3 h-3" />
-                {s}
+              <span className={`status-badge ${sColorClasses.bgClass} ${sColorClasses.textClass}`}>
+                <SIcon className="w-3 h-3 flex-shrink-0" />
+                <span>{s.name}</span>
+                {sIsLeasing && (
+                  <span className="ml-1 inline-flex items-center justify-center min-w-[14px] h-[14px] rounded-full bg-destructive text-destructive-foreground flex-shrink-0">
+                    <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                  </span>
+                )}
               </span>
             </DropdownMenuItem>
           );

@@ -1,8 +1,8 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { 
   User, Phone, Euro, Package, Truck, MessageCircle, 
   MoreHorizontal, Pencil, Trash2, Printer, Calendar,
-  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check
+  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check, FileText
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Order, OrderStatus } from '@/types/order';
@@ -15,6 +15,7 @@ import { MessageStatusIcon } from './MessageStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,7 @@ interface MobileOrderCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onPrint: () => void;
-  onStatusChange?: (orderId: number, newStatus: OrderStatus) => void;
+  onStatusChange?: (orderId: number, newStatus: string) => void;
   messageInfo?: {
     channel: 'viber' | 'sms';
     status: 'sent' | 'delivered' | 'read' | 'failed';
@@ -53,6 +54,20 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   const { toast } = useToast();
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedCatalog, setCopiedCatalog] = useState(false);
+  const [hasInvoice, setHasInvoice] = useState(false);
+
+  // Check if order has invoice
+  useEffect(() => {
+    const checkInvoice = async () => {
+      const { data } = await supabase
+        .from('invoices')
+        .select('id')
+        .eq('order_id', order.id)
+        .maybeSingle();
+      setHasInvoice(!!data);
+    };
+    checkInvoice();
+  }, [order.id]);
 
   const handleCopyPhone = () => {
     navigator.clipboard.writeText(order.phone);
@@ -128,6 +143,11 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 status={messageInfo.status} 
                 sentAt={messageInfo.sentAt}
               />
+            )}
+            {hasInvoice && (
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-success" title="Има издадена фактура">
+                <FileText className="w-4 h-4" />
+              </Button>
             )}
           </div>
           <div className="flex items-center gap-2">

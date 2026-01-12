@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { 
   Clock, Loader2, PhoneOff, CheckCircle2, CreditCard, Building2, 
   Truck, PackageX, Package, CircleCheck, Undo2, XCircle, Ban,
-  Plus, Trash2, Pencil, Save, X, Warehouse, GripVertical
+  Plus, Trash2, Pencil, Save, X, Warehouse, GripVertical, Check
 } from 'lucide-react';
 import { useOrderStatuses, OrderStatusConfig } from '@/hooks/useOrderStatuses';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -205,6 +206,10 @@ export const StatusSettings: FC = () => {
   // Stock deduction status setting
   const [stockDeductionStatus, setStockDeductionStatus] = useState<string>('Изпратена');
   const [savingStockStatus, setSavingStockStatus] = useState(false);
+  
+  // Leasing statuses setting
+  const [leasingStatuses, setLeasingStatuses] = useState<string[]>(['На лизинг през TBI', 'На лизинг през BNP', 'На лизинг през UniCredit']);
+  const [savingLeasingStatuses, setSavingLeasingStatuses] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -214,19 +219,25 @@ export const StatusSettings: FC = () => {
   );
 
   useEffect(() => {
-    // Load saved stock deduction status
-    const loadStockDeductionStatus = async () => {
-      const { data } = await supabase
-        .from('api_settings')
-        .select('setting_value')
-        .eq('setting_key', 'stock_deduction_status')
-        .single();
+    // Load saved settings
+    const loadSettings = async () => {
+      const [stockData, leasingData] = await Promise.all([
+        supabase.from('api_settings').select('setting_value').eq('setting_key', 'stock_deduction_status').maybeSingle(),
+        supabase.from('api_settings').select('setting_value').eq('setting_key', 'leasing_statuses').maybeSingle(),
+      ]);
       
-      if (data?.setting_value) {
-        setStockDeductionStatus(data.setting_value);
+      if (stockData.data?.setting_value) {
+        setStockDeductionStatus(stockData.data.setting_value);
+      }
+      if (leasingData.data?.setting_value) {
+        try {
+          setLeasingStatuses(JSON.parse(leasingData.data.setting_value));
+        } catch {
+          // Keep default
+        }
       }
     };
-    loadStockDeductionStatus();
+    loadSettings();
   }, []);
 
   const saveStockDeductionStatus = async (status: string) => {
@@ -253,6 +264,39 @@ export const StatusSettings: FC = () => {
       });
     } finally {
       setSavingStockStatus(false);
+    }
+  };
+
+  const toggleLeasingStatus = async (statusName: string) => {
+    setSavingLeasingStatuses(true);
+    try {
+      const newLeasingStatuses = leasingStatuses.includes(statusName)
+        ? leasingStatuses.filter(s => s !== statusName)
+        : [...leasingStatuses, statusName];
+      
+      await supabase
+        .from('api_settings')
+        .upsert({
+          setting_key: 'leasing_statuses',
+          setting_value: JSON.stringify(newLeasingStatuses),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'setting_key' });
+      
+      setLeasingStatuses(newLeasingStatuses);
+      toast({
+        title: 'Запазено',
+        description: newLeasingStatuses.includes(statusName) 
+          ? `Статусът "${statusName}" е маркиран като лизингов` 
+          : `Статусът "${statusName}" вече не е лизингов`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Грешка',
+        description: 'Неуспешно запазване на настройката',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingLeasingStatuses(false);
     }
   };
 
@@ -356,6 +400,56 @@ export const StatusSettings: FC = () => {
               количеството ще бъде автоматично изписано от склада.
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Leasing Statuses Setting */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            Лизингови статуси
+          </CardTitle>
+          <CardDescription>
+            Изберете кои статуси да показват червено тикче (индикатор за лизинг)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {statuses.map((status) => {
+              const colorClasses = getColorClasses(status.color);
+              const Icon = getIconComponent(status.icon);
+              const isLeasing = leasingStatuses.includes(status.name);
+              
+              return (
+                <div key={status.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <Checkbox
+                    id={`leasing-${status.id}`}
+                    checked={isLeasing}
+                    onCheckedChange={() => toggleLeasingStatus(status.name)}
+                    disabled={savingLeasingStatuses}
+                  />
+                  <label 
+                    htmlFor={`leasing-${status.id}`} 
+                    className="flex items-center gap-2 cursor-pointer flex-1"
+                  >
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${colorClasses.bgClass} ${colorClasses.textClass}`}>
+                      <Icon className="w-3 h-3 flex-shrink-0" />
+                      {status.name}
+                      {isLeasing && (
+                        <span className="ml-1 inline-flex items-center justify-center min-w-[14px] h-[14px] rounded-full bg-destructive text-destructive-foreground flex-shrink-0">
+                          <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Статусите с отметка ще показват червено тикче до името си в таблицата с поръчки.
+          </p>
         </CardContent>
       </Card>
 
