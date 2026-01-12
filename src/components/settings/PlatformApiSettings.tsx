@@ -318,7 +318,7 @@ export const PlatformApiSettings: FC = () => {
                         <Input
                           value={webhookUrl}
                           readOnly
-                          className="font-mono text-xs bg-muted"
+                          className="font-mono text-xs bg-muted text-muted-foreground"
                         />
                         <Button
                           variant="outline"

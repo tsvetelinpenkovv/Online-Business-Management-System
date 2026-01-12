@@ -569,7 +569,41 @@ const Settings = () => {
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl space-y-4 sm:space-y-6">
         <Tabs defaultValue={initialTab} className="w-full">
           <div className="relative mb-4 sm:mb-6">
-            <div 
+            {/* Mobile scroll gradients */}
+            {isMobile && canScrollLeft && (
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent" />
+            )}
+            {isMobile && canScrollRight && (
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent" />
+            )}
+
+            {/* Mobile scroll buttons */}
+            {isMobile && canScrollLeft && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => scrollTabs('left')}
+                className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm"
+                aria-label="Превърти табовете наляво"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+            {isMobile && canScrollRight && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => scrollTabs('right')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm"
+                aria-label="Превърти табовете надясно"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+
+            <div
               ref={tabsListRef}
               className="overflow-x-auto scrollbar-hide"
               onScroll={checkScrollButtons}

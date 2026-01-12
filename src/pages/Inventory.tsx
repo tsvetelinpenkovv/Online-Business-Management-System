@@ -248,11 +248,45 @@ export default function Inventory() {
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          {/* Scrollable tabs with fade indicators */}
+          {/* Scrollable tabs with arrows (mobile) */}
           <div className="relative">
-            <div 
+            {/* Mobile scroll gradients */}
+            {showLeftArrow && (
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent sm:hidden" />
+            )}
+            {showRightArrow && (
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent sm:hidden" />
+            )}
+
+            {/* Mobile scroll buttons */}
+            {showLeftArrow && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => scrollTabs('left')}
+                className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm sm:hidden"
+                aria-label="Превърти табовете наляво"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+            {showRightArrow && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => scrollTabs('right')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm sm:hidden"
+                aria-label="Превърти табовете надясно"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+
+            <div
               ref={tabsContainerRef}
-              className="overflow-x-auto -mx-3 lg:mx-0 px-3 lg:px-0" 
+              className="overflow-x-auto -mx-3 lg:mx-0 px-3 lg:px-0"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               onScroll={checkScrollPosition}
             >
@@ -285,15 +319,15 @@ export default function Inventory() {
                   <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Отчети</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="forecast" 
+                <TabsTrigger
+                  value="forecast"
                   className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
                 >
                   <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Прогнози</span>
                   {criticalStockInfo.totalCritical > 0 && (
-                    <Badge 
-                      variant="destructive" 
+                    <Badge
+                      variant="destructive"
                       className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1 flex items-center justify-center text-[10px] font-bold animate-pulse"
                     >
                       {criticalStockInfo.totalCritical}
