@@ -1,6 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Order } from '@/types/order';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Package, 
   Clock, 
@@ -12,7 +15,10 @@ import {
   Euro,
   FileText,
   Receipt,
-  CalendarDays
+  CalendarDays,
+  Download,
+  Calendar as CalendarIcon,
+  X
 } from 'lucide-react';
 import {
   BarChart,
@@ -27,11 +33,29 @@ import {
   Legend
 } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfYear, subMonths } from 'date-fns';
 import { bg } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 
 interface OrderStatisticsProps {
   orders: Order[];
+}
+
+interface Invoice {
+  id: string;
+  invoice_number: number;
+  issue_date: string;
+  created_at: string;
+  buyer_name: string;
+  buyer_address: string | null;
+  buyer_eik: string | null;
+  buyer_vat_number: string | null;
+  product_description: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  vat_amount: number | null;
+  total_amount: number;
 }
 
 interface InvoiceStats {
@@ -45,6 +69,7 @@ interface InvoiceStats {
   } | null;
   todayCount: number;
   monthCount: number;
+  filteredInvoices: Invoice[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -59,23 +84,22 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
+  const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
+  const [invoiceDateFrom, setInvoiceDateFrom] = useState<Date | undefined>();
+  const [invoiceDateTo, setInvoiceDateTo] = useState<Date | undefined>();
   const [invoiceStats, setInvoiceStats] = useState<InvoiceStats>({
     totalCount: 0,
     totalAmount: 0,
     lastInvoice: null,
     todayCount: 0,
-    monthCount: 0
+    monthCount: 0,
+    filteredInvoices: []
   });
 
-  // Fetch invoice statistics
+  // Fetch all invoices
   useEffect(() => {
-    const fetchInvoiceStats = async () => {
+    const fetchAllInvoices = async () => {
       try {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        // Get all invoices
         const { data: invoices, error } = await supabase
           .from('invoices')
           .select('*')
@@ -83,33 +107,54 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
 
         if (error) throw error;
 
-        if (invoices && invoices.length > 0) {
-          const totalAmount = invoices.reduce((sum, inv) => sum + Number(inv.total_amount), 0);
-          const todayCount = invoices.filter(inv => new Date(inv.created_at) >= today).length;
-          const monthCount = invoices.filter(inv => new Date(inv.created_at) >= monthStart).length;
-          
-          const lastInv = invoices[0];
-          
-          setInvoiceStats({
-            totalCount: invoices.length,
-            totalAmount,
-            lastInvoice: {
-              number: lastInv.invoice_number,
-              date: lastInv.issue_date,
-              amount: Number(lastInv.total_amount),
-              buyerName: lastInv.buyer_name
-            },
-            todayCount,
-            monthCount
-          });
+        if (invoices) {
+          setAllInvoices(invoices as Invoice[]);
         }
       } catch (err) {
-        console.error('Error fetching invoice stats:', err);
+        console.error('Error fetching invoices:', err);
       }
     };
 
-    fetchInvoiceStats();
+    fetchAllInvoices();
   }, []);
+
+  // Calculate stats based on filters
+  useEffect(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Apply date filters
+    let filtered = allInvoices;
+    if (invoiceDateFrom) {
+      filtered = filtered.filter(inv => new Date(inv.issue_date) >= invoiceDateFrom);
+    }
+    if (invoiceDateTo) {
+      const endDate = new Date(invoiceDateTo);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(inv => new Date(inv.issue_date) <= endDate);
+    }
+
+    const totalAmount = filtered.reduce((sum, inv) => sum + Number(inv.total_amount), 0);
+    const todayCount = allInvoices.filter(inv => new Date(inv.created_at) >= today).length;
+    const monthCount = allInvoices.filter(inv => new Date(inv.created_at) >= monthStart).length;
+    
+    const lastInv = allInvoices[0];
+    
+    setInvoiceStats({
+      totalCount: filtered.length,
+      totalAmount,
+      lastInvoice: lastInv ? {
+        number: lastInv.invoice_number,
+        date: lastInv.issue_date,
+        amount: Number(lastInv.total_amount),
+        buyerName: lastInv.buyer_name
+      } : null,
+      todayCount,
+      monthCount,
+      filteredInvoices: filtered
+    });
+  }, [allInvoices, invoiceDateFrom, invoiceDateTo]);
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -197,6 +242,68 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
       return `${Math.round(hours)}ч`;
     }
     return `${Math.round(hours / 24)}д`;
+  };
+
+  // Export invoices to CSV
+  const exportInvoicesToCSV = (invoices: Invoice[]) => {
+    if (invoices.length === 0) {
+      return;
+    }
+
+    const headers = ['№ Фактура', 'Дата', 'Купувач', 'ЕИК', 'ДДС №', 'Адрес', 'Описание', 'Количество', 'Ед. цена', 'Стойност', 'ДДС', 'Общо'];
+    const rows = invoices.map(inv => [
+      inv.invoice_number,
+      format(new Date(inv.issue_date), 'dd.MM.yyyy'),
+      inv.buyer_name,
+      inv.buyer_eik || '',
+      inv.buyer_vat_number || '',
+      inv.buyer_address || '',
+      inv.product_description,
+      inv.quantity,
+      inv.unit_price.toFixed(2),
+      inv.subtotal.toFixed(2),
+      (inv.vat_amount || 0).toFixed(2),
+      inv.total_amount.toFixed(2)
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `invoices_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export invoices to Excel
+  const exportInvoicesToExcel = (invoices: Invoice[]) => {
+    if (invoices.length === 0) {
+      return;
+    }
+
+    const data = invoices.map(inv => ({
+      '№ Фактура': inv.invoice_number,
+      'Дата': format(new Date(inv.issue_date), 'dd.MM.yyyy'),
+      'Купувач': inv.buyer_name,
+      'ЕИК': inv.buyer_eik || '',
+      'ДДС №': inv.buyer_vat_number || '',
+      'Адрес': inv.buyer_address || '',
+      'Описание': inv.product_description,
+      'Количество': inv.quantity,
+      'Ед. цена': inv.unit_price,
+      'Стойност': inv.subtotal,
+      'ДДС': inv.vat_amount || 0,
+      'Общо': inv.total_amount
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Фактури');
+    XLSX.writeFile(wb, `invoices_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
   };
 
   return (
@@ -346,71 +453,191 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
         </Card>
       </div>
 
-      {/* Invoice Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 border-indigo-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground font-medium">Общо фактури</p>
-                <p className="text-2xl font-bold text-indigo-600">{invoiceStats.totalCount}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-indigo-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Invoice Statistics with Filters */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Статистика на фактурите
+            </CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Date From Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 h-8">
+                    <CalendarIcon className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">От:</span>
+                    {invoiceDateFrom ? format(invoiceDateFrom, 'dd.MM.yy') : 'Начало'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={invoiceDateFrom}
+                    onSelect={setInvoiceDateFrom}
+                    initialFocus
+                    locale={bg}
+                  />
+                </PopoverContent>
+              </Popover>
 
-        <Card className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border-teal-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground font-medium">Обща сума фактури</p>
-                <p className="text-2xl font-bold text-teal-600">{formatCurrency(invoiceStats.totalAmount)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-teal-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Date To Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 h-8">
+                    <CalendarIcon className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">До:</span>
+                    {invoiceDateTo ? format(invoiceDateTo, 'dd.MM.yy') : 'Край'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={invoiceDateTo}
+                    onSelect={setInvoiceDateTo}
+                    initialFocus
+                    locale={bg}
+                  />
+                </PopoverContent>
+              </Popover>
 
-        <Card className="bg-gradient-to-br from-rose-500/10 to-rose-600/5 border-rose-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground font-medium">Фактури този месец</p>
-                <p className="text-2xl font-bold text-rose-600">{invoiceStats.monthCount}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center">
-                <CalendarDays className="w-5 h-5 text-rose-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Quick filters */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8"
+                onClick={() => {
+                  const now = new Date();
+                  setInvoiceDateFrom(startOfMonth(now));
+                  setInvoiceDateTo(endOfMonth(now));
+                }}
+              >
+                Този месец
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8"
+                onClick={() => {
+                  const now = new Date();
+                  setInvoiceDateFrom(startOfMonth(subMonths(now, 1)));
+                  setInvoiceDateTo(endOfMonth(subMonths(now, 1)));
+                }}
+              >
+                Миналия месец
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8"
+                onClick={() => {
+                  const now = new Date();
+                  setInvoiceDateFrom(startOfYear(now));
+                  setInvoiceDateTo(undefined);
+                }}
+              >
+                Тази година
+              </Button>
 
-        <Card className="bg-gradient-to-br from-violet-500/10 to-violet-600/5 border-violet-500/20">
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-muted-foreground font-medium">Последна фактура</p>
-              {invoiceStats.lastInvoice ? (
-                <>
-                  <p className="text-lg font-bold text-violet-600">№ {invoiceStats.lastInvoice.number}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(invoiceStats.lastInvoice.date), 'dd.MM.yyyy')} • {formatCurrency(invoiceStats.lastInvoice.amount)}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate" title={invoiceStats.lastInvoice.buyerName}>
-                    {invoiceStats.lastInvoice.buyerName}
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">Няма издадени</p>
+              {/* Clear filters */}
+              {(invoiceDateFrom || invoiceDateTo) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-destructive"
+                  onClick={() => {
+                    setInvoiceDateFrom(undefined);
+                    setInvoiceDateTo(undefined);
+                  }}
+                >
+                  <X className="w-3.5 h-3.5 mr-1" />
+                  Изчисти
+                </Button>
               )}
+
+              {/* Export buttons */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-8"
+                onClick={() => exportInvoicesToCSV(invoiceStats.filteredInvoices)}
+              >
+                <Download className="w-3.5 h-3.5" />
+                CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-8"
+                onClick={() => exportInvoicesToExcel(invoiceStats.filteredInvoices)}
+              >
+                <Download className="w-3.5 h-3.5" />
+                Excel
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 border border-indigo-500/20 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {(invoiceDateFrom || invoiceDateTo) ? 'Филтрирани' : 'Общо'} фактури
+                  </p>
+                  <p className="text-xl font-bold text-indigo-600">{invoiceStats.totalCount}</p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-indigo-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border border-teal-500/20 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {(invoiceDateFrom || invoiceDateTo) ? 'Сума (филтър)' : 'Обща сума'}
+                  </p>
+                  <p className="text-xl font-bold text-teal-600">{formatCurrency(invoiceStats.totalAmount)}</p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
+                  <Receipt className="w-4 h-4 text-teal-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-rose-500/10 to-rose-600/5 border border-rose-500/20 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Този месец</p>
+                  <p className="text-xl font-bold text-rose-600">{invoiceStats.monthCount}</p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center">
+                  <CalendarDays className="w-4 h-4 text-rose-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-500/20 rounded-lg p-3">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-xs text-muted-foreground font-medium">Последна фактура</p>
+                {invoiceStats.lastInvoice ? (
+                  <>
+                    <p className="text-lg font-bold text-violet-600">№ {invoiceStats.lastInvoice.number}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {format(new Date(invoiceStats.lastInvoice.date), 'dd.MM.yyyy')} • {formatCurrency(invoiceStats.lastInvoice.amount)}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Няма издадени</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
