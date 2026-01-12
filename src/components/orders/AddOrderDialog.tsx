@@ -258,7 +258,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           <div className="md:col-span-2 space-y-3">
             <div className="flex items-center justify-between">
               <Label>Продукти *</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addProduct}>
+              <Button type="button" variant="default" size="sm" onClick={addProduct}>
                 <Plus className="w-4 h-4 mr-1" />
                 Добави продукт
               </Button>
@@ -306,6 +306,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                     step="0.01"
                     value={product.price}
                     onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                    className="text-success"
                   />
                 </div>
                 {products.length > 1 && (
