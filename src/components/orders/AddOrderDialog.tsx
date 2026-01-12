@@ -357,6 +357,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting || !formData.first_name || !formData.phone || !products[0]?.product_name}
+            className="bg-primary hover:bg-primary/90"
           >
             {isSubmitting ? 'Създаване...' : 'Създай поръчка'}
           </Button>

@@ -5,6 +5,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
+import { useDebounce } from '@/hooks/useDebounce';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
@@ -45,6 +46,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [statusFilter, setStatusFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -145,12 +147,12 @@ const Index = () => {
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      const matchesSearch = searchTerm === '' || 
-        order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.phone.includes(searchTerm) ||
-        order.id.toString().includes(searchTerm) ||
-        order.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (order.catalog_number && order.catalog_number.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSearch = debouncedSearchTerm === '' || 
+        order.customer_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        order.phone.includes(debouncedSearchTerm) ||
+        order.id.toString().includes(debouncedSearchTerm) ||
+        order.code.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        (order.catalog_number && order.catalog_number.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
 
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       const matchesSource = sourceFilter === 'all' || order.source === sourceFilter;
@@ -161,7 +163,7 @@ const Index = () => {
 
       return matchesSearch && matchesStatus && matchesSource && matchesDateFrom && matchesDateTo;
     });
-  }, [orders, searchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
+  }, [orders, debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
 
   // Pagination
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
@@ -173,7 +175,7 @@ const Index = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
+  }, [debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
 
   const clearFilters = () => {
     setSearchTerm('');
