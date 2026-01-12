@@ -612,11 +612,6 @@ const Index = () => {
             <Button variant="outline" size="icon" onClick={() => navigate('/messages')} title="Съобщения">
               <MessageCircle className="w-4 h-4" />
             </Button>
-            {nekorektenEnabled && (
-              <Button variant="outline" size="icon" onClick={() => navigate('/nekorekten')} title="Nekorekten статистика">
-                <ShieldAlert className="w-4 h-4" />
-              </Button>
-            )}
             <Button variant="outline" size="icon" onClick={() => navigate('/inventory')} title="Склад">
               <Boxes className="w-4 h-4" />
             </Button>
@@ -694,12 +689,6 @@ const Index = () => {
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Съобщения
                 </DropdownMenuItem>
-                {nekorektenEnabled && (
-                  <DropdownMenuItem onClick={() => navigate('/nekorekten')} className="cursor-pointer">
-                    <ShieldAlert className="w-4 h-4 mr-2" />
-                    Nekorekten
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem onClick={() => navigate('/inventory')} className="cursor-pointer">
                   <Boxes className="w-4 h-4 mr-2" />
                   Склад
@@ -734,6 +723,7 @@ const Index = () => {
           onClearFilters={clearFilters}
           onToggleStatistics={() => setShowStatistics(!showStatistics)}
           showStatistics={showStatistics}
+          nekorektenEnabled={nekorektenEnabled}
         />
 
         {/* Statistics Dashboard */}

@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle, ShieldAlert } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES } from '@/types/order';
@@ -35,6 +35,7 @@ interface OrderFiltersProps {
   onClearFilters: () => void;
   onToggleStatistics?: () => void;
   showStatistics?: boolean;
+  nekorektenEnabled?: boolean;
 }
 
 export const OrderFilters: FC<OrderFiltersProps> = ({
@@ -51,6 +52,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   onClearFilters,
   onToggleStatistics,
   showStatistics,
+  nekorektenEnabled = false,
 }) => {
   const navigate = useNavigate();
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
@@ -238,6 +240,17 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           Съобщения
         </Button>
 
+        {nekorektenEnabled && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/nekorekten')}
+            className="bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-foreground hover:text-foreground"
+          >
+            <ShieldAlert className="w-4 h-4 mr-2" />
+            Некоректен
+          </Button>
+        )}
+
         {hasFilters && (
           <Button variant="ghost" onClick={onClearFilters} className="text-muted-foreground">
             <X className="w-4 h-4 mr-2" />
@@ -422,6 +435,18 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             <MessageCircle className="w-4 h-4 mr-2" />
             Съобщения
           </Button>
+
+          {/* Nekorekten button for mobile */}
+          {nekorektenEnabled && (
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/nekorekten')}
+              className="col-span-2 sm:col-span-1 sm:w-auto h-9 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-foreground hover:text-foreground"
+            >
+              <ShieldAlert className="w-4 h-4 mr-2" />
+              Некоректен
+            </Button>
+          )}
 
           {hasFilters && (
             <Button variant="ghost" onClick={onClearFilters} className="col-span-2 sm:col-span-1 h-9 text-muted-foreground">
