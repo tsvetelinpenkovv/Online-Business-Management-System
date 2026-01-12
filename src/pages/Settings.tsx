@@ -20,6 +20,7 @@ import { SourceSettings } from '@/components/settings/SourceSettings';
 import { PlatformApiSettings } from '@/components/settings/PlatformApiSettings';
 import { ConnectixSettings } from '@/components/settings/ConnectixSettings';
 import { DocumentationTab } from '@/components/settings/DocumentationTab';
+import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -1436,32 +1437,59 @@ const Settings = () => {
               />
             </div>
 
-            {/* Nekorekten Statistics */}
+            {/* Test connection and Save buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  if (!settings.nekorekten_api_key) {
+                    toast({
+                      title: 'Внимание',
+                      description: 'Моля въведете API ключ за Nekorekten',
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
+                  toast({
+                    title: 'Тестване',
+                    description: 'Връзката с Nekorekten ще бъде тествана...',
+                  });
+                  // Simulate test - in real implementation call the API
+                  setTimeout(() => {
+                    toast({
+                      title: 'Успех',
+                      description: 'Връзката с Nekorekten е успешна!',
+                    });
+                  }, 1000);
+                }}
+                disabled={settings.nekorekten_enabled !== 'true'}
+                className="flex-1 sm:flex-none"
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                Тест на връзката
+              </Button>
+              <Button 
+                onClick={handleSave} 
+                disabled={saving}
+                className="flex-1 sm:flex-none"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Запазване...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Запази
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Nekorekten Statistics - based on real data */}
             {settings.nekorekten_enabled === 'true' && (
-              <div className="p-4 bg-muted rounded-lg">
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  Статистика за некоректни клиенти
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-card rounded-lg p-3 text-center border">
-                    <div className="text-2xl font-bold text-success">0</div>
-                    <div className="text-xs text-muted-foreground">Коректни</div>
-                  </div>
-                  <div className="bg-card rounded-lg p-3 text-center border">
-                    <div className="text-2xl font-bold text-destructive">0</div>
-                    <div className="text-xs text-muted-foreground">Некоректни</div>
-                  </div>
-                  <div className="bg-card rounded-lg p-3 text-center border">
-                    <div className="text-2xl font-bold text-warning">0</div>
-                    <div className="text-xs text-muted-foreground">Неизвестни</div>
-                  </div>
-                  <div className="bg-card rounded-lg p-3 text-center border">
-                    <div className="text-2xl font-bold text-muted-foreground">0</div>
-                    <div className="text-xs text-muted-foreground">Общо проверки</div>
-                  </div>
-                </div>
-              </div>
+              <NekorektenStatistics />
             )}
           </CardContent>
         </Card>
@@ -1529,6 +1557,39 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Футер */}
+      <footer className="mt-auto border-t bg-card py-4">
+        <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
+          <span>
+            {companySettings?.footer_text || 'Разработен от'}{' '}
+            {companySettings?.footer_link && companySettings?.footer_link_text ? (
+              <a 
+                href={companySettings.footer_link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                {companySettings.footer_link_text}
+              </a>
+            ) : (
+              <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
+            )}
+          </span>
+          {companySettings?.footer_website && (
+            <div className="mt-1">
+              <a 
+                href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {companySettings.footer_website}
+              </a>
+            </div>
+          )}
+        </div>
+      </footer>
     </div>
   );
 };

@@ -29,7 +29,7 @@ interface StatusBadgeProps {
   onStatusChange?: (newStatus: OrderStatus) => void;
 }
 
-const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string }> = {
+const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string; isLeasing?: boolean }> = {
   'Нова': {
     icon: Clock,
     className: 'status-badge status-new',
@@ -53,14 +53,17 @@ const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string 
   'На лизинг през TBI': {
     icon: Building2,
     className: 'status-badge status-leasing-tbi',
+    isLeasing: true,
   },
   'На лизинг през BNP': {
     icon: Building2,
     className: 'status-badge status-leasing-bnp',
+    isLeasing: true,
   },
   'На лизинг през UniCredit': {
     icon: Building2,
     className: 'status-badge status-leasing-unicredit',
+    isLeasing: true,
   },
   'Изпратена': {
     icon: Truck,
@@ -100,6 +103,9 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
     <span className={`${config.className} ${editable ? 'cursor-pointer' : ''}`} title={`Статус: ${status}`}>
       <Icon className="w-3 h-3" />
       {status}
+      {config.isLeasing && (
+        <span className="ml-1 inline-flex items-center justify-center w-3 h-3 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold">✓</span>
+      )}
       {editable && <ChevronDown className="w-3 h-3 ml-1" />}
     </span>
   );
