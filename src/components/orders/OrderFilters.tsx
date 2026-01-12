@@ -95,7 +95,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           />
         </div>
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-[160px] justify-between">
               <div className="flex items-center">
@@ -117,7 +117,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-[160px] justify-between">
               <div className="flex items-center">

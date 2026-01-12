@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -73,11 +74,30 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
 
           <div className="space-y-2">
             <Label htmlFor="phone">Телефон</Label>
-            <Input
-              id="phone"
-              value={formData.phone || ''}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="phone"
+                value={formData.phone || ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (formData.phone) {
+                    window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(formData.phone)}`, '_blank');
+                  }
+                }}
+                disabled={!formData.phone}
+                className="shrink-0"
+                title="Проверка в Nekorekten"
+              >
+                <Search className="w-4 h-4 mr-1" />
+                Nekorekten
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">

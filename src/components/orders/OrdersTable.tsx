@@ -713,6 +713,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         Изпрати Viber/SMS
                       </DropdownMenuItem>
                       <DropdownMenuItem 
+                        onClick={() => {
+                          // Open nekorekten check
+                          window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(order.phone)}`, '_blank');
+                        }}
+                      >
+                        <Search className="w-4 h-4 mr-2" />
+                        Проверка в Nekorekten
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
                         onClick={() => setDeleteId(order.id)}
                         className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                       >

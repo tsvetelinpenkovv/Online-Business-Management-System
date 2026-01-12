@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
@@ -1435,6 +1435,34 @@ const Settings = () => {
                 disabled={settings.nekorekten_enabled !== 'true'}
               />
             </div>
+
+            {/* Nekorekten Statistics */}
+            {settings.nekorekten_enabled === 'true' && (
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-3 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Статистика за некоректни клиенти
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-card rounded-lg p-3 text-center border">
+                    <div className="text-2xl font-bold text-success">0</div>
+                    <div className="text-xs text-muted-foreground">Коректни</div>
+                  </div>
+                  <div className="bg-card rounded-lg p-3 text-center border">
+                    <div className="text-2xl font-bold text-destructive">0</div>
+                    <div className="text-xs text-muted-foreground">Некоректни</div>
+                  </div>
+                  <div className="bg-card rounded-lg p-3 text-center border">
+                    <div className="text-2xl font-bold text-warning">0</div>
+                    <div className="text-xs text-muted-foreground">Неизвестни</div>
+                  </div>
+                  <div className="bg-card rounded-lg p-3 text-center border">
+                    <div className="text-2xl font-bold text-muted-foreground">0</div>
+                    <div className="text-xs text-muted-foreground">Общо проверки</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -1471,12 +1499,29 @@ const Settings = () => {
                 </Button>
               </div>
             ))}
-            <Button variant="outline" onClick={addCustomApi} className="w-full">
-              <Plus className="w-4 h-4 mr-2" />
-              Добави API ключ
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={addCustomApi} className="flex-1">
+                <Plus className="w-4 h-4 mr-2" />
+                Добави API ключ
+              </Button>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Save button for all API settings */}
+        <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Запазване...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Запази API настройките
+            </>
+          )}
+        </Button>
           </TabsContent>
 
           <TabsContent value="docs" className="space-y-6">
