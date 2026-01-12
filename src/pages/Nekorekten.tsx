@@ -222,7 +222,7 @@ const Nekorekten = () => {
       className={`overflow-hidden ${
         customer.is_correct === true ? 'border-l-4 border-l-success' : 
         customer.is_correct === false ? 'border-l-4 border-l-destructive' : 
-        'border-l-4 border-l-muted'
+        'border-l-4 border-l-gray-400 dark:border-l-gray-500'
       }`}
     >
       <CardContent className="p-3 space-y-2">
@@ -449,7 +449,14 @@ const Nekorekten = () => {
                     </TableHeader>
                     <TableBody>
                       {filteredCustomers.map((customer) => (
-                        <TableRow key={customer.id} className="hover:bg-muted/30">
+                        <TableRow 
+                          key={customer.id} 
+                          className={`hover:bg-muted/30 ${
+                            customer.is_correct === true ? 'border-l-4 border-l-success' : 
+                            customer.is_correct === false ? 'border-l-4 border-l-destructive' : 
+                            'border-l-4 border-l-gray-400 dark:border-l-gray-500'
+                          }`}
+                        >
                           <TableCell className="font-medium">{customer.customer_name}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{customer.customer_email || '—'}</TableCell>
                           <TableCell className="font-mono text-sm">{customer.phone}</TableCell>
