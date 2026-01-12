@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Plus, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,13 @@ import { SourceIcon } from '@/components/icons/SourceIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
 
+interface ProductItem {
+  product_name: string;
+  catalog_number: string;
+  quantity: number;
+  price: number;
+}
+
 interface AddOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,15 +44,14 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     last_name: '',
     customer_email: '',
     phone: '',
-    product_name: '',
-    catalog_number: '',
-    quantity: 1,
-    total_price: 0,
     delivery_address: '',
     comment: '',
     status: 'Нова' as OrderStatus,
     source: 'phone' as OrderSource,
   });
+  const [products, setProducts] = useState<ProductItem[]>([
+    { product_name: '', catalog_number: '', quantity: 1, price: 0 }
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(0);
 
@@ -67,8 +74,28 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     }
   }, [open]);
 
+  const addProduct = () => {
+    setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+  };
+
+  const removeProduct = (index: number) => {
+    if (products.length > 1) {
+      setProducts(products.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateProduct = (index: number, field: keyof ProductItem, value: string | number) => {
+    const newProducts = [...products];
+    newProducts[index] = { ...newProducts[index], [field]: value };
+    setProducts(newProducts);
+  };
+
+  const calculateTotalPrice = () => {
+    return products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+  };
+
   const handleSubmit = async () => {
-    if (!formData.first_name || !formData.phone || !formData.product_name) {
+    if (!formData.first_name || !formData.phone || !products[0]?.product_name) {
       return;
     }
 
@@ -77,15 +104,23 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
       const customerName = `${formData.first_name} ${formData.last_name}`.trim();
       const newCode = String(lastOrderId + 1);
       
+      // Combine products into a single string if multiple
+      const productName = products.map(p => 
+        p.quantity > 1 ? `${p.product_name} (x${p.quantity})` : p.product_name
+      ).filter(n => n).join(', ');
+      
+      const catalogNumber = products.map(p => p.catalog_number).filter(c => c).join(', ');
+      const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
+      
       const order = await onCreateOrder({
         code: newCode,
         customer_name: customerName,
         customer_email: formData.customer_email || null,
         phone: formData.phone,
-        product_name: formData.product_name,
-        catalog_number: formData.catalog_number || null,
-        quantity: formData.quantity,
-        total_price: formData.total_price,
+        product_name: productName,
+        catalog_number: catalogNumber || null,
+        quantity: totalQuantity,
+        total_price: calculateTotalPrice(),
         delivery_address: formData.delivery_address || null,
         comment: formData.comment || null,
         status: formData.status,
@@ -101,15 +136,12 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           last_name: '',
           customer_email: '',
           phone: '',
-          product_name: '',
-          catalog_number: '',
-          quantity: 1,
-          total_price: 0,
           delivery_address: '',
           comment: '',
           status: 'Нова',
           source: 'phone',
         });
+        setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
         onOpenChange(false);
       }
     } finally {
@@ -220,46 +252,76 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
               placeholder="email@example.com"
             />
           </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="product_name">Продукт *</Label>
-            <Input
-              id="product_name"
-              value={formData.product_name}
-              onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-              placeholder="Име на продукта"
-              required
-            />
+
+          {/* Products Section */}
+          <div className="md:col-span-2 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Продукти *</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addProduct}>
+                <Plus className="w-4 h-4 mr-1" />
+                Добави продукт
+              </Button>
+            </div>
+            
+            {products.map((product, index) => (
+              <div key={index} className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30">
+                <div className="col-span-12 sm:col-span-4 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Продукт</Label>
+                  <Input
+                    value={product.product_name}
+                    onChange={(e) => updateProduct(index, 'product_name', e.target.value)}
+                    placeholder="Име на продукта"
+                    required={index === 0}
+                  />
+                </div>
+                <div className="col-span-6 sm:col-span-2 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Каталожен №</Label>
+                  <Input
+                    value={product.catalog_number}
+                    onChange={(e) => updateProduct(index, 'catalog_number', e.target.value)}
+                    placeholder="SKU"
+                  />
+                </div>
+                <div className="col-span-3 sm:col-span-2 space-y-1">
+                  <Label className="text-xs text-muted-foreground">К-во</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={product.quantity}
+                    onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <div className="col-span-3 sm:col-span-3 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Цена (€)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={product.price}
+                    onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                {products.length > 1 && (
+                  <div className="col-span-12 sm:col-span-1 flex justify-end sm:justify-center">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => removeProduct(index)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <div className="flex justify-end text-sm font-medium">
+              Обща цена: {calculateTotalPrice().toFixed(2)} €
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="catalog_number">Каталожен номер</Label>
-            <Input
-              id="catalog_number"
-              value={formData.catalog_number}
-              onChange={(e) => setFormData({ ...formData, catalog_number: e.target.value })}
-              placeholder="SKU / Код на продукт"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Количество</Label>
-            <Input
-              id="quantity"
-              type="number"
-              min="1"
-              value={formData.quantity}
-              onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="total_price">Обща цена (€)</Label>
-            <Input
-              id="total_price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.total_price}
-              onChange={(e) => setFormData({ ...formData, total_price: parseFloat(e.target.value) || 0 })}
-            />
-          </div>
+
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="delivery_address">Адрес за доставка</Label>
             <Textarea
@@ -287,7 +349,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={isSubmitting || !formData.first_name || !formData.phone || !formData.product_name}
+            disabled={isSubmitting || !formData.first_name || !formData.phone || !products[0]?.product_name}
           >
             {isSubmitting ? 'Създаване...' : 'Създай поръчка'}
           </Button>

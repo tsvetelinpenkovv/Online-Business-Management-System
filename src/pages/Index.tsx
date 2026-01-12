@@ -8,7 +8,7 @@ import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt, MessageCircle, ShieldAlert, Boxes } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
@@ -609,6 +609,17 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="outline" size="icon" onClick={() => navigate('/messages')} title="Съобщения">
+              <MessageCircle className="w-4 h-4" />
+            </Button>
+            {nekorektenEnabled && (
+              <Button variant="outline" size="icon" onClick={() => navigate('/nekorekten')} title="Nekorekten статистика">
+                <ShieldAlert className="w-4 h-4" />
+              </Button>
+            )}
+            <Button variant="outline" size="icon" onClick={() => navigate('/inventory')} title="Склад">
+              <Boxes className="w-4 h-4" />
+            </Button>
             <ThemeToggle />
             <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title="Настройки">
               <Settings className="w-4 h-4" />
@@ -679,6 +690,20 @@ const Index = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate('/messages')} className="cursor-pointer">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Съобщения
+                </DropdownMenuItem>
+                {nekorektenEnabled && (
+                  <DropdownMenuItem onClick={() => navigate('/nekorekten')} className="cursor-pointer">
+                    <ShieldAlert className="w-4 h-4 mr-2" />
+                    Nekorekten
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => navigate('/inventory')} className="cursor-pointer">
+                  <Boxes className="w-4 h-4 mr-2" />
+                  Склад
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
                   Настройки
