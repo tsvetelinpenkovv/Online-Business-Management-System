@@ -83,19 +83,22 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   const colorClasses = COLOR_MAP[colorName] || COLOR_MAP.primary;
   const isLeasing = leasingStatuses.includes(status);
 
+  // Truncate long status names on desktop/tablet
+  const truncatedStatus = status.length > 15 ? status.substring(0, 12) + '...' : status;
+
   const badge = (
     <span 
-      className={`status-badge ${colorClasses.bgClass} ${colorClasses.textClass} ${editable ? 'cursor-pointer' : ''}`} 
+      className={`status-badge ${colorClasses.bgClass} ${colorClasses.textClass} ${editable ? 'cursor-pointer' : ''} max-w-[180px] md:max-w-[160px] lg:max-w-[200px]`} 
       title={`Статус: ${status}`}
     >
       <Icon className="w-3 h-3 flex-shrink-0" />
-      <span className="break-words">{status}</span>
+      <span className="truncate">{truncatedStatus}</span>
       {isLeasing && (
-        <span className="ml-1 inline-flex items-center justify-center min-w-[14px] h-[14px] rounded-full bg-destructive text-destructive-foreground flex-shrink-0">
-          <Check className="w-2.5 h-2.5" strokeWidth={3} />
+        <span className="ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-destructive text-destructive-foreground flex-shrink-0" title="Лизинг">
+          <Check className="w-2 h-2" strokeWidth={3} />
         </span>
       )}
-      {editable && <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />}
+      {editable && <ChevronDown className="w-3 h-3 ml-0.5 flex-shrink-0" />}
     </span>
   );
 

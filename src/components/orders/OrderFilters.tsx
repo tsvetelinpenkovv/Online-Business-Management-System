@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES } from '@/types/order';
 import { StatusBadge } from './StatusBadge';
 import { SourceIcon } from '@/components/icons/SourceIcon';
+import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,15 +56,16 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   nekorektenEnabled = false,
 }) => {
   const navigate = useNavigate();
+  const { getText } = useInterfaceTexts();
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
 
   const getStatusLabel = () => {
-    if (statusFilter === 'all') return 'Статуси';
+    if (statusFilter === 'all') return getText('orders_status_filter_label');
     return statusFilter;
   };
 
   const getSourceLabel = () => {
-    if (sourceFilter === 'all') return 'Източници';
+    if (sourceFilter === 'all') return getText('orders_source_filter_label');
     const sourceLabels: Record<string, string> = {
       google: 'Google',
       facebook: 'Facebook',
@@ -90,7 +92,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         <div className="relative w-[280px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Търси клиент, телефон, ID..."
+            placeholder={getText('orders_search_placeholder')}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10"
