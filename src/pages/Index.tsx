@@ -34,6 +34,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 
 type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
@@ -416,7 +419,7 @@ const Index = () => {
                     {getText('orders_print_waybills_label')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
-                    <Receipt className="w-4 h-4 mr-2" />
+                    <FileText className="w-4 h-4 mr-2" />
                     {getText('orders_print_invoices_label')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -529,7 +532,7 @@ const Index = () => {
                     {getText('orders_print_waybills_label')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
-                    <Receipt className="w-4 h-4 mr-2" />
+                    <FileText className="w-4 h-4 mr-2" />
                     {getText('orders_print_invoices_label')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -694,40 +697,39 @@ const Index = () => {
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {/* Column visibility submenu header */}
-                <DropdownMenuItem 
-                  disabled 
-                  className="text-xs font-medium text-muted-foreground opacity-100"
-                >
-                  <Columns3 className="w-4 h-4 mr-2" />
-                  Колони
-                </DropdownMenuItem>
-                {/* Column visibility in mobile settings */}
-                {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || nekorektenEnabled).map((column) => (
-                  <DropdownMenuItem 
-                    key={column.key}
-                    onClick={() => {
-                      const newColumns = new Set(visibleColumns);
-                      if (newColumns.has(column.key)) {
-                        newColumns.delete(column.key);
-                      } else {
-                        newColumns.add(column.key);
-                      }
-                      setVisibleColumns(newColumns);
-                      saveVisibleColumns(newColumns);
-                    }}
-                    onSelect={(e) => e.preventDefault()}
-                    className="cursor-pointer pl-6"
-                  >
-                    {visibleColumns.has(column.key) ? (
-                      <Eye className="w-4 h-4 mr-2 text-success" />
-                    ) : (
-                      <EyeOff className="w-4 h-4 mr-2 text-muted-foreground" />
-                    )}
-                    {column.label}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
+                {/* Column visibility submenu */}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="cursor-pointer">
+                    <Columns3 className="w-4 h-4 mr-2" />
+                    Колони
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-48 max-h-[300px] overflow-y-auto">
+                    {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || nekorektenEnabled).map((column) => (
+                      <DropdownMenuItem 
+                        key={column.key}
+                        onClick={() => {
+                          const newColumns = new Set(visibleColumns);
+                          if (newColumns.has(column.key)) {
+                            newColumns.delete(column.key);
+                          } else {
+                            newColumns.add(column.key);
+                          }
+                          setVisibleColumns(newColumns);
+                          saveVisibleColumns(newColumns);
+                        }}
+                        onSelect={(e) => e.preventDefault()}
+                        className="cursor-pointer"
+                      >
+                        {visibleColumns.has(column.key) ? (
+                          <Eye className="w-4 h-4 mr-2 text-success" />
+                        ) : (
+                          <EyeOff className="w-4 h-4 mr-2 text-muted-foreground" />
+                        )}
+                        {column.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                   <LogOut className="w-4 h-4 mr-2" />
                   {getText('orders_logout_button_label')}

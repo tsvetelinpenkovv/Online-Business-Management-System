@@ -31,6 +31,7 @@ interface MobileOrderCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onPrint: () => void;
+  onInvoice: () => void;
   onStatusChange?: (orderId: number, newStatus: string) => void;
   messageInfo?: {
     channel: 'viber' | 'sms';
@@ -47,6 +48,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onEdit,
   onDelete,
   onPrint,
+  onInvoice,
   onStatusChange,
   messageInfo,
   nekorektenEnabled = true,
@@ -145,6 +147,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 size="icon" 
                 className="h-6 w-6 text-success hover:bg-success/10 hover:text-success relative" 
                 title={invoiceData.viewedAt ? "Фактурата е прегледана" : "Има издадена фактура (непрегледана)"}
+                onClick={onInvoice}
               >
                 <FileText className="w-4 h-4" />
                 <span className={`absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[14px] h-[14px] rounded-full text-[9px] font-bold text-white ${
@@ -172,6 +175,10 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                 <DropdownMenuItem onClick={onPrint}>
                   <Printer className="w-4 h-4 mr-2" />
                   Печат на поръчка
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onInvoice}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Фактура
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => {
