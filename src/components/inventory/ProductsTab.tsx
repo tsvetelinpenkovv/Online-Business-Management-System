@@ -576,10 +576,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                             variant="secondary" 
                             className={`pointer-events-none ${
                               product.current_stock <= 0 
-                                ? 'bg-destructive/15 text-destructive' 
+                                ? 'bg-destructive text-destructive-foreground' 
                                 : product.current_stock <= product.min_stock_level 
-                                  ? 'bg-warning/15 text-warning' 
-                                  : 'bg-info/15 text-info'
+                                  ? 'bg-warning text-white' 
+                                  : 'bg-success text-white'
                             }`}
                           >
                             {product.current_stock} {product.unit?.abbreviation || 'бр.'}
@@ -589,7 +589,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                           {(product as any).reserved_stock > 0 ? (
                             <Badge 
                               variant="secondary" 
-                              className="pointer-events-none bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                              className="pointer-events-none bg-destructive text-white"
                             >
                               {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
                             </Badge>
