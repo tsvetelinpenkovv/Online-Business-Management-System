@@ -50,7 +50,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Pencil, Trash2, Package, 
-  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy, Check, Layers, Eye
+  AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy, Check, Layers, Eye,
+  Hash, FileText, FolderOpen, Boxes, Euro, TrendingUp, Activity, Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -145,12 +146,13 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
     }
   };
 
-  const SortableHeader = ({ columnKey, children }: { columnKey: SortKey; children: React.ReactNode }) => (
+  const SortableHeader = ({ columnKey, children, icon: Icon }: { columnKey: SortKey; children: React.ReactNode; icon?: React.ElementType }) => (
     <TableHead 
       className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'text-right' : ''}`}
       onClick={() => handleSort(columnKey)}
     >
-      <div className={`flex items-center gap-1 ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'justify-end' : ''}`}>
+      <div className={`flex items-center gap-1.5 ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'justify-end' : ''}`}>
+        {Icon && <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
         {children}
         <ArrowUpDown className={`w-3 h-3 flex-shrink-0 ${sortKey === columnKey ? 'text-primary' : 'text-muted-foreground/50'}`} />
       </div>
@@ -480,21 +482,37 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader columnKey="sku">Код</SortableHeader>
-                    <SortableHeader columnKey="name">Наименование</SortableHeader>
-                    <SortableHeader columnKey="category">Категория</SortableHeader>
-                    <SortableHeader columnKey="current_stock">Наличност</SortableHeader>
-                    <SortableHeader columnKey="purchase_price">Покупна цена</SortableHeader>
-                    <SortableHeader columnKey="sale_price">Продажна цена</SortableHeader>
-                    <TableHead className="text-right">Марж</TableHead>
-                    <TableHead>Статус</TableHead>
+                    <SortableHeader columnKey="sku" icon={Hash}>Код</SortableHeader>
+                    <SortableHeader columnKey="name" icon={FileText}>Наименование</SortableHeader>
+                    <SortableHeader columnKey="category" icon={FolderOpen}>Категория</SortableHeader>
+                    <SortableHeader columnKey="current_stock" icon={Boxes}>Наличност</SortableHeader>
+                    <TableHead className="text-right">
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        Резерв
+                      </div>
+                    </TableHead>
+                    <SortableHeader columnKey="purchase_price" icon={Euro}>Покупна</SortableHeader>
+                    <SortableHeader columnKey="sale_price" icon={Euro}>Продажна</SortableHeader>
+                    <TableHead className="text-right">
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <TrendingUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        Марж
+                      </div>
+                    </TableHead>
+                    <TableHead>
+                      <div className="flex items-center gap-1.5">
+                        <Activity className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        Статус
+                      </div>
+                    </TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredAndSortedProducts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                         <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         <p>Няма намерени артикули</p>
                       </TableCell>
@@ -566,6 +584,18 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                           >
                             {product.current_stock} {product.unit?.abbreviation || 'бр.'}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {(product as any).reserved_stock > 0 ? (
+                            <Badge 
+                              variant="secondary" 
+                              className="pointer-events-none bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                            >
+                              {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right text-warning font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right text-primary font-medium">{product.sale_price.toFixed(2)} €</TableCell>

@@ -714,11 +714,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 )}
                 {visibleColumns.has('delivery') && (
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground line-clamp-2 max-w-[100px]" title={order.delivery_address || ''}>
-                        {order.delivery_address || '-'}
-                      </span>
-                      {order.delivery_address && (
+                    {order.delivery_address ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground line-clamp-2 max-w-[100px]" title={order.delivery_address}>
+                          {order.delivery_address}
+                        </span>
                         <InfoPopover 
                           title="Адрес за доставка" 
                           icon="eye"
@@ -730,8 +730,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                             />
                           }
                         />
-                      )}
-                    </div>
+                      </div>
+                    ) : null}
                   </TableCell>
                 )}
                 {visibleColumns.has('tracking') && (
@@ -755,9 +755,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                           </a>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
+                    ) : null}
                   </TableCell>
                 )}
                 {visibleColumns.has('status') && (

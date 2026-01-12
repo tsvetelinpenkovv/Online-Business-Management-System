@@ -128,7 +128,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-7 w-7 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
             onClick={handleCopyAll}
             title="Копирай всички продукти"
           >
