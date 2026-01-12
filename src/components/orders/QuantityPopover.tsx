@@ -172,7 +172,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
               </div>
               <span className={`inline-flex items-center justify-center min-w-[28px] h-5 px-1.5 rounded-full text-xs font-semibold flex-shrink-0 ${
                 product.quantity > 1 
-                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' 
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
                   : 'bg-muted text-muted-foreground'
               }`}>
                 {product.quantity} бр.

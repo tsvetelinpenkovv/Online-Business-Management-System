@@ -119,16 +119,14 @@ export const StatusBadge: FC<StatusBadgeProps> = ({ status, editable = false, on
   // Memoize leasing check to avoid recalculation
   const isLeasing = useMemo(() => leasingStatuses.includes(status), [leasingStatuses, status]);
 
-  // Don't render anything until data is loaded to prevent flash
-  const isLoading = statusesLoading || !leasingLoaded;
-
   // Find status config from database or use default
   const statusConfig = statuses.find(s => s.name === status);
   const iconName = statusConfig?.icon || 'Clock';
   const colorName = statusConfig?.color || 'primary';
   
   const Icon = ICON_MAP[iconName] || Clock;
-  const colorClasses = isLoading ? COLOR_MAP.muted : (COLOR_MAP[colorName] || COLOR_MAP.primary);
+  // Use muted colors while loading, otherwise use actual colors
+  const colorClasses = statusesLoading ? COLOR_MAP.muted : (COLOR_MAP[colorName] || COLOR_MAP.primary);
 
   // Shorten leasing status names for display
   const getShortStatus = (statusName: string) => {

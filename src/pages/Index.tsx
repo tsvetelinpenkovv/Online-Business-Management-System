@@ -7,11 +7,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { OrdersTable } from '@/components/orders/OrdersTable';
-import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, type ColumnKey } from '@/components/orders/ColumnVisibilityToggle';
+import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, COLUMNS_CONFIG, type ColumnKey } from '@/components/orders/ColumnVisibilityToggle';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt, MessageCircle, ShieldAlert, Boxes } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt, MessageCircle, ShieldAlert, Boxes, Eye, EyeOff } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
@@ -688,11 +688,37 @@ const Index = () => {
                   <Settings className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {/* Column visibility in mobile settings */}
+                {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || nekorektenEnabled).map((column) => (
+                  <DropdownMenuItem 
+                    key={column.key}
+                    onClick={() => {
+                      const newColumns = new Set(visibleColumns);
+                      if (newColumns.has(column.key)) {
+                        newColumns.delete(column.key);
+                      } else {
+                        newColumns.add(column.key);
+                      }
+                      setVisibleColumns(newColumns);
+                      saveVisibleColumns(newColumns);
+                    }}
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer"
+                  >
+                    {visibleColumns.has(column.key) ? (
+                      <Eye className="w-4 h-4 mr-2 text-success" />
+                    ) : (
+                      <EyeOff className="w-4 h-4 mr-2 text-muted-foreground" />
+                    )}
+                    {column.label}
+                  </DropdownMenuItem>
+                ))}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                   <LogOut className="w-4 h-4 mr-2" />
@@ -738,8 +764,8 @@ const Index = () => {
           </div>
         ) : (
           <div className="w-full space-y-4">
-            {/* Column visibility toggle */}
-            <div className="flex justify-end">
+            {/* Column visibility toggle - hidden on mobile */}
+            <div className="hidden md:flex justify-end">
               <ColumnVisibilityToggle
                 visibleColumns={visibleColumns}
                 onToggle={(column) => {
