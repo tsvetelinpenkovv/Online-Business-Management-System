@@ -569,19 +569,9 @@ const Settings = () => {
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl space-y-4 sm:space-y-6">
         <Tabs defaultValue={initialTab} className="w-full">
           <div className="relative mb-4 sm:mb-6">
-            {/* Left scroll button - mobile and tablet */}
-            {canScrollLeft && (
-              <button
-                onClick={() => scrollTabs('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md lg:hidden"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
-            
             <div 
               ref={tabsListRef}
-              className="overflow-x-auto scrollbar-hide mx-7 lg:mx-0"
+              className="overflow-x-auto scrollbar-hide"
               onScroll={checkScrollButtons}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
@@ -604,16 +594,6 @@ const Settings = () => {
                 </TabsTrigger>
               </TabsList>
             </div>
-            
-            {/* Right scroll button - mobile and tablet */}
-            {canScrollRight && (
-              <button
-                onClick={() => scrollTabs('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/95 backdrop-blur-sm border border-border rounded-full p-1.5 shadow-md lg:hidden"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           <TabsContent value="platforms" className="space-y-6">
