@@ -429,10 +429,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Дата
                 </div>
               </SortableHead>
-              <SortableHead columnKey="customer_name" className="w-[110px]">
+              <SortableHead columnKey="customer_name" className="w-[100px]">
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Клиент
+                  <span className="text-xs">Клиент</span>
                 </div>
               </SortableHead>
               {nekorektenEnabled && (
@@ -440,19 +440,19 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
-              <SortableHead columnKey="phone" className="w-[130px]">
+              <SortableHead columnKey="phone" className="w-[115px]">
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  Телефон
+                  <span className="text-xs">Телефон</span>
                 </div>
               </SortableHead>
               <SortableHead columnKey="total_price" className="w-[80px]" align="center">
                 <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 Цена
               </SortableHead>
-              <SortableHead columnKey="product_name" className="w-[140px]" align="center">
+              <SortableHead columnKey="product_name" className="w-[125px]" align="center">
                 <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                Продукт
+                <span className="text-xs">Продукт</span>
               </SortableHead>
               <SortableHead columnKey="catalog_number" className="w-[100px]" align="center">
                 <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -508,9 +508,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <span>{format(new Date(order.created_at), 'HH:mm')}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="text-xs">
                   <div className="flex items-center gap-1">
-                    <span title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
+                    <span className="truncate max-w-[85px]" title={`Клиент: ${order.customer_name}`}>{order.customer_name}</span>
                     <InfoPopover 
                       title="Данни за клиента" 
                       icon="eye"
@@ -546,9 +546,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     <CorrectStatusIcon isCorrect={order.is_correct} />
                   </TableCell>
                 )}
-                <TableCell className="text-sm">
+                <TableCell className="text-xs">
                   <div className="flex items-center gap-1">
-                    <span>{order.phone}</span>
+                    <span className="truncate max-w-[90px]">{order.phone}</span>
                     <button
                       onClick={() => handleCopyPhone(order.phone)}
                       className="p-0.5 hover:bg-muted rounded transition-colors"
@@ -565,7 +565,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 <TableCell className="text-sm font-medium text-success whitespace-nowrap text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>{order.total_price.toFixed(2)} €</TableCell>
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1">
-                    <span className="text-sm line-clamp-2 max-w-[120px]" title={order.product_name}>
+                    <span className="text-xs line-clamp-2 max-w-[100px]" title={order.product_name}>
                       {order.product_name}
                     </span>
                     <InfoPopover 
@@ -753,24 +753,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => {
-                          // Open nekorekten check
-                          window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(order.phone)}`, '_blank');
-                        }}
-                      >
-                        <Search className="w-4 h-4 mr-2" />
-                        Проверка в Nekorekten
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => {
                           // Ръчна проверка - в бъдеще ще използва API
                           toast({
-                            title: 'Проверка',
+                            title: 'Проверка в Некоректен',
                             description: 'API за Некоректен не е вързано. Моля конфигурирайте го в Настройки.',
                           });
                         }}
                       >
                         <Search className="w-4 h-4 mr-2" />
-                        Ръчна проверка в Некоректен
+                        Проверка в Nekorekten
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setDeleteId(order.id)}

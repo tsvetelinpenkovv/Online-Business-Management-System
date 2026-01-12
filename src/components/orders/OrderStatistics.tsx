@@ -49,18 +49,18 @@ export const OrderStatistics = ({ orders }: OrderStatisticsProps) => {
     // Count by status
     const newOrders = orders.filter(o => o.status === 'Нова').length;
     const activeOrders = orders.filter(o => 
-      ['В обработка', 'Потвърдена', 'Изпратена'].includes(o.status)
+      ['В обработка', 'Потвърдена', 'Изпратена', 'Неуспешна връзка'].includes(o.status)
     ).length;
     const completedOrders = orders.filter(o => 
-      ['Доставена', 'Приключена'].includes(o.status)
+      ['Доставена', 'Завършена', 'Приключена'].includes(o.status)
     ).length;
     const cancelledOrders = orders.filter(o => 
-      ['Отказана', 'Върната'].includes(o.status)
+      ['Отказана', 'Върната', 'Анулирана'].includes(o.status)
     ).length;
 
     // Average processing time (from creation to completion)
     const completedWithTime = orders.filter(o => 
-      ['Доставена', 'Приключена'].includes(o.status)
+      ['Доставена', 'Завършена', 'Приключена'].includes(o.status)
     );
     const avgProcessingHours = completedWithTime.length > 0
       ? completedWithTime.reduce((sum, o) => {

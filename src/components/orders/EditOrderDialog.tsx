@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Search } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,20 +22,57 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+interface ProductItem {
+  product_name: string;
+  catalog_number: string;
+  quantity: number;
+  price: number;
+}
+
 interface EditOrderDialogProps {
   order: Order | null;
   onClose: () => void;
   onSave: (order: Order) => void;
 }
 
+// Helper to parse products from order data
+const parseProducts = (order: Order): ProductItem[] => {
+  // If product_name contains commas, it might be multiple products
+  const names = order.product_name.split(', ');
+  const codes = (order.catalog_number || '').split(', ');
+  
+  if (names.length === 1) {
+    return [{
+      product_name: order.product_name.replace(/ \(x\d+\)$/, ''),
+      catalog_number: order.catalog_number || '',
+      quantity: order.quantity,
+      price: order.total_price
+    }];
+  }
+  
+  // Multiple products
+  return names.map((name, index) => {
+    const qtyMatch = name.match(/\(x(\d+)\)$/);
+    const cleanName = name.replace(/ \(x\d+\)$/, '');
+    return {
+      product_name: cleanName,
+      catalog_number: codes[index] || '',
+      quantity: qtyMatch ? parseInt(qtyMatch[1]) : 1,
+      price: 0 // Price per item unknown, will be calculated
+    };
+  });
+};
+
 export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<Order>>({});
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const { couriers, getCourierByUrl } = useCouriers();
   const [courierLocked, setCourierLocked] = useState(false);
 
   useEffect(() => {
     if (order) {
       setFormData(order);
+      setProducts(parseProducts(order));
       // Check if courier should be locked based on existing URL
       if (order.courier_tracking_url) {
         const detectedCourier = getCourierByUrl(order.courier_tracking_url);
@@ -59,9 +96,45 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
     }
   }, [formData.courier_tracking_url, getCourierByUrl]);
 
+  const addProduct = () => {
+    setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+  };
+
+  const removeProduct = (index: number) => {
+    if (products.length > 1) {
+      setProducts(products.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateProduct = (index: number, field: keyof ProductItem, value: string | number) => {
+    const newProducts = [...products];
+    newProducts[index] = { ...newProducts[index], [field]: value };
+    setProducts(newProducts);
+  };
+
+  const calculateTotalPrice = () => {
+    return products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+  };
+
   const handleSave = () => {
     if (order && formData) {
-      onSave({ ...order, ...formData } as Order);
+      // Combine products into order fields
+      const productName = products.map(p => 
+        p.quantity > 1 ? `${p.product_name} (x${p.quantity})` : p.product_name
+      ).filter(n => n).join(', ');
+      
+      const catalogNumber = products.map(p => p.catalog_number).filter(c => c).join(', ');
+      const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
+      const totalPrice = calculateTotalPrice() || formData.total_price || 0;
+
+      onSave({ 
+        ...order, 
+        ...formData,
+        product_name: productName,
+        catalog_number: catalogNumber || null,
+        quantity: totalQuantity,
+        total_price: totalPrice
+      } as Order);
       onClose();
     }
   };
@@ -85,30 +158,11 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
 
           <div className="space-y-2">
             <Label htmlFor="phone">Телефон</Label>
-            <div className="flex gap-2">
-              <Input
-                id="phone"
-                value={formData.phone || ''}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (formData.phone) {
-                    window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(formData.phone)}`, '_blank');
-                  }
-                }}
-                disabled={!formData.phone}
-                className="shrink-0"
-                title="Проверка в Nekorekten"
-              >
-                <Search className="w-4 h-4 mr-1" />
-                Nekorekten
-              </Button>
-            </div>
+            <Input
+              id="phone"
+              value={formData.phone || ''}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
           </div>
 
           <div className="space-y-2">
@@ -119,45 +173,6 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
               value={formData.customer_email || ''}
               onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
               placeholder="client@example.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="total_price">Цена (€)</Label>
-            <Input
-              id="total_price"
-              type="number"
-              step="0.01"
-              value={formData.total_price || ''}
-              onChange={(e) => setFormData({ ...formData, total_price: parseFloat(e.target.value) })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="product_name">Продукт</Label>
-            <Input
-              id="product_name"
-              value={formData.product_name || ''}
-              onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="catalog_number">Каталожен номер</Label>
-            <Input
-              id="catalog_number"
-              value={formData.catalog_number || ''}
-              onChange={(e) => setFormData({ ...formData, catalog_number: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Количество</Label>
-            <Input
-              id="quantity"
-              type="number"
-              value={formData.quantity || ''}
-              onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
             />
           </div>
 
@@ -178,6 +193,74 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Products Section */}
+          <div className="col-span-2 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Продукти</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addProduct}>
+                <Plus className="w-4 h-4 mr-1" />
+                Добави продукт
+              </Button>
+            </div>
+            
+            {products.map((product, index) => (
+              <div key={index} className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30">
+                <div className="col-span-12 sm:col-span-4 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Продукт</Label>
+                  <Input
+                    value={product.product_name}
+                    onChange={(e) => updateProduct(index, 'product_name', e.target.value)}
+                    placeholder="Име на продукта"
+                  />
+                </div>
+                <div className="col-span-6 sm:col-span-2 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Каталожен №</Label>
+                  <Input
+                    value={product.catalog_number}
+                    onChange={(e) => updateProduct(index, 'catalog_number', e.target.value)}
+                    placeholder="SKU"
+                  />
+                </div>
+                <div className="col-span-3 sm:col-span-2 space-y-1">
+                  <Label className="text-xs text-muted-foreground">К-во</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={product.quantity}
+                    onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <div className="col-span-3 sm:col-span-3 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Цена (€)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={product.price}
+                    onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                {products.length > 1 && (
+                  <div className="col-span-12 sm:col-span-1 flex justify-end sm:justify-center">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => removeProduct(index)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <div className="flex justify-end text-sm font-medium">
+              Обща цена: {calculateTotalPrice().toFixed(2)} €
+            </div>
           </div>
 
           <div className="col-span-2 space-y-2">
