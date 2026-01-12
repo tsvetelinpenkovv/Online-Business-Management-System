@@ -159,6 +159,14 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                   <FileBox className="w-4 h-4 mr-2" />
                   Печат на товарителница
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    window.open(`https://nekorekten.com/bg/search?phone=${encodeURIComponent(order.phone)}`, '_blank');
+                  }}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Проверка в Nekorekten
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
                   <Trash2 className="w-4 h-4 mr-2" />
                   Изтрий
@@ -215,7 +223,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
 
         {/* Product info */}
         <div className="space-y-2">
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <span className="text-sm">{order.product_name}</span>

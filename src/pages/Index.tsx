@@ -143,7 +143,8 @@ const Index = () => {
         order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.phone.includes(searchTerm) ||
         order.id.toString().includes(searchTerm) ||
-        order.code.toLowerCase().includes(searchTerm.toLowerCase());
+        order.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.catalog_number && order.catalog_number.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       const matchesSource = sourceFilter === 'all' || order.source === sourceFilter;
