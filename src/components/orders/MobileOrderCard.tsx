@@ -89,6 +89,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
         return 'border-l-4 border-l-purple';
       case 'На лизинг през TBI':
       case 'На лизинг през BNP':
+      case 'На лизинг през UniCredit':
         return 'border-l-4 border-l-teal';
       case 'Изпратена':
         return 'border-l-4 border-l-warning';

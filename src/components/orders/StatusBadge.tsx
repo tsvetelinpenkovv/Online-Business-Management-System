@@ -58,6 +58,10 @@ const statusConfig: Record<OrderStatus, { icon: typeof Clock; className: string 
     icon: Building2,
     className: 'status-badge status-leasing-bnp',
   },
+  'На лизинг през UniCredit': {
+    icon: Building2,
+    className: 'status-badge status-leasing-unicredit',
+  },
   'Изпратена': {
     icon: Truck,
     className: 'status-badge status-sent',
