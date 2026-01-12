@@ -416,7 +416,6 @@ const Messages = () => {
                     <TableHeader>
                       <TableRow className="bg-muted/50">
                         <TableHead className="w-[60px]">Канал</TableHead>
-                        <TableHead className="w-[80px]">Поръчка</TableHead>
                         <TableHead>Клиент</TableHead>
                         <TableHead>Телефон</TableHead>
                         <TableHead>Шаблон</TableHead>
@@ -431,19 +430,6 @@ const Messages = () => {
                             <div className="flex items-center justify-center">
                               {getChannelIcon(msg.channel)}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            {msg.order_id ? (
-                              <Button 
-                                variant="link" 
-                                className="p-0 h-auto text-primary"
-                                onClick={() => navigate(`/?search=${msg.order_id}`)}
-                              >
-                                #{msg.order_id}
-                              </Button>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
                           </TableCell>
                           <TableCell className="font-medium">
                             {msg.customer_name || '—'}
