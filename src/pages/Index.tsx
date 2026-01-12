@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useOrders } from '@/hooks/useOrders';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
+import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
@@ -40,6 +41,7 @@ const Index = () => {
   const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   const { logoUrl } = useCompanyLogo();
   const { toast } = useToast();
+  const { getText } = useInterfaceTexts();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -322,7 +324,7 @@ const Index = () => {
         </div>
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Зареждане на поръчки...</p>
+          <p className="text-sm text-muted-foreground">{getText('orders_loading_text')}</p>
         </div>
       </div>
     );
@@ -352,9 +354,9 @@ const Index = () => {
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-base sm:text-xl font-semibold truncate">{companySettings?.orders_page_title || 'Управление на поръчки'}</h1>
+              <h1 className="text-base sm:text-xl font-semibold truncate">{companySettings?.orders_page_title || getText('orders_page_title')}</h1>
               <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                <span>{filteredOrders.length} поръчки</span>
+                <span>{filteredOrders.length} {getText('orders_header_subtitle')}</span>
                 {websiteUrl && (
                   <>
                     <span>•</span>
@@ -403,15 +405,15 @@ const Index = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
                     <Printer className="w-4 h-4 mr-2" />
-                    {selectedOrders.length === 1 ? 'Печат на поръчка' : 'Печат на поръчки'}
+                    {getText('orders_print_receipts_label')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
                     <FileBox className="w-4 h-4 mr-2" />
-                    {selectedOrders.length === 1 ? 'Печат на товарителница' : 'Печат на товарителници'}
+                    {getText('orders_print_waybills_label')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
                     <Receipt className="w-4 h-4 mr-2" />
-                    Печат на фактури
+                    {getText('orders_print_invoices_label')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -434,7 +436,7 @@ const Index = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1">
                       <Tags className="w-4 h-4" />
-                      <span className="hidden lg:inline">Смени статус</span>
+                      <span className="hidden lg:inline">{getText('orders_change_status_label')}</span>
                       <span className="lg:hidden">({selectedOrders.length})</span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -463,7 +465,7 @@ const Index = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
                       <FileBox className="w-4 h-4 mr-2" />
-                      Печат на товарителници
+                      {getText('orders_print_waybills_label')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -487,7 +489,7 @@ const Index = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-2">
                       <Tags className="w-4 h-4" />
-                      Смени статус ({selectedOrders.length})
+                      {getText('orders_change_status_label')} ({selectedOrders.length})
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
@@ -506,21 +508,21 @@ const Index = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-2">
                       <Printer className="w-4 h-4" />
-                      Печат ({selectedOrders.length})
+                      {getText('orders_print_action')} ({selectedOrders.length})
                     </Button>
                   </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleBulkPrintReceipts} className="cursor-pointer">
                     <Printer className="w-4 h-4 mr-2" />
-                    {selectedOrders.length === 1 ? 'Печат на поръчка' : 'Печат на поръчки'}
+                    {getText('orders_print_receipts_label')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintWaybills} className="cursor-pointer">
                     <FileBox className="w-4 h-4 mr-2" />
-                    {selectedOrders.length === 1 ? 'Печат на товарителница' : 'Печат на товарителници'}
+                    {getText('orders_print_waybills_label')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
                     <Receipt className="w-4 h-4 mr-2" />
-                    Печат на фактури
+                    {getText('orders_print_invoices_label')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
@@ -540,23 +542,23 @@ const Index = () => {
           <div className="hidden md:flex items-center gap-2">
             <Button onClick={() => setShowAddOrderDialog(true)} className="hidden lg:flex gap-2">
               <Plus className="w-4 h-4" />
-              Нова поръчка
+              {getText('orders_add_button_label')}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <Download className="w-4 h-4" />
-                  Експорт
+                  {getText('orders_export_csv_label').split(' ')[0]}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer">
                   <FileText className="w-4 h-4 mr-2" />
-                  Експорт в CSV
+                  {getText('orders_export_csv_label')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={exportToXML} className="cursor-pointer">
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Експорт в XML
+                  {getText('orders_export_xml_label')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -569,7 +571,7 @@ const Index = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => refetch()} className="cursor-pointer">
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Обнови сега
+                  {getText('orders_refresh_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
@@ -610,10 +612,10 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
-            <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title="Настройки">
+            <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title={getText('orders_settings_button_label')}>
               <Settings className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut} title="Изход">
+            <Button variant="ghost" size="icon" onClick={handleSignOut} title={getText('orders_logout_button_label')}>
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
@@ -622,14 +624,14 @@ const Index = () => {
           <div className="flex md:hidden items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8" title="Обнови">
+                <Button variant="outline" size="icon" className="h-8 w-8" title={getText('orders_refresh_label')}>
                   <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => refetch()} className="cursor-pointer">
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Обнови сега
+                  {getText('orders_refresh_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
@@ -681,20 +683,20 @@ const Index = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => navigate('/messages')} className="cursor-pointer">
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Съобщения
+                  {getText('orders_messages_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/inventory')} className="cursor-pointer">
                   <Boxes className="w-4 h-4 mr-2" />
-                  Склад
+                  {getText('orders_warehouse_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
-                  Настройки
+                  {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                   <LogOut className="w-4 h-4 mr-2" />
-                  Изход
+                  {getText('orders_logout_button_label')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -732,7 +734,7 @@ const Index = () => {
         ) : filteredOrders.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Няма намерени поръчки</p>
+            <p>{getText('orders_no_orders_text')}</p>
           </div>
         ) : (
           <div className="w-full space-y-4">
@@ -793,7 +795,7 @@ const Index = () => {
                 </Button>
                 
                 <span className="text-sm text-muted-foreground ml-2">
-                  Страница {currentPage} от {totalPages} ({filteredOrders.length} поръчки)
+                  {getText('common_page_label')} {currentPage} {getText('common_of_label')} {totalPages} ({filteredOrders.length} {getText('orders_header_subtitle')})
                 </span>
               </div>
             )}
@@ -838,19 +840,19 @@ const Index = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Изтриване на {selectedOrders.length === 1 ? 'поръчка' : `${selectedOrders.length} поръчки`}
+              {getText('common_confirm_delete_title')} ({selectedOrders.length})
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Сигурен ли си, че искаш да изтриеш {selectedOrders.length === 1 ? 'поръчката' : 'поръчките'}? Това действие не може да бъде отменено.
+              {getText('common_confirm_delete_description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отказ</AlertDialogCancel>
+            <AlertDialogCancel>{getText('common_cancel_button')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleBulkDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Изтрий
+              {getText('common_delete_button')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -867,7 +869,7 @@ const Index = () => {
         onClick={() => setShowAddOrderDialog(true)} 
         size="icon" 
         className="lg:hidden fixed bottom-6 right-4 h-12 w-12 rounded-full shadow-lg z-20"
-        title="Нова поръчка"
+        title={getText('orders_add_button_label')}
       >
         <Plus className="w-5 h-5" />
       </Button>
