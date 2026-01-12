@@ -338,7 +338,10 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                     </span>
                   )}
                   {columns.has('price') && (
-                    <span className="font-semibold text-green-600 dark:text-green-400">{order.total_price.toFixed(2)} €</span>
+                    <div className="flex flex-col items-end">
+                      <span className="font-semibold text-green-600 dark:text-green-400">{order.total_price.toFixed(2)} €</span>
+                      <span className="text-[10px] text-muted-foreground">с ДДС</span>
+                    </div>
                   )}
                 </div>
               )}

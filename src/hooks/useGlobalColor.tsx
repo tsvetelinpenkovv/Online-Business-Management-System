@@ -37,9 +37,18 @@ const hexToHsl = (hex: string): string => {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 };
 
+// Get current theme mode
+const getCurrentTheme = (): 'light' | 'dark' => {
+  if (typeof window === 'undefined') return 'light';
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+};
+
 // Apply color to CSS variables
-const applyGlobalColor = (hsl: string) => {
+const applyGlobalColor = (lightHsl: string, darkHsl: string) => {
   const root = document.documentElement;
+  const currentTheme = getCurrentTheme();
+  const hsl = currentTheme === 'dark' ? darkHsl : lightHsl;
+  
   root.style.setProperty('--primary', hsl);
   root.style.setProperty('--accent', hsl);
   root.style.setProperty('--ring', hsl);
@@ -49,43 +58,78 @@ const applyGlobalColor = (hsl: string) => {
 
 export const useGlobalColor = () => {
   const [globalColor, setGlobalColor] = useState<string>('#2463eb');
+  const [darkModeColor, setDarkModeColor] = useState<string>('#3b82f6');
   const [loading, setLoading] = useState(true);
 
-  // Load color from database on mount
+  // Apply colors on theme change
   useEffect(() => {
-    const loadColor = async () => {
+    const observer = new MutationObserver(() => {
+      const lightHsl = hexToHsl(globalColor);
+      const darkHsl = hexToHsl(darkModeColor);
+      applyGlobalColor(lightHsl, darkHsl);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, [globalColor, darkModeColor]);
+
+  // Load colors from database on mount
+  useEffect(() => {
+    const loadColors = async () => {
       try {
-        const { data } = await supabase
+        const { data: lightData } = await supabase
           .from('api_settings')
           .select('setting_value')
           .eq('setting_key', 'global_primary_color')
           .maybeSingle();
 
-        if (data?.setting_value) {
-          setGlobalColor(data.setting_value);
-          const hsl = hexToHsl(data.setting_value);
-          applyGlobalColor(hsl);
-        }
+        const { data: darkData } = await supabase
+          .from('api_settings')
+          .select('setting_value')
+          .eq('setting_key', 'global_dark_mode_color')
+          .maybeSingle();
+
+        const lightColor = lightData?.setting_value || '#2463eb';
+        const darkColor = darkData?.setting_value || '#3b82f6';
+        
+        setGlobalColor(lightColor);
+        setDarkModeColor(darkColor);
+        
+        const lightHsl = hexToHsl(lightColor);
+        const darkHsl = hexToHsl(darkColor);
+        applyGlobalColor(lightHsl, darkHsl);
       } catch (error) {
-        console.error('Error loading global color:', error);
+        console.error('Error loading global colors:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadColor();
+    loadColors();
   }, []);
 
-  const saveColor = useCallback(async (color: string) => {
+  const saveColor = useCallback(async (color: string, mode: 'light' | 'dark' = 'light') => {
     try {
-      setGlobalColor(color);
-      const hsl = hexToHsl(color);
-      applyGlobalColor(hsl);
+      if (mode === 'light') {
+        setGlobalColor(color);
+      } else {
+        setDarkModeColor(color);
+      }
+      
+      const lightHsl = hexToHsl(mode === 'light' ? color : globalColor);
+      const darkHsl = hexToHsl(mode === 'dark' ? color : darkModeColor);
+      applyGlobalColor(lightHsl, darkHsl);
 
+      const settingKey = mode === 'light' ? 'global_primary_color' : 'global_dark_mode_color';
+      
       await supabase
         .from('api_settings')
         .upsert({
-          setting_key: 'global_primary_color',
+          setting_key: settingKey,
           setting_value: color,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'setting_key' });
@@ -95,7 +139,7 @@ export const useGlobalColor = () => {
       console.error('Error saving global color:', error);
       return false;
     }
-  }, []);
+  }, [globalColor, darkModeColor]);
 
-  return { globalColor, saveColor, loading };
+  return { globalColor, darkModeColor, saveColor, loading };
 };

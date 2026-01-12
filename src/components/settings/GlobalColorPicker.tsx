@@ -1,11 +1,12 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Palette, Check, Loader2 } from 'lucide-react';
+import { Palette, Check, Loader2, Sun, Moon } from 'lucide-react';
 import { useGlobalColor } from '@/hooks/useGlobalColor';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const PRESET_COLORS = [
   { name: 'Син', value: '#2463eb' },
@@ -20,21 +21,34 @@ const PRESET_COLORS = [
 ];
 
 export const GlobalColorPicker: FC = () => {
-  const { globalColor, saveColor, loading } = useGlobalColor();
-  const [customColor, setCustomColor] = useState(globalColor);
+  const { globalColor, darkModeColor, saveColor, loading } = useGlobalColor();
+  const [customLightColor, setCustomLightColor] = useState(globalColor);
+  const [customDarkColor, setCustomDarkColor] = useState(darkModeColor);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const handleColorChange = async (color: string) => {
+  useEffect(() => {
+    setCustomLightColor(globalColor);
+  }, [globalColor]);
+
+  useEffect(() => {
+    setCustomDarkColor(darkModeColor);
+  }, [darkModeColor]);
+
+  const handleColorChange = async (color: string, mode: 'light' | 'dark') => {
     setSaving(true);
-    setCustomColor(color);
-    const success = await saveColor(color);
+    if (mode === 'light') {
+      setCustomLightColor(color);
+    } else {
+      setCustomDarkColor(color);
+    }
+    const success = await saveColor(color, mode);
     setSaving(false);
     
     if (success) {
       toast({
         title: 'Успех',
-        description: 'Цветът е обновен успешно',
+        description: `Цветът за ${mode === 'light' ? 'светла' : 'тъмна'} тема е обновен`,
       });
     } else {
       toast({
@@ -45,9 +59,10 @@ export const GlobalColorPicker: FC = () => {
     }
   };
 
-  const handleCustomColorApply = async () => {
-    if (/^#[0-9A-Fa-f]{6}$/.test(customColor)) {
-      await handleColorChange(customColor);
+  const handleCustomColorApply = async (mode: 'light' | 'dark') => {
+    const color = mode === 'light' ? customLightColor : customDarkColor;
+    if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+      await handleColorChange(color, mode);
     } else {
       toast({
         title: 'Грешка',
@@ -67,18 +82,13 @@ export const GlobalColorPicker: FC = () => {
     );
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Palette className="w-5 h-5" />
-          Глобален цвят
-        </CardTitle>
-        <CardDescription>
-          Изберете основния цвят на интерфейса. Този цвят ще се използва навсякъде в системата.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+  const renderColorPicker = (mode: 'light' | 'dark') => {
+    const currentColor = mode === 'light' ? globalColor : darkModeColor;
+    const customColor = mode === 'light' ? customLightColor : customDarkColor;
+    const setCustomColor = mode === 'light' ? setCustomLightColor : setCustomDarkColor;
+    
+    return (
+      <div className="space-y-6">
         {/* Preset colors */}
         <div className="space-y-3">
           <Label>Готови цветове</Label>
@@ -86,17 +96,17 @@ export const GlobalColorPicker: FC = () => {
             {PRESET_COLORS.map((preset) => (
               <button
                 key={preset.value}
-                onClick={() => handleColorChange(preset.value)}
+                onClick={() => handleColorChange(preset.value, mode)}
                 disabled={saving}
                 className="relative w-10 h-10 rounded-lg border-2 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 style={{ 
                   backgroundColor: preset.value,
-                  borderColor: globalColor === preset.value ? 'white' : 'transparent',
-                  boxShadow: globalColor === preset.value ? `0 0 0 2px ${preset.value}` : undefined
+                  borderColor: currentColor === preset.value ? 'white' : 'transparent',
+                  boxShadow: currentColor === preset.value ? `0 0 0 2px ${preset.value}` : undefined
                 }}
                 title={preset.name}
               >
-                {globalColor === preset.value && (
+                {currentColor === preset.value && (
                   <Check className="w-5 h-5 text-white absolute inset-0 m-auto" />
                 )}
               </button>
@@ -106,7 +116,7 @@ export const GlobalColorPicker: FC = () => {
 
         {/* Custom color */}
         <div className="space-y-3">
-          <Label htmlFor="custom-color">Персонализиран цвят (HEX код)</Label>
+          <Label htmlFor={`custom-color-${mode}`}>Персонализиран цвят (HEX код)</Label>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <div 
@@ -114,7 +124,7 @@ export const GlobalColorPicker: FC = () => {
                 style={{ backgroundColor: customColor }}
               />
               <Input
-                id="custom-color"
+                id={`custom-color-${mode}`}
                 value={customColor}
                 onChange={(e) => setCustomColor(e.target.value)}
                 placeholder="#2463eb"
@@ -129,8 +139,8 @@ export const GlobalColorPicker: FC = () => {
               className="w-10 h-10 rounded-lg border cursor-pointer"
             />
             <Button 
-              onClick={handleCustomColorApply} 
-              disabled={saving || customColor === globalColor}
+              onClick={() => handleCustomColorApply(mode)} 
+              disabled={saving || customColor === currentColor}
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Приложи'}
             </Button>
@@ -150,12 +160,46 @@ export const GlobalColorPicker: FC = () => {
             </div>
             <div 
               className="px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
-              style={{ backgroundColor: `${globalColor}20`, color: globalColor }}
+              style={{ backgroundColor: `${currentColor}20`, color: currentColor }}
             >
               Примерен статус
             </div>
           </div>
         </div>
+      </div>
+    );
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Palette className="w-5 h-5" />
+          Глобален цвят
+        </CardTitle>
+        <CardDescription>
+          Изберете основния цвят на интерфейса. Можете да зададете различен цвят за светла и тъмна тема.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="light" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="light" className="flex items-center gap-2">
+              <Sun className="w-4 h-4" />
+              Светла тема
+            </TabsTrigger>
+            <TabsTrigger value="dark" className="flex items-center gap-2">
+              <Moon className="w-4 h-4" />
+              Тъмна тема
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="light">
+            {renderColorPicker('light')}
+          </TabsContent>
+          <TabsContent value="dark">
+            {renderColorPicker('dark')}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

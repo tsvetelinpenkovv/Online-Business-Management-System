@@ -593,54 +593,69 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              title="Обнови"
-              onClick={() => {
-                refetch();
-                toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
-              }}
-            >
-              <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" title="Авто-обновяване">
-                  <Clock className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'text-primary' : ''}`} />
+                <Button variant="outline" size="icon" title="Обнови">
+                  <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(0)} 
+                  onClick={() => {
+                    refetch();
+                    toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
+                  }} 
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Обнови сега
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setAutoRefreshInterval(0);
+                    toast({ title: 'Авто-обновяване', description: 'Изключено' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   Без автоматично
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(60000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(60000);
+                    toast({ title: 'Авто-обновяване', description: 'На всяка 1 минута' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 60000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   На всяка 1 минута
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(120000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(120000);
+                    toast({ title: 'Авто-обновяване', description: 'На всеки 2 минути' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 120000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   На всеки 2 минути
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(300000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(300000);
+                    toast({ title: 'Авто-обновяване', description: 'На всеки 5 минути' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 300000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   На всеки 5 минути
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(600000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(600000);
+                    toast({ title: 'Авто-обновяване', description: 'На всеки 10 минути' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 600000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
@@ -659,55 +674,69 @@ const Index = () => {
 
           {/* Mobile menu (show up to md breakpoint) */}
           <div className="flex md:hidden items-center gap-1">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="h-8 w-8" 
-              title={getText('orders_refresh_label')}
-              onClick={() => {
-                refetch();
-                toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
-              }}
-            >
-              <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8" title="Авто-обновяване">
-                  <Clock className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'text-primary' : ''}`} />
+                <Button variant="outline" size="icon" className="h-8 w-8" title={getText('orders_refresh_label')}>
+                  <RefreshCw className={`w-4 h-4 ${autoRefreshInterval > 0 ? 'animate-spin' : ''}`} style={autoRefreshInterval > 0 ? { animationDuration: '3s' } : undefined} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(0)} 
+                  onClick={() => {
+                    refetch();
+                    toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
+                  }} 
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Обнови сега
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setAutoRefreshInterval(0);
+                    toast({ title: 'Авто-обновяване', description: 'Изключено' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   Без автоматично
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(60000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(60000);
+                    toast({ title: 'Авто-обновяване', description: 'На всяка 1 минута' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 60000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   1 мин
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(120000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(120000);
+                    toast({ title: 'Авто-обновяване', description: 'На всеки 2 минути' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 120000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   2 мин
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(300000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(300000);
+                    toast({ title: 'Авто-обновяване', description: 'На всеки 5 минути' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 300000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
                   5 мин
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setAutoRefreshInterval(600000)} 
+                  onClick={() => {
+                    setAutoRefreshInterval(600000);
+                    toast({ title: 'Авто-обновяване', description: 'На всеки 10 минути' });
+                  }} 
                   className={`cursor-pointer ${autoRefreshInterval === 600000 ? 'bg-muted' : ''}`}
                 >
                   <Clock className="w-4 h-4 mr-2" />
