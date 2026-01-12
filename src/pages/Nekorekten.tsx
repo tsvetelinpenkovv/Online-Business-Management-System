@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, ShieldAlert, CheckCircle2, XCircle, HelpCircle, Loader2, RefreshCw, ExternalLink, Phone, User } from 'lucide-react';
+import { ArrowLeft, Search, ShieldAlert, CheckCircle2, XCircle, HelpCircle, Loader2, RefreshCw, ExternalLink, Phone, User, Download, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,8 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { format } from 'date-fns';
+import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { bg } from 'date-fns/locale';
+import { DateRange } from 'react-day-picker';
 
 interface CustomerCheck {
   id: number;
@@ -41,6 +48,7 @@ const Nekorekten = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [footerSettings, setFooterSettings] = useState<{
     footer_text: string | null;
     footer_link_text: string | null;
@@ -122,31 +130,81 @@ const Nekorekten = () => {
   };
 
   // Filter customers
-  const filteredCustomers = customers.filter(cust => {
-    // Tab filter
-    if (activeTab === 'correct' && cust.is_correct !== true) return false;
-    if (activeTab === 'incorrect' && cust.is_correct !== false) return false;
-    if (activeTab === 'unknown' && cust.is_correct !== null) return false;
+  const filteredCustomers = useMemo(() => {
+    return customers.filter(cust => {
+      // Tab filter
+      if (activeTab === 'correct' && cust.is_correct !== true) return false;
+      if (activeTab === 'incorrect' && cust.is_correct !== false) return false;
+      if (activeTab === 'unknown' && cust.is_correct !== null) return false;
 
-    // Search filter - by email, name, or phone
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        cust.phone.toLowerCase().includes(query) ||
-        cust.customer_name?.toLowerCase().includes(query) ||
-        (cust.customer_email && cust.customer_email.toLowerCase().includes(query))
-      );
-    }
+      // Date range filter
+      if (dateRange?.from) {
+        const custDate = new Date(cust.created_at);
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        if (!isWithinInterval(custDate, { start: from, end: to })) return false;
+      }
 
-    return true;
-  });
+      // Search filter - by email, name, or phone
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          cust.phone.toLowerCase().includes(query) ||
+          cust.customer_name?.toLowerCase().includes(query) ||
+          (cust.customer_email && cust.customer_email.toLowerCase().includes(query))
+        );
+      }
+
+      return true;
+    });
+  }, [customers, activeTab, dateRange, searchQuery]);
 
   // Statistics
-  const stats = {
+  const stats = useMemo(() => ({
     total: customers.length,
     correct: customers.filter(c => c.is_correct === true).length,
     incorrect: customers.filter(c => c.is_correct === false).length,
     unknown: customers.filter(c => c.is_correct === null).length,
+  }), [customers]);
+
+  // Export CSV function
+  const exportToCSV = () => {
+    const dataToExport = activeTab === 'incorrect' 
+      ? filteredCustomers 
+      : customers.filter(c => c.is_correct === false);
+    
+    if (dataToExport.length === 0) {
+      toast({
+        title: 'Няма данни',
+        description: 'Няма некоректни клиенти за експорт',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const headers = ['Име', 'Имейл', 'Телефон', 'Източник', 'Дата'];
+    const csvContent = [
+      headers.join(','),
+      ...dataToExport.map(c => [
+        `"${c.customer_name}"`,
+        `"${c.customer_email || ''}"`,
+        `"${c.phone}"`,
+        `"${c.source || ''}"`,
+        `"${format(new Date(c.created_at), 'dd.MM.yyyy HH:mm')}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `nekоrektni-klienti-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    toast({
+      title: 'Успешен експорт',
+      description: `Експортирани са ${dataToExport.length} некоректни клиента`,
+    });
   };
 
   if (authLoading || loading) {
@@ -263,17 +321,72 @@ const Nekorekten = () => {
             </Card>
           </div>
 
-          {/* Search */}
+          {/* Search and Filters */}
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Търси по име, имейл или телефон..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Търси по име, имейл или телефон..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="default" className="gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {dateRange?.from ? (
+                          dateRange.to ? (
+                            <span className="text-xs">
+                              {format(dateRange.from, 'dd.MM.yy')} - {format(dateRange.to, 'dd.MM.yy')}
+                            </span>
+                          ) : (
+                            format(dateRange.from, 'dd.MM.yyyy')
+                          )
+                        ) : (
+                          <span className="hidden sm:inline">Период</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <CalendarComponent
+                        initialFocus
+                        mode="range"
+                        defaultMonth={dateRange?.from}
+                        selected={dateRange}
+                        onSelect={setDateRange}
+                        numberOfMonths={isMobile ? 1 : 2}
+                        locale={bg}
+                      />
+                      {dateRange && (
+                        <div className="p-2 border-t">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => setDateRange(undefined)}
+                          >
+                            Изчисти филтъра
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  <Button 
+                    variant="outline" 
+                    size="default"
+                    onClick={exportToCSV}
+                    className="gap-2"
+                    title="Експорт на некоректни клиенти"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">CSV</span>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
