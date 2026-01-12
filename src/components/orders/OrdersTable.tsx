@@ -432,7 +432,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               <SortableHead columnKey="customer_name" className="w-[100px]">
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs">Клиент</span>
+                  Клиент
                 </div>
               </SortableHead>
               {nekorektenEnabled && (
@@ -443,7 +443,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               <SortableHead columnKey="phone" className="w-[115px]">
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs">Телефон</span>
+                  Телефон
                 </div>
               </SortableHead>
               <SortableHead columnKey="total_price" className="w-[80px]" align="center">
@@ -452,7 +452,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
               </SortableHead>
               <SortableHead columnKey="product_name" className="w-[125px]" align="center">
                 <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs">Продукт</span>
+                Продукт
               </SortableHead>
               <SortableHead columnKey="catalog_number" className="w-[100px]" align="center">
                 <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
