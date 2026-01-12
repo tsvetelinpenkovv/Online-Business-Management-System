@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, useEffect } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
@@ -59,6 +59,37 @@ interface OrdersTableProps {
   onSelectionChange: (ids: number[]) => void;
   nekorektenEnabled?: boolean;
 }
+
+// Invoice icon button component - checks if order has invoice
+const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ orderId, onClick }) => {
+  const [hasInvoice, setHasInvoice] = useState(false);
+
+  useEffect(() => {
+    const checkInvoice = async () => {
+      const { data } = await supabase
+        .from('invoices')
+        .select('id')
+        .eq('order_id', orderId)
+        .maybeSingle();
+      setHasInvoice(!!data);
+    };
+    checkInvoice();
+  }, [orderId]);
+
+  if (!hasInvoice) return null;
+
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      className="h-6 w-6 text-success" 
+      onClick={onClick}
+      title="Има издадена фактура"
+    >
+      <FileText className="w-4 h-4" />
+    </Button>
+  );
+};
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
@@ -669,6 +700,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col items-center gap-0.5">
+                    {/* Invoice icon above the three dots */}
+                    <InvoiceIconButton orderId={order.id} onClick={() => setInvoiceOrder(order)} />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Отвори меню с действия">

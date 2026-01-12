@@ -7,7 +7,7 @@ import { OrdersTable } from '@/components/orders/OrdersTable';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
@@ -50,6 +50,8 @@ const Index = () => {
   const [showStatistics, setShowStatistics] = useState(false);
   const [showAddOrderDialog, setShowAddOrderDialog] = useState(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 100;
   const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
   const [nekorektenEnabled, setNekorektenEnabled] = useState(true);
   const [companySettings, setCompanySettings] = useState<{
@@ -156,6 +158,18 @@ const Index = () => {
       return matchesSearch && matchesStatus && matchesSource && matchesDateFrom && matchesDateTo;
     });
   }, [orders, searchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const paginatedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * ordersPerPage;
+    return filteredOrders.slice(startIndex, startIndex + ordersPerPage);
+  }, [filteredOrders, currentPage, ordersPerPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -675,15 +689,68 @@ const Index = () => {
             <p>Няма намерени поръчки</p>
           </div>
         ) : (
-          <div className="w-full overflow-x-auto">
-            <OrdersTable
-              orders={filteredOrders}
-              onDelete={deleteOrder}
-              onUpdate={updateOrder}
-              selectedOrders={selectedOrders}
-              onSelectionChange={setSelectedOrders}
-              nekorektenEnabled={nekorektenEnabled}
-            />
+          <div className="w-full space-y-4">
+            <div className="overflow-x-auto">
+              <OrdersTable
+                orders={paginatedOrders}
+                onDelete={deleteOrder}
+                onUpdate={updateOrder}
+                selectedOrders={selectedOrders}
+                onSelectionChange={setSelectedOrders}
+                nekorektenEnabled={nekorektenEnabled}
+              />
+            </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-wrap items-center justify-center gap-2 py-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 4) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 3) {
+                    pageNum = totalPages - 6 + i;
+                  } else {
+                    pageNum = currentPage - 3 + i;
+                  }
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className="min-w-[36px]"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                
+                <span className="text-sm text-muted-foreground ml-2">
+                  Страница {currentPage} от {totalPages} ({filteredOrders.length} поръчки)
+                </span>
+              </div>
+            )}
           </div>
         )}
       </main>
