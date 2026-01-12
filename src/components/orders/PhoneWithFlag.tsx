@@ -79,23 +79,13 @@ export const PhoneWithFlag: FC<PhoneWithFlagProps> = ({ phone }) => {
   };
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span 
-        className="inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors text-[13px] font-semibold"
-        onClick={handleCopy}
-        title="Кликни за копиране"
-      >
-        {isBulgarian && <BulgarianFlag className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" />}
-        <span className="whitespace-nowrap">{formatted}</span>
-      </span>
-      <a
-        href={`tel:${cleanNumber}`}
-        onClick={handleCall}
-        className="p-1 rounded-md hover:bg-muted transition-colors text-success hover:text-success/80"
-        title="Обади се"
-      >
-        <PhoneIcon className="w-3.5 h-3.5" />
-      </a>
-    </div>
+    <span 
+      className="inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors text-[13px] font-semibold"
+      onClick={handleCopy}
+      title="Кликни за копиране"
+    >
+      {isBulgarian && <BulgarianFlag className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" />}
+      <span className="whitespace-nowrap">{formatted}</span>
+    </span>
   );
 };
