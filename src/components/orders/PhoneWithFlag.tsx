@@ -1,4 +1,5 @@
 import { FC, useMemo } from 'react';
+import { Phone as PhoneIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface PhoneWithFlagProps {
@@ -64,7 +65,8 @@ export const PhoneWithFlag: FC<PhoneWithFlagProps> = ({ phone }) => {
   
   const { formatted, isBulgarian, cleanNumber } = useMemo(() => formatPhone(phone), [phone]);
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(cleanNumber);
     toast({
       title: 'Копирано',
@@ -72,14 +74,28 @@ export const PhoneWithFlag: FC<PhoneWithFlagProps> = ({ phone }) => {
     });
   };
 
+  const handleCall = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <span 
-      className="inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
-      onClick={handleCopy}
-      title="Кликни за копиране"
-    >
-      {isBulgarian && <BulgarianFlag className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" />}
-      <span className="whitespace-nowrap">{formatted}</span>
-    </span>
+    <div className="flex items-center gap-1.5">
+      <span 
+        className="inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors text-[13px] font-semibold"
+        onClick={handleCopy}
+        title="Кликни за копиране"
+      >
+        {isBulgarian && <BulgarianFlag className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" />}
+        <span className="whitespace-nowrap">{formatted}</span>
+      </span>
+      <a
+        href={`tel:${cleanNumber}`}
+        onClick={handleCall}
+        className="p-1 rounded-md hover:bg-muted transition-colors text-success hover:text-success/80"
+        title="Обади се"
+      >
+        <PhoneIcon className="w-3.5 h-3.5" />
+      </a>
+    </div>
   );
 };
