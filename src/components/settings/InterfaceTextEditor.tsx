@@ -135,9 +135,11 @@ interface TextConfig {
   inventory_product_barcode: string;
   inventory_product_category: string;
   inventory_product_stock: string;
+  inventory_product_reserved_stock: string;
   inventory_product_min_stock: string;
   inventory_product_purchase_price: string;
   inventory_product_sale_price: string;
+  inventory_product_margin: string;
   
   // Inventory suppliers
   inventory_add_supplier_button: string;
@@ -306,9 +308,11 @@ const defaultTexts: TextConfig = {
   inventory_product_barcode: 'Баркод',
   inventory_product_category: 'Категория',
   inventory_product_stock: 'Наличност',
+  inventory_product_reserved_stock: 'Резервирано',
   inventory_product_min_stock: 'Мин. наличност',
   inventory_product_purchase_price: 'Покупна цена',
   inventory_product_sale_price: 'Продажна цена',
+  inventory_product_margin: 'Марж',
   
   // Inventory suppliers
   inventory_add_supplier_button: 'Добави доставчик',

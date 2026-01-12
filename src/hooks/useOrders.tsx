@@ -407,6 +407,23 @@ export const useOrders = () => {
         }
       }
 
+      // Handle unreserve when leaving reserve status (but not when shipping or cancelling - those handle their own stock ops)
+      const isLeavingReserveStatus = oldOrder && oldOrder.status === stockSettings.reserveStatus && 
+        order.status !== stockSettings.reserveStatus && 
+        order.status !== stockSettings.deductionStatus && 
+        order.status !== stockSettings.restoreStatus;
+      
+      if (isLeavingReserveStatus) {
+        // Unreserve the stock without deducting
+        const result = await handleOrderStock(order, 'unreserve');
+        if (result.success) {
+          toast({
+            title: 'Резервация премахната',
+            description: 'Резервираната наличност беше освободена',
+          });
+        }
+      }
+
       // Handle stock deduction when shipped
       if (isBeingShipped) {
         const result = await deductStockForOrder(order);
@@ -466,12 +483,55 @@ export const useOrders = () => {
         ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.restoreStatus)
         : [];
 
+      const ordersToReserve = status === stockSettings.reserveStatus
+        ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.reserveStatus)
+        : [];
+
+      // Orders leaving reserve status (but not being shipped or cancelled)
+      const ordersToUnreserve = status !== stockSettings.reserveStatus && 
+        status !== stockSettings.deductionStatus && 
+        status !== stockSettings.restoreStatus
+        ? orders.filter(o => ids.includes(o.id) && o.status === stockSettings.reserveStatus)
+        : [];
+
       const { error } = await supabase
         .from('orders')
         .update({ status })
         .in('id', ids);
 
       if (error) throw error;
+
+      // Handle stock reservation
+      if (ordersToReserve.length > 0) {
+        let stockReserved = 0;
+        for (const order of ordersToReserve) {
+          const result = await reserveStockForOrder(order);
+          if (result.success) stockReserved++;
+        }
+        
+        if (stockReserved > 0) {
+          toast({
+            title: 'Резервация',
+            description: `Резервирани наличности за ${stockReserved} поръчки`,
+          });
+        }
+      }
+
+      // Handle unreserving
+      if (ordersToUnreserve.length > 0) {
+        let stockUnreserved = 0;
+        for (const order of ordersToUnreserve) {
+          const result = await handleOrderStock(order, 'unreserve');
+          if (result.success) stockUnreserved++;
+        }
+        
+        if (stockUnreserved > 0) {
+          toast({
+            title: 'Резервация премахната',
+            description: `Освободени резервации за ${stockUnreserved} поръчки`,
+          });
+        }
+      }
 
       // Handle stock deduction for shipped orders
       if (ordersToShip.length > 0) {
