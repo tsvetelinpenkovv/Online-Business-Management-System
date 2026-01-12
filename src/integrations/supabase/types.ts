@@ -329,6 +329,7 @@ export type Database = {
           min_stock_level: number | null
           name: string
           purchase_price: number | null
+          reserved_stock: number
           sale_price: number | null
           sku: string
           unit_id: string | null
@@ -348,6 +349,7 @@ export type Database = {
           min_stock_level?: number | null
           name: string
           purchase_price?: number | null
+          reserved_stock?: number
           sale_price?: number | null
           sku: string
           unit_id?: string | null
@@ -367,6 +369,7 @@ export type Database = {
           min_stock_level?: number | null
           name?: string
           purchase_price?: number | null
+          reserved_stock?: number
           sale_price?: number | null
           sku?: string
           unit_id?: string | null
@@ -577,6 +580,7 @@ export type Database = {
           quantity: number
           source: string | null
           status: string
+          stock_deducted: boolean
           total_price: number
           user_id: string | null
         }
@@ -597,6 +601,7 @@ export type Database = {
           quantity?: number
           source?: string | null
           status?: string
+          stock_deducted?: boolean
           total_price: number
           user_id?: string | null
         }
@@ -617,6 +622,7 @@ export type Database = {
           quantity?: number
           source?: string | null
           status?: string
+          stock_deducted?: boolean
           total_price?: number
           user_id?: string | null
         }

@@ -40,6 +40,7 @@ export interface Order {
   comment: string | null;
   source: OrderSource;
   user_id: string | null;
+  stock_deducted?: boolean;
 }
 
 export interface ApiSetting {
