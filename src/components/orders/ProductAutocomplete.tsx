@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, Barcode, Loader2 } from 'lucide-react';
+import { Package, Barcode, Loader2, AlertTriangle } from 'lucide-react';
 
 interface InventoryProduct {
   id: string;
@@ -17,6 +17,8 @@ interface ProductAutocompleteProps {
   onSelect?: (product: InventoryProduct) => void;
   placeholder?: string;
   className?: string;
+  requiredQuantity?: number; // For stock validation
+  showStockWarning?: boolean;
 }
 
 export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
@@ -25,11 +27,14 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
   onSelect,
   placeholder = 'Име на продукта',
   className = '',
+  requiredQuantity = 1,
+  showStockWarning = true,
 }) => {
   const [products, setProducts] = useState<InventoryProduct[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedProduct, setSelectedProduct] = useState<InventoryProduct | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -80,6 +85,7 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
 
   const handleSelect = (product: InventoryProduct) => {
     onChange(product.name);
+    setSelectedProduct(product);
     onSelect?.(product);
     setShowSuggestions(false);
     setSelectedIndex(-1);
@@ -110,6 +116,9 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
     }
   };
 
+  // Stock warning
+  const showWarning = showStockWarning && selectedProduct && selectedProduct.current_stock < requiredQuantity;
+
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div className="relative">
@@ -119,13 +128,14 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
           onChange={(e) => {
             onChange(e.target.value);
             setSelectedIndex(-1);
+            setSelectedProduct(null);
           }}
           onFocus={() => {
             if (products.length > 0) setShowSuggestions(true);
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="pr-8"
+          className={`pr-8 ${showWarning ? 'border-warning focus-visible:ring-warning' : ''}`}
         />
         {loading && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -134,37 +144,51 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
         )}
       </div>
 
+      {/* Stock warning message */}
+      {showWarning && (
+        <div className="flex items-center gap-1.5 mt-1 text-warning text-xs">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>
+            Недостатъчна наличност! Налични: {selectedProduct.current_stock} бр., нужни: {requiredQuantity} бр.
+          </span>
+        </div>
+      )}
+
       {showSuggestions && products.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-[200px] overflow-y-auto">
-          {products.map((product, index) => (
-            <button
-              key={product.id}
-              type="button"
-              onClick={() => handleSelect(product)}
-              className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
-                index === selectedIndex 
-                  ? 'bg-accent text-accent-foreground' 
-                  : 'hover:bg-muted'
-              }`}
-            >
-              <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{product.name}</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-2">
-                  <span className="flex items-center gap-1">
-                    <Barcode className="w-3 h-3" />
-                    {product.sku}
-                  </span>
-                  {product.sale_price && (
-                    <span className="text-success">{product.sale_price.toFixed(2)} €</span>
-                  )}
-                  <span className={product.current_stock > 0 ? 'text-success' : 'text-destructive'}>
-                    {product.current_stock} бр.
-                  </span>
-                </p>
-              </div>
-            </button>
-          ))}
+          {products.map((product, index) => {
+            const lowStock = product.current_stock < requiredQuantity;
+            return (
+              <button
+                key={product.id}
+                type="button"
+                onClick={() => handleSelect(product)}
+                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
+                  index === selectedIndex 
+                    ? 'bg-accent text-accent-foreground' 
+                    : 'hover:bg-muted'
+                }`}
+              >
+                <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{product.name}</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <Barcode className="w-3 h-3" />
+                      {product.sku}
+                    </span>
+                    {product.sale_price && (
+                      <span className="text-success">{product.sale_price.toFixed(2)} €</span>
+                    )}
+                    <span className={`flex items-center gap-0.5 ${lowStock ? 'text-warning' : product.current_stock > 0 ? 'text-success' : 'text-destructive'}`}>
+                      {lowStock && <AlertTriangle className="w-3 h-3" />}
+                      {product.current_stock} бр.
+                    </span>
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
