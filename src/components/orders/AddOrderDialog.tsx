@@ -324,9 +324,6 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
               </div>
             ))}
             
-            <div className="flex justify-end text-sm font-medium">
-              Обща цена: {calculateTotalPrice().toFixed(2)} €
-            </div>
           </div>
 
           <div className="space-y-2 md:col-span-2">
