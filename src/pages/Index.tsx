@@ -11,7 +11,7 @@ import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, C
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt, MessageCircle, ShieldAlert, Boxes, Eye, EyeOff } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, Phone, ChevronLeft, ChevronRight, Receipt, MessageCircle, ShieldAlert, Boxes, Eye, EyeOff, Columns3 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
@@ -694,6 +694,14 @@ const Index = () => {
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                {/* Column visibility submenu header */}
+                <DropdownMenuItem 
+                  disabled 
+                  className="text-xs font-medium text-muted-foreground opacity-100"
+                >
+                  <Columns3 className="w-4 h-4 mr-2" />
+                  Колони
+                </DropdownMenuItem>
                 {/* Column visibility in mobile settings */}
                 {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || nekorektenEnabled).map((column) => (
                   <DropdownMenuItem 
@@ -709,7 +717,7 @@ const Index = () => {
                       saveVisibleColumns(newColumns);
                     }}
                     onSelect={(e) => e.preventDefault()}
-                    className="cursor-pointer"
+                    className="cursor-pointer pl-6"
                   >
                     {visibleColumns.has(column.key) ? (
                       <Eye className="w-4 h-4 mr-2 text-success" />

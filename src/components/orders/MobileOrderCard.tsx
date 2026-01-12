@@ -248,10 +248,10 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
               )}
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-xs px-2 py-0.5 rounded-full ${order.quantity > 1 ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground'} font-semibold`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${order.quantity > 1 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-muted text-muted-foreground'} font-semibold`}>
                 {order.quantity} бр.
               </span>
-              <span className="font-semibold text-green-600">{order.total_price.toFixed(2)} €</span>
+              <span className="font-semibold text-green-600 dark:text-green-400">{order.total_price.toFixed(2)} €</span>
             </div>
           </div>
         </div>
