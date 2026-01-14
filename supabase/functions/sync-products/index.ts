@@ -12,6 +12,12 @@ interface PlatformConfig {
   is_enabled: boolean;
 }
 
+interface SyncResult {
+  synced: number;
+  created: number;
+  bundles: number;
+}
+
 interface WooCommerceProduct {
   id: number;
   name: string;
@@ -22,6 +28,8 @@ interface WooCommerceProduct {
   manage_stock: boolean;
   price: string;
   regular_price: string;
+  description: string;
+  short_description: string;
   grouped_products?: number[];
   bundled_items?: Array<{
     product_id: number;
@@ -36,6 +44,11 @@ interface WooCommerceProduct {
     quantity_min: number;
     quantity_max: number;
   }>;
+}
+
+// Helper to generate unique SKU if missing
+function generateSku(platformPrefix: string, productId: number | string): string {
+  return `${platformPrefix}-${productId}`;
 }
 
 async function fetchWooCommerceProducts(config: PlatformConfig): Promise<WooCommerceProduct[]> {
@@ -111,17 +124,20 @@ async function fetchWooCommerceBundledItems(config: PlatformConfig, productId: n
   }
 }
 
-async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   console.log('Fetching WooCommerce products...');
   const products = await fetchWooCommerceProducts(config);
   console.log(`Found ${products.length} WooCommerce products`);
   
   let synced = 0;
+  let created = 0;
   let bundles = 0;
   
   for (const wcProduct of products) {
     let existingProduct = null;
+    const sku = wcProduct.sku || generateSku('WC', wcProduct.id);
     
+    // Try to find by SKU first
     if (wcProduct.sku) {
       const { data } = await supabase
         .from('inventory_products')
@@ -131,6 +147,7 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
       existingProduct = data;
     }
     
+    // Try to find by name if no SKU match
     if (!existingProduct && wcProduct.name) {
       const { data } = await supabase
         .from('inventory_products')
@@ -141,75 +158,109 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
     }
     
     const isBundleType = ['grouped', 'bundle', 'composite'].includes(wcProduct.type);
+    const salePrice = parseFloat(wcProduct.price) || parseFloat(wcProduct.regular_price) || 0;
     
     if (existingProduct) {
+      // Update existing product
       await supabase
         .from('inventory_products')
         .update({
           woocommerce_id: wcProduct.id,
           is_bundle: isBundleType,
           external_bundle_type: isBundleType ? wcProduct.type : null,
+          current_stock: wcProduct.manage_stock ? (wcProduct.stock_quantity || 0) : existingProduct.current_stock,
+          sale_price: salePrice || undefined,
         })
         .eq('id', existingProduct.id);
       synced++;
+    } else {
+      // CREATE NEW PRODUCT
+      console.log(`Creating new product from WooCommerce: ${wcProduct.name} (SKU: ${sku})`);
+      const { data: newProduct, error } = await supabase
+        .from('inventory_products')
+        .insert({
+          sku: sku,
+          name: wcProduct.name,
+          description: wcProduct.short_description || wcProduct.description || null,
+          sale_price: salePrice,
+          purchase_price: 0,
+          current_stock: wcProduct.manage_stock ? (wcProduct.stock_quantity || 0) : 0,
+          min_stock_level: 0,
+          woocommerce_id: wcProduct.id,
+          is_bundle: isBundleType,
+          external_bundle_type: isBundleType ? wcProduct.type : null,
+          is_active: wcProduct.status === 'publish',
+        })
+        .select('id')
+        .single();
       
-      if (isBundleType) {
-        const bundledItems = await fetchWooCommerceBundledItems(config, wcProduct.id);
+      if (error) {
+        console.error(`Error creating product ${wcProduct.name}:`, error);
+        continue;
+      }
+      
+      existingProduct = newProduct;
+      created++;
+    }
+    
+    // Handle bundles
+    if (isBundleType && existingProduct) {
+      const bundledItems = await fetchWooCommerceBundledItems(config, wcProduct.id);
+      
+      for (const item of bundledItems) {
+        const wcComponentUrl = `${config.store_url}/wp-json/wc/v3/products/${item.product_id}`;
+        const credentials = btoa(`${config.api_key}:${config.api_secret}`);
+        const compRes = await fetch(wcComponentUrl, {
+          headers: { 'Authorization': `Basic ${credentials}` },
+        });
         
-        for (const item of bundledItems) {
-          const wcComponentUrl = `${config.store_url}/wp-json/wc/v3/products/${item.product_id}`;
-          const credentials = btoa(`${config.api_key}:${config.api_secret}`);
-          const compRes = await fetch(wcComponentUrl, {
-            headers: { 'Authorization': `Basic ${credentials}` },
-          });
-          
-          if (!compRes.ok) continue;
-          
-          const wcComponent = await compRes.json();
-          
-          let componentProduct = null;
-          
-          if (wcComponent.sku) {
-            const { data } = await supabase
-              .from('inventory_products')
-              .select('id')
-              .eq('sku', wcComponent.sku)
-              .maybeSingle();
-            componentProduct = data;
-          }
-          
-          if (!componentProduct && wcComponent.name) {
-            const { data } = await supabase
-              .from('inventory_products')
-              .select('id')
-              .ilike('name', wcComponent.name)
-              .maybeSingle();
-            componentProduct = data;
-          }
-          
-          if (componentProduct) {
-            await supabase
-              .from('product_bundles')
-              .upsert({
-                parent_product_id: existingProduct.id,
-                component_product_id: componentProduct.id,
-                component_quantity: item.quantity,
-              }, {
-                onConflict: 'parent_product_id,component_product_id',
-              });
-            bundles++;
-          }
+        if (!compRes.ok) continue;
+        
+        const wcComponent = await compRes.json();
+        
+        let componentProduct = null;
+        
+        if (wcComponent.sku) {
+          const { data } = await supabase
+            .from('inventory_products')
+            .select('id')
+            .eq('sku', wcComponent.sku)
+            .maybeSingle();
+          componentProduct = data;
+        }
+        
+        if (!componentProduct && wcComponent.name) {
+          const { data } = await supabase
+            .from('inventory_products')
+            .select('id')
+            .ilike('name', wcComponent.name)
+            .maybeSingle();
+          componentProduct = data;
+        }
+        
+        if (componentProduct) {
+          await supabase
+            .from('product_bundles')
+            .upsert({
+              parent_product_id: existingProduct.id,
+              component_product_id: componentProduct.id,
+              component_quantity: item.quantity,
+            }, {
+              onConflict: 'parent_product_id,component_product_id',
+            });
+          bundles++;
         }
       }
     }
   }
   
-  return { synced, bundles };
+  return { synced, created, bundles };
 }
 
-async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   const credentials = btoa(`${config.api_key}:`);
   let synced = 0;
+  let created = 0;
   let bundles = 0;
   
   const productsUrl = `${config.store_url}/api/products?output_format=JSON&display=full`;
@@ -219,7 +270,7 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
   
   if (!productsRes.ok) {
     console.error('Failed to fetch PrestaShop products');
-    return { synced: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -229,6 +280,8 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
   
   for (const psProduct of products) {
     let existingProduct = null;
+    const sku = psProduct.reference || generateSku('PS', psProduct.id);
+    const productName = psProduct.name?.[0]?.value || psProduct.name || `PrestaShop Product ${psProduct.id}`;
     
     if (psProduct.reference) {
       const { data } = await supabase
@@ -239,7 +292,6 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
       existingProduct = data;
     }
     
-    const productName = psProduct.name?.[0]?.value || psProduct.name;
     if (!existingProduct && productName) {
       const { data } = await supabase
         .from('inventory_products')
@@ -250,6 +302,8 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
     }
     
     const isPack = psProduct.type === 'pack' || psProduct.is_pack === '1';
+    const salePrice = parseFloat(psProduct.price) || 0;
+    const description = psProduct.description?.[0]?.value || psProduct.description_short?.[0]?.value || null;
     
     if (existingProduct) {
       await supabase
@@ -257,69 +311,100 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
         .update({
           is_bundle: isPack,
           external_bundle_type: isPack ? 'pack' : null,
+          current_stock: parseInt(psProduct.quantity) || 0,
+          sale_price: salePrice || undefined,
         })
         .eq('id', existingProduct.id);
       synced++;
+    } else {
+      // CREATE NEW PRODUCT
+      console.log(`Creating new product from PrestaShop: ${productName} (SKU: ${sku})`);
+      const { data: newProduct, error } = await supabase
+        .from('inventory_products')
+        .insert({
+          sku: sku,
+          name: productName,
+          description: description,
+          sale_price: salePrice,
+          purchase_price: parseFloat(psProduct.wholesale_price) || 0,
+          current_stock: parseInt(psProduct.quantity) || 0,
+          min_stock_level: parseInt(psProduct.minimal_quantity) || 0,
+          is_bundle: isPack,
+          external_bundle_type: isPack ? 'pack' : null,
+          is_active: psProduct.active === '1',
+        })
+        .select('id')
+        .single();
       
-      if (isPack && psProduct.associations?.pack) {
-        const packItems = Array.isArray(psProduct.associations.pack)
-          ? psProduct.associations.pack
-          : [psProduct.associations.pack];
+      if (error) {
+        console.error(`Error creating product ${productName}:`, error);
+        continue;
+      }
+      
+      existingProduct = newProduct;
+      created++;
+    }
+    
+    // Handle pack bundles
+    if (isPack && psProduct.associations?.pack && existingProduct) {
+      const packItems = Array.isArray(psProduct.associations.pack)
+        ? psProduct.associations.pack
+        : [psProduct.associations.pack];
+      
+      for (const packItem of packItems) {
+        const componentUrl = `${config.store_url}/api/products/${packItem.id}?output_format=JSON`;
+        const compRes = await fetch(componentUrl, {
+          headers: { 'Authorization': `Basic ${credentials}` },
+        });
         
-        for (const packItem of packItems) {
-          const componentUrl = `${config.store_url}/api/products/${packItem.id}?output_format=JSON`;
-          const compRes = await fetch(componentUrl, {
-            headers: { 'Authorization': `Basic ${credentials}` },
-          });
-          
-          if (!compRes.ok) continue;
-          
-          const compData = await compRes.json();
-          const component = compData.product;
-          
-          let componentProduct = null;
-          
-          if (component?.reference) {
-            const { data } = await supabase
-              .from('inventory_products')
-              .select('id')
-              .eq('sku', component.reference)
-              .maybeSingle();
-            componentProduct = data;
-          }
-          
-          const compName = component?.name?.[0]?.value || component?.name;
-          if (!componentProduct && compName) {
-            const { data } = await supabase
-              .from('inventory_products')
-              .select('id')
-              .ilike('name', compName)
-              .maybeSingle();
-            componentProduct = data;
-          }
-          
-          if (componentProduct) {
-            await supabase
-              .from('product_bundles')
-              .upsert({
-                parent_product_id: existingProduct.id,
-                component_product_id: componentProduct.id,
-                component_quantity: parseInt(packItem.quantity) || 1,
-              }, {
-                onConflict: 'parent_product_id,component_product_id',
-              });
-            bundles++;
-          }
+        if (!compRes.ok) continue;
+        
+        const compData = await compRes.json();
+        const component = compData.product;
+        
+        let componentProduct = null;
+        
+        if (component?.reference) {
+          const { data } = await supabase
+            .from('inventory_products')
+            .select('id')
+            .eq('sku', component.reference)
+            .maybeSingle();
+          componentProduct = data;
+        }
+        
+        const compName = component?.name?.[0]?.value || component?.name;
+        if (!componentProduct && compName) {
+          const { data } = await supabase
+            .from('inventory_products')
+            .select('id')
+            .ilike('name', compName)
+            .maybeSingle();
+          componentProduct = data;
+        }
+        
+        if (componentProduct) {
+          await supabase
+            .from('product_bundles')
+            .upsert({
+              parent_product_id: existingProduct.id,
+              component_product_id: componentProduct.id,
+              component_quantity: parseInt(packItem.quantity) || 1,
+            }, {
+              onConflict: 'parent_product_id,component_product_id',
+            });
+          bundles++;
         }
       }
     }
   }
   
-  return { synced, bundles };
+  return { synced, created, bundles };
 }
 
-async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   let synced = 0;
+  let created = 0;
   let bundles = 0;
   
   // Fetch all products from Shopify
@@ -333,7 +418,7 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
   
   if (!productsRes.ok) {
     console.error('Failed to fetch Shopify products');
-    return { synced: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -342,17 +427,16 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
   console.log(`Found ${products.length} Shopify products`);
   
   for (const shopifyProduct of products) {
-    // Shopify products can have multiple variants
     const mainVariant = shopifyProduct.variants?.[0];
-    const sku = mainVariant?.sku;
+    const sku = mainVariant?.sku || generateSku('SH', shopifyProduct.id);
     
     let existingProduct = null;
     
-    if (sku) {
+    if (mainVariant?.sku) {
       const { data } = await supabase
         .from('inventory_products')
         .select('id, name')
-        .eq('sku', sku)
+        .eq('sku', mainVariant.sku)
         .maybeSingle();
       existingProduct = data;
     }
@@ -366,9 +450,10 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
       existingProduct = data;
     }
     
-    // Check if it's a bundle (using tags or product type)
     const isBundleType = shopifyProduct.tags?.toLowerCase().includes('bundle') ||
                          shopifyProduct.product_type?.toLowerCase().includes('bundle');
+    const salePrice = parseFloat(mainVariant?.price) || 0;
+    const stockQuantity = mainVariant?.inventory_quantity || 0;
     
     if (existingProduct) {
       await supabase
@@ -376,93 +461,122 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
         .update({
           is_bundle: isBundleType,
           external_bundle_type: isBundleType ? 'bundle' : null,
+          current_stock: stockQuantity,
+          sale_price: salePrice || undefined,
         })
         .eq('id', existingProduct.id);
       synced++;
+    } else {
+      // CREATE NEW PRODUCT
+      console.log(`Creating new product from Shopify: ${shopifyProduct.title} (SKU: ${sku})`);
+      const { data: newProduct, error } = await supabase
+        .from('inventory_products')
+        .insert({
+          sku: sku,
+          name: shopifyProduct.title,
+          description: shopifyProduct.body_html?.replace(/<[^>]*>/g, '') || null,
+          sale_price: salePrice,
+          purchase_price: 0,
+          current_stock: stockQuantity,
+          min_stock_level: 0,
+          is_bundle: isBundleType,
+          external_bundle_type: isBundleType ? 'bundle' : null,
+          is_active: shopifyProduct.status === 'active',
+        })
+        .select('id')
+        .single();
       
-      // Handle bundles using metafields (common pattern for Shopify bundles)
-      if (isBundleType) {
-        const metafieldsUrl = `${config.store_url}/admin/api/2024-01/products/${shopifyProduct.id}/metafields.json`;
-        const metafieldsRes = await fetch(metafieldsUrl, {
-          headers: {
-            'X-Shopify-Access-Token': config.api_key,
-            'Content-Type': 'application/json',
-          },
-        });
+      if (error) {
+        console.error(`Error creating product ${shopifyProduct.title}:`, error);
+        continue;
+      }
+      
+      existingProduct = newProduct;
+      created++;
+    }
+    
+    // Handle bundles using metafields
+    if (isBundleType && existingProduct) {
+      const metafieldsUrl = `${config.store_url}/admin/api/2024-01/products/${shopifyProduct.id}/metafields.json`;
+      const metafieldsRes = await fetch(metafieldsUrl, {
+        headers: {
+          'X-Shopify-Access-Token': config.api_key,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (metafieldsRes.ok) {
+        const metafieldsData = await metafieldsRes.json();
+        const bundleMetafield = metafieldsData.metafields?.find(
+          (m: any) => m.key === 'bundle_products' || m.key === 'bundled_products'
+        );
         
-        if (metafieldsRes.ok) {
-          const metafieldsData = await metafieldsRes.json();
-          const bundleMetafield = metafieldsData.metafields?.find(
-            (m: any) => m.key === 'bundle_products' || m.key === 'bundled_products'
-          );
-          
-          if (bundleMetafield?.value) {
-            try {
-              const bundledProductIds = JSON.parse(bundleMetafield.value);
+        if (bundleMetafield?.value) {
+          try {
+            const bundledProductIds = JSON.parse(bundleMetafield.value);
+            
+            for (const bundledId of bundledProductIds) {
+              const bundledUrl = `${config.store_url}/admin/api/2024-01/products/${bundledId.product_id || bundledId}.json`;
+              const bundledRes = await fetch(bundledUrl, {
+                headers: {
+                  'X-Shopify-Access-Token': config.api_key,
+                  'Content-Type': 'application/json',
+                },
+              });
               
-              for (const bundledId of bundledProductIds) {
-                // Fetch bundled product
-                const bundledUrl = `${config.store_url}/admin/api/2024-01/products/${bundledId.product_id || bundledId}.json`;
-                const bundledRes = await fetch(bundledUrl, {
-                  headers: {
-                    'X-Shopify-Access-Token': config.api_key,
-                    'Content-Type': 'application/json',
-                  },
-                });
-                
-                if (!bundledRes.ok) continue;
-                
-                const bundledData = await bundledRes.json();
-                const bundledProduct = bundledData.product;
-                const bundledSku = bundledProduct.variants?.[0]?.sku;
-                
-                let componentProduct = null;
-                
-                if (bundledSku) {
-                  const { data } = await supabase
-                    .from('inventory_products')
-                    .select('id')
-                    .eq('sku', bundledSku)
-                    .maybeSingle();
-                  componentProduct = data;
-                }
-                
-                if (!componentProduct && bundledProduct.title) {
-                  const { data } = await supabase
-                    .from('inventory_products')
-                    .select('id')
-                    .ilike('name', bundledProduct.title)
-                    .maybeSingle();
-                  componentProduct = data;
-                }
-                
-                if (componentProduct) {
-                  await supabase
-                    .from('product_bundles')
-                    .upsert({
-                      parent_product_id: existingProduct.id,
-                      component_product_id: componentProduct.id,
-                      component_quantity: bundledId.quantity || 1,
-                    }, {
-                      onConflict: 'parent_product_id,component_product_id',
-                    });
-                  bundles++;
-                }
+              if (!bundledRes.ok) continue;
+              
+              const bundledData = await bundledRes.json();
+              const bundledProduct = bundledData.product;
+              const bundledSku = bundledProduct.variants?.[0]?.sku;
+              
+              let componentProduct = null;
+              
+              if (bundledSku) {
+                const { data } = await supabase
+                  .from('inventory_products')
+                  .select('id')
+                  .eq('sku', bundledSku)
+                  .maybeSingle();
+                componentProduct = data;
               }
-            } catch (e) {
-              console.error('Error parsing bundle metafield:', e);
+              
+              if (!componentProduct && bundledProduct.title) {
+                const { data } = await supabase
+                  .from('inventory_products')
+                  .select('id')
+                  .ilike('name', bundledProduct.title)
+                  .maybeSingle();
+                componentProduct = data;
+              }
+              
+              if (componentProduct) {
+                await supabase
+                  .from('product_bundles')
+                  .upsert({
+                    parent_product_id: existingProduct.id,
+                    component_product_id: componentProduct.id,
+                    component_quantity: bundledId.quantity || 1,
+                  }, {
+                    onConflict: 'parent_product_id,component_product_id',
+                  });
+                bundles++;
+              }
             }
+          } catch (e) {
+            console.error('Error parsing bundle metafield:', e);
           }
         }
       }
     }
   }
   
-  return { synced, bundles };
+  return { synced, created, bundles };
 }
 
-async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   let synced = 0;
+  let created = 0;
   let bundles = 0;
   
   // OpenCart REST API - fetch products
@@ -476,16 +590,17 @@ async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Prom
   
   if (!productsRes.ok) {
     console.error('Failed to fetch OpenCart products');
-    return { synced: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0 };
   }
   
   const productsData = await productsRes.json();
-  const products = productsData.products || [];
+  const products = productsData.products || productsData.data || [];
   
   console.log(`Found ${products.length} OpenCart products`);
   
   for (const ocProduct of products) {
     let existingProduct = null;
+    const sku = ocProduct.model || generateSku('OC', ocProduct.product_id);
     
     if (ocProduct.model) {
       const { data } = await supabase
@@ -505,23 +620,56 @@ async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Prom
       existingProduct = data;
     }
     
+    const salePrice = parseFloat(ocProduct.price) || 0;
+    const stockQuantity = parseInt(ocProduct.quantity) || 0;
+    
     if (existingProduct) {
       await supabase
         .from('inventory_products')
         .update({
           is_bundle: false,
           external_bundle_type: null,
+          current_stock: stockQuantity,
+          sale_price: salePrice || undefined,
         })
         .eq('id', existingProduct.id);
       synced++;
+    } else {
+      // CREATE NEW PRODUCT
+      console.log(`Creating new product from OpenCart: ${ocProduct.name} (SKU: ${sku})`);
+      const { data: newProduct, error } = await supabase
+        .from('inventory_products')
+        .insert({
+          sku: sku,
+          name: ocProduct.name || `OpenCart Product ${ocProduct.product_id}`,
+          description: ocProduct.description?.replace(/<[^>]*>/g, '') || null,
+          sale_price: salePrice,
+          purchase_price: 0,
+          current_stock: stockQuantity,
+          min_stock_level: parseInt(ocProduct.minimum) || 0,
+          is_bundle: false,
+          external_bundle_type: null,
+          is_active: ocProduct.status === '1',
+        })
+        .select('id')
+        .single();
+      
+      if (error) {
+        console.error(`Error creating product ${ocProduct.name}:`, error);
+        continue;
+      }
+      
+      existingProduct = newProduct;
+      created++;
     }
   }
   
-  return { synced, bundles };
+  return { synced, created, bundles };
 }
 
-async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   let synced = 0;
+  let created = 0;
   let bundles = 0;
   
   // Get Magento admin token
@@ -537,7 +685,7 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
   
   if (!tokenRes.ok) {
     console.error('Failed to get Magento token');
-    return { synced: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0 };
   }
   
   const token = await tokenRes.json();
@@ -551,7 +699,7 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
   
   if (!productsRes.ok) {
     console.error('Failed to fetch Magento products');
-    return { synced: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -561,6 +709,7 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
   
   for (const magentoProduct of products) {
     let existingProduct = null;
+    const sku = magentoProduct.sku || generateSku('MG', magentoProduct.id);
     
     if (magentoProduct.sku) {
       const { data } = await supabase
@@ -580,8 +729,23 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
       existingProduct = data;
     }
     
-    // Check if bundle type
     const isBundleType = magentoProduct.type_id === 'bundle' || magentoProduct.type_id === 'grouped';
+    const salePrice = magentoProduct.price || 0;
+    
+    // Get stock quantity from extension attributes
+    let stockQuantity = 0;
+    if (magentoProduct.extension_attributes?.stock_item) {
+      stockQuantity = magentoProduct.extension_attributes.stock_item.qty || 0;
+    }
+    
+    // Get description from custom attributes
+    let description = null;
+    if (magentoProduct.custom_attributes) {
+      const descAttr = magentoProduct.custom_attributes.find((a: any) => a.attribute_code === 'description' || a.attribute_code === 'short_description');
+      if (descAttr) {
+        description = descAttr.value?.replace(/<[^>]*>/g, '') || null;
+      }
+    }
     
     if (existingProduct) {
       await supabase
@@ -589,75 +753,103 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
         .update({
           is_bundle: isBundleType,
           external_bundle_type: isBundleType ? magentoProduct.type_id : null,
+          current_stock: stockQuantity,
+          sale_price: salePrice || undefined,
         })
         .eq('id', existingProduct.id);
       synced++;
+    } else {
+      // CREATE NEW PRODUCT
+      console.log(`Creating new product from Magento: ${magentoProduct.name} (SKU: ${sku})`);
+      const { data: newProduct, error } = await supabase
+        .from('inventory_products')
+        .insert({
+          sku: sku,
+          name: magentoProduct.name || `Magento Product ${magentoProduct.id}`,
+          description: description,
+          sale_price: salePrice,
+          purchase_price: 0,
+          current_stock: stockQuantity,
+          min_stock_level: 0,
+          is_bundle: isBundleType,
+          external_bundle_type: isBundleType ? magentoProduct.type_id : null,
+          is_active: magentoProduct.status === 1,
+        })
+        .select('id')
+        .single();
       
-      // Handle bundles
-      if (isBundleType) {
-        // Fetch bundle options
-        const bundleUrl = `${config.store_url}/rest/V1/bundle-products/${encodeURIComponent(magentoProduct.sku)}/options/all`;
-        const bundleRes = await fetch(bundleUrl, {
-          headers: { 'Authorization': authHeader },
-        });
+      if (error) {
+        console.error(`Error creating product ${magentoProduct.name}:`, error);
+        continue;
+      }
+      
+      existingProduct = newProduct;
+      created++;
+    }
+    
+    // Handle bundles
+    if (isBundleType && existingProduct) {
+      // Fetch bundle options
+      const bundleUrl = `${config.store_url}/rest/V1/bundle-products/${encodeURIComponent(magentoProduct.sku)}/options/all`;
+      const bundleRes = await fetch(bundleUrl, {
+        headers: { 'Authorization': authHeader },
+      });
+      
+      if (bundleRes.ok) {
+        const bundleOptions = await bundleRes.json();
         
-        if (bundleRes.ok) {
-          const bundleOptions = await bundleRes.json();
-          
-          for (const option of bundleOptions) {
-            for (const selection of option.product_links || []) {
-              // Find component product
-              const { data: componentProduct } = await supabase
-                .from('inventory_products')
-                .select('id')
-                .eq('sku', selection.sku)
-                .maybeSingle();
-              
-              if (componentProduct) {
-                await supabase
-                  .from('product_bundles')
-                  .upsert({
-                    parent_product_id: existingProduct.id,
-                    component_product_id: componentProduct.id,
-                    component_quantity: selection.qty || 1,
-                  }, {
-                    onConflict: 'parent_product_id,component_product_id',
-                  });
-                bundles++;
-              }
+        for (const option of bundleOptions) {
+          for (const selection of option.product_links || []) {
+            const { data: componentProduct } = await supabase
+              .from('inventory_products')
+              .select('id')
+              .eq('sku', selection.sku)
+              .maybeSingle();
+            
+            if (componentProduct) {
+              await supabase
+                .from('product_bundles')
+                .upsert({
+                  parent_product_id: existingProduct.id,
+                  component_product_id: componentProduct.id,
+                  component_quantity: selection.qty || 1,
+                }, {
+                  onConflict: 'parent_product_id,component_product_id',
+                });
+              bundles++;
             }
           }
         }
+      }
+      
+      // For grouped products
+      if (magentoProduct.type_id === 'grouped') {
+        const linkedUrl = `${config.store_url}/rest/V1/products/${encodeURIComponent(magentoProduct.sku)}/links/associated`;
+        const linkedRes = await fetch(linkedUrl, {
+          headers: { 'Authorization': authHeader },
+        });
         
-        // For grouped products
-        if (magentoProduct.type_id === 'grouped') {
-          const linkedUrl = `${config.store_url}/rest/V1/products/${encodeURIComponent(magentoProduct.sku)}/links/associated`;
-          const linkedRes = await fetch(linkedUrl, {
-            headers: { 'Authorization': authHeader },
-          });
+        if (linkedRes.ok) {
+          const linkedProducts = await linkedRes.json();
           
-          if (linkedRes.ok) {
-            const linkedProducts = await linkedRes.json();
+          for (const linked of linkedProducts) {
+            const { data: componentProduct } = await supabase
+              .from('inventory_products')
+              .select('id')
+              .eq('sku', linked.linked_product_sku)
+              .maybeSingle();
             
-            for (const linked of linkedProducts) {
-              const { data: componentProduct } = await supabase
-                .from('inventory_products')
-                .select('id')
-                .eq('sku', linked.linked_product_sku)
-                .maybeSingle();
-              
-              if (componentProduct) {
-                await supabase
-                  .from('product_bundles')
-                  .upsert({
-                    parent_product_id: existingProduct.id,
-                    component_product_id: componentProduct.id,
-                    component_quantity: linked.qty || 1,
-                  }, {
-                    onConflict: 'parent_product_id,component_product_id',
-                  });
-                bundles++;
-              }
+            if (componentProduct) {
+              await supabase
+                .from('product_bundles')
+                .upsert({
+                  parent_product_id: existingProduct.id,
+                  component_product_id: componentProduct.id,
+                  component_quantity: linked.qty || 1,
+                }, {
+                  onConflict: 'parent_product_id,component_product_id',
+                });
+              bundles++;
             }
           }
         }
@@ -665,7 +857,7 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
     }
   }
   
-  return { synced, bundles };
+  return { synced, created, bundles };
 }
 
 Deno.serve(async (req) => {
@@ -689,13 +881,13 @@ Deno.serve(async (req) => {
       .eq('is_enabled', true);
 
     if (!platforms?.length) {
-      return new Response(JSON.stringify({ success: true, message: 'No platforms enabled' }), {
+      return new Response(JSON.stringify({ success: true, message: 'No platforms enabled', results: {} }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const results: Record<string, { synced: number; bundles: number }> = {};
+    const results: Record<string, SyncResult> = {};
 
     for (const p of platforms) {
       if (platform && p.name !== platform) continue;
@@ -717,6 +909,8 @@ Deno.serve(async (req) => {
 
       if (!config.store_url || !config.api_key) continue;
 
+      console.log(`Syncing products from ${p.name}...`);
+
       switch (p.name) {
         case 'woocommerce':
           results[p.name] = await syncWooCommerceProducts(config, supabase);
@@ -734,13 +928,27 @@ Deno.serve(async (req) => {
           results[p.name] = await syncMagentoProducts(config, supabase);
           break;
         default:
-          results[p.name] = { synced: 0, bundles: 0 };
+          results[p.name] = { synced: 0, created: 0, bundles: 0 };
       }
+      
+      console.log(`${p.name} sync complete:`, results[p.name]);
     }
 
     console.log('Product sync results:', results);
 
-    return new Response(JSON.stringify({ success: true, results }), {
+    // Calculate totals
+    const totals = {
+      synced: Object.values(results).reduce((sum, r) => sum + r.synced, 0),
+      created: Object.values(results).reduce((sum, r) => sum + r.created, 0),
+      bundles: Object.values(results).reduce((sum, r) => sum + r.bundles, 0),
+    };
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      results,
+      totals,
+      message: `Синхронизирани: ${totals.synced}, Създадени: ${totals.created}, Бъндъли: ${totals.bundles}`
+    }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
