@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import woocommerceLogo from '@/assets/woocommerce-logo.png';
 import { PrestaShopLogo, OpenCartLogo, MagentoLogo, ShopifyLogo } from '@/components/icons/PlatformLogos';
 import { EditableSourceLogo } from './EditableSourceLogo';
-
+import { SyncProgressDialog, SyncLogEntry, SyncStats } from './SyncProgressDialog';
 interface PlatformConfig {
   store_url: string;
   api_key: string;
@@ -65,6 +65,20 @@ export const PlatformApiSettings: FC = () => {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [copiedWebhook, setCopiedWebhook] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Sync progress dialog state
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+  const [syncPlatformName, setSyncPlatformName] = useState('');
+  const [syncLogs, setSyncLogs] = useState<SyncLogEntry[]>([]);
+  const [syncStats, setSyncStats] = useState<SyncStats>({
+    total: 0,
+    processed: 0,
+    synced: 0,
+    created: 0,
+    bundles: 0,
+    errors: 0,
+  });
+  const logIdCounter = useRef(0);
 
   // Get Supabase URL for webhook endpoints
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -188,6 +202,17 @@ export const PlatformApiSettings: FC = () => {
     }
   };
 
+  const addLog = useCallback((level: SyncLogEntry['level'], message: string, details?: string) => {
+    const newLog: SyncLogEntry = {
+      id: `log-${Date.now()}-${logIdCounter.current++}`,
+      timestamp: new Date(),
+      level,
+      message,
+      details,
+    };
+    setSyncLogs(prev => [...prev, newLog]);
+  }, []);
+
   const syncProducts = async (platform: EcommercePlatform) => {
     const config = configs[platform.name];
     if (!config?.store_url || !config?.api_key) {
@@ -199,30 +224,94 @@ export const PlatformApiSettings: FC = () => {
       return;
     }
 
+    // Reset and open dialog
+    setSyncLogs([]);
+    setSyncStats({
+      total: 0,
+      processed: 0,
+      synced: 0,
+      created: 0,
+      bundles: 0,
+      errors: 0,
+    });
+    setSyncPlatformName(platform.display_name);
+    setSyncDialogOpen(true);
     setSyncing(platform.name);
+
+    // Add initial log
+    addLog('info', `Стартиране на синхронизация с ${platform.display_name}...`);
+    addLog('info', `URL: ${config.store_url}`);
+
     try {
+      // First, estimate total products (show loading)
+      addLog('info', 'Извличане на продукти от платформата...');
+      
       const { data, error } = await supabase.functions.invoke('sync-products', {
         body: { platform: platform.name }
       });
 
       if (error) throw error;
 
-      const imported = data?.imported || 0;
+      const synced = data?.synced || 0;
+      const created = data?.created || 0;
       const bundles = data?.bundles || 0;
+      const total = synced + created;
+      const errors = data?.errors || 0;
+
+      // Simulate progress updates from results
+      addLog('success', `Намерени ${total} продукта за обработка`);
+      
+      setSyncStats({
+        total,
+        processed: total,
+        synced,
+        created,
+        bundles,
+        errors,
+      });
+
+      // Add detailed logs based on results
+      if (created > 0) {
+        addLog('success', `Създадени ${created} нови продукта в склада`);
+      }
+      if (synced > 0) {
+        addLog('info', `Обновени ${synced} съществуващи продукта`);
+      }
+      if (bundles > 0) {
+        addLog('success', `Синхронизирани ${bundles} комплекта/бъндъла`);
+      }
+      if (errors > 0) {
+        addLog('warning', `${errors} продукта не бяха синхронизирани поради грешки`);
+      }
+      
+      addLog('success', 'Синхронизацията завърши успешно!');
       
       toast({ 
         title: 'Синхронизация завършена', 
-        description: `Импортирани ${imported} продукта${bundles > 0 ? ` и ${bundles} комплекта` : ''} от ${platform.display_name}` 
+        description: `Синхронизирани: ${synced}, Създадени: ${created}${bundles > 0 ? `, Комплекти: ${bundles}` : ''} от ${platform.display_name}` 
       });
     } catch (err: any) {
+      const errorMessage = err.message || 'Неуспешна синхронизация';
+      addLog('error', 'Грешка при синхронизация', errorMessage);
+      
+      setSyncStats(prev => ({
+        ...prev,
+        errors: prev.errors + 1,
+      }));
+      
       toast({ 
         title: 'Грешка при синхронизация', 
-        description: err.message || 'Неуспешна синхронизация', 
+        description: errorMessage, 
         variant: 'destructive' 
       });
     } finally {
       setSyncing(null);
     }
+  };
+
+  const handleSyncDialogClose = () => {
+    setSyncDialogOpen(false);
+    setSyncLogs([]);
   };
 
   if (loading) {
@@ -388,6 +477,17 @@ export const PlatformApiSettings: FC = () => {
           })}
         </CardContent>
       </Card>
+
+      {/* Sync Progress Dialog */}
+      <SyncProgressDialog
+        open={syncDialogOpen}
+        onOpenChange={setSyncDialogOpen}
+        platformName={syncPlatformName}
+        isRunning={syncing !== null}
+        stats={syncStats}
+        logs={syncLogs}
+        onClose={handleSyncDialogClose}
+      />
     </div>
   );
 };

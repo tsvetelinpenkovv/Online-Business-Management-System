@@ -16,6 +16,7 @@ interface SyncResult {
   synced: number;
   created: number;
   bundles: number;
+  errors?: number;
 }
 
 interface WooCommerceProduct {
@@ -941,12 +942,18 @@ Deno.serve(async (req) => {
       synced: Object.values(results).reduce((sum, r) => sum + r.synced, 0),
       created: Object.values(results).reduce((sum, r) => sum + r.created, 0),
       bundles: Object.values(results).reduce((sum, r) => sum + r.bundles, 0),
+      errors: Object.values(results).reduce((sum, r) => sum + (r.errors || 0), 0),
     };
 
     return new Response(JSON.stringify({ 
       success: true, 
       results,
       totals,
+      // Also return flat values for easier access
+      synced: totals.synced,
+      created: totals.created,
+      bundles: totals.bundles,
+      errors: totals.errors,
       message: `Синхронизирани: ${totals.synced}, Създадени: ${totals.created}, Бъндъли: ${totals.bundles}`
     }), {
       status: 200,
@@ -955,7 +962,7 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Product sync error:', error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: errorMessage, errors: 1 }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
