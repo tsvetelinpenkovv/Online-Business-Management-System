@@ -16,37 +16,25 @@ interface WooCommerceProduct {
   id: number;
   name: string;
   sku: string;
-  type: string; // simple, variable, grouped, external, bundle
+  type: string;
   status: string;
   stock_quantity: number | null;
   manage_stock: boolean;
   price: string;
   regular_price: string;
-  grouped_products?: number[]; // IDs of products in a grouped product
+  grouped_products?: number[];
   bundled_items?: Array<{
     product_id: number;
     quantity_min: number;
     quantity_max: number;
     quantity_default: number;
   }>;
-  // For composite products
   composite_components?: Array<{
     id: number;
     title: string;
     query_ids: number[];
     quantity_min: number;
     quantity_max: number;
-  }>;
-}
-
-interface PrestaShopProduct {
-  id: number;
-  name: string;
-  reference: string;
-  type: string;
-  pack_items?: Array<{
-    id_product_item: number;
-    quantity: number;
   }>;
 }
 
@@ -79,7 +67,6 @@ async function fetchWooCommerceProducts(config: PlatformConfig): Promise<WooComm
 async function fetchWooCommerceBundledItems(config: PlatformConfig, productId: number): Promise<Array<{ product_id: number; quantity: number }>> {
   const credentials = btoa(`${config.api_key}:${config.api_secret}`);
   
-  // Try to get bundled items for WooCommerce Product Bundles plugin
   try {
     const url = `${config.store_url}/wp-json/wc/v3/products/${productId}`;
     const res = await fetch(url, {
@@ -90,7 +77,6 @@ async function fetchWooCommerceBundledItems(config: PlatformConfig, productId: n
     
     const product = await res.json();
     
-    // Check for bundled_items (WooCommerce Product Bundles)
     if (product.bundled_items?.length) {
       return product.bundled_items.map((item: any) => ({
         product_id: item.product_id,
@@ -98,7 +84,6 @@ async function fetchWooCommerceBundledItems(config: PlatformConfig, productId: n
       }));
     }
     
-    // Check for grouped_products
     if (product.grouped_products?.length) {
       return product.grouped_products.map((id: number) => ({
         product_id: id,
@@ -106,7 +91,6 @@ async function fetchWooCommerceBundledItems(config: PlatformConfig, productId: n
       }));
     }
     
-    // Check for composite_components
     if (product.composite_components?.length) {
       const items: Array<{ product_id: number; quantity: number }> = [];
       for (const comp of product.composite_components) {
@@ -136,7 +120,6 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
   let bundles = 0;
   
   for (const wcProduct of products) {
-    // Check if product exists by SKU or name
     let existingProduct = null;
     
     if (wcProduct.sku) {
@@ -160,7 +143,6 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
     const isBundleType = ['grouped', 'bundle', 'composite'].includes(wcProduct.type);
     
     if (existingProduct) {
-      // Update existing product
       await supabase
         .from('inventory_products')
         .update({
@@ -171,12 +153,10 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
         .eq('id', existingProduct.id);
       synced++;
       
-      // If it's a bundle, sync components
       if (isBundleType) {
         const bundledItems = await fetchWooCommerceBundledItems(config, wcProduct.id);
         
         for (const item of bundledItems) {
-          // Find component product
           const wcComponentUrl = `${config.store_url}/wp-json/wc/v3/products/${item.product_id}`;
           const credentials = btoa(`${config.api_key}:${config.api_secret}`);
           const compRes = await fetch(wcComponentUrl, {
@@ -187,7 +167,6 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
           
           const wcComponent = await compRes.json();
           
-          // Find component in inventory by SKU or name
           let componentProduct = null;
           
           if (wcComponent.sku) {
@@ -209,7 +188,6 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
           }
           
           if (componentProduct) {
-            // Insert or update bundle relationship
             await supabase
               .from('product_bundles')
               .upsert({
@@ -234,7 +212,6 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
   let synced = 0;
   let bundles = 0;
   
-  // Fetch products
   const productsUrl = `${config.store_url}/api/products?output_format=JSON&display=full`;
   const productsRes = await fetch(productsUrl, {
     headers: { 'Authorization': `Basic ${credentials}` },
@@ -251,7 +228,6 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
   console.log(`Found ${products.length} PrestaShop products`);
   
   for (const psProduct of products) {
-    // Check if product exists by reference (SKU) or name
     let existingProduct = null;
     
     if (psProduct.reference) {
@@ -273,7 +249,6 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
       existingProduct = data;
     }
     
-    // PrestaShop packs
     const isPack = psProduct.type === 'pack' || psProduct.is_pack === '1';
     
     if (existingProduct) {
@@ -286,14 +261,12 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
         .eq('id', existingProduct.id);
       synced++;
       
-      // Sync pack items
       if (isPack && psProduct.associations?.pack) {
         const packItems = Array.isArray(psProduct.associations.pack)
           ? psProduct.associations.pack
           : [psProduct.associations.pack];
         
         for (const packItem of packItems) {
-          // Find component by ID
           const componentUrl = `${config.store_url}/api/products/${packItem.id}?output_format=JSON`;
           const compRes = await fetch(componentUrl, {
             headers: { 'Authorization': `Basic ${credentials}` },
@@ -304,7 +277,6 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
           const compData = await compRes.json();
           const component = compData.product;
           
-          // Find in inventory
           let componentProduct = null;
           
           if (component?.reference) {
@@ -346,6 +318,356 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
   return { synced, bundles };
 }
 
+async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+  let synced = 0;
+  let bundles = 0;
+  
+  // Fetch all products from Shopify
+  const productsUrl = `${config.store_url}/admin/api/2024-01/products.json?limit=250`;
+  const productsRes = await fetch(productsUrl, {
+    headers: {
+      'X-Shopify-Access-Token': config.api_key,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!productsRes.ok) {
+    console.error('Failed to fetch Shopify products');
+    return { synced: 0, bundles: 0 };
+  }
+  
+  const productsData = await productsRes.json();
+  const products = productsData.products || [];
+  
+  console.log(`Found ${products.length} Shopify products`);
+  
+  for (const shopifyProduct of products) {
+    // Shopify products can have multiple variants
+    const mainVariant = shopifyProduct.variants?.[0];
+    const sku = mainVariant?.sku;
+    
+    let existingProduct = null;
+    
+    if (sku) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name')
+        .eq('sku', sku)
+        .maybeSingle();
+      existingProduct = data;
+    }
+    
+    if (!existingProduct && shopifyProduct.title) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name')
+        .ilike('name', shopifyProduct.title)
+        .maybeSingle();
+      existingProduct = data;
+    }
+    
+    // Check if it's a bundle (using tags or product type)
+    const isBundleType = shopifyProduct.tags?.toLowerCase().includes('bundle') ||
+                         shopifyProduct.product_type?.toLowerCase().includes('bundle');
+    
+    if (existingProduct) {
+      await supabase
+        .from('inventory_products')
+        .update({
+          is_bundle: isBundleType,
+          external_bundle_type: isBundleType ? 'bundle' : null,
+        })
+        .eq('id', existingProduct.id);
+      synced++;
+      
+      // Handle bundles using metafields (common pattern for Shopify bundles)
+      if (isBundleType) {
+        const metafieldsUrl = `${config.store_url}/admin/api/2024-01/products/${shopifyProduct.id}/metafields.json`;
+        const metafieldsRes = await fetch(metafieldsUrl, {
+          headers: {
+            'X-Shopify-Access-Token': config.api_key,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (metafieldsRes.ok) {
+          const metafieldsData = await metafieldsRes.json();
+          const bundleMetafield = metafieldsData.metafields?.find(
+            (m: any) => m.key === 'bundle_products' || m.key === 'bundled_products'
+          );
+          
+          if (bundleMetafield?.value) {
+            try {
+              const bundledProductIds = JSON.parse(bundleMetafield.value);
+              
+              for (const bundledId of bundledProductIds) {
+                // Fetch bundled product
+                const bundledUrl = `${config.store_url}/admin/api/2024-01/products/${bundledId.product_id || bundledId}.json`;
+                const bundledRes = await fetch(bundledUrl, {
+                  headers: {
+                    'X-Shopify-Access-Token': config.api_key,
+                    'Content-Type': 'application/json',
+                  },
+                });
+                
+                if (!bundledRes.ok) continue;
+                
+                const bundledData = await bundledRes.json();
+                const bundledProduct = bundledData.product;
+                const bundledSku = bundledProduct.variants?.[0]?.sku;
+                
+                let componentProduct = null;
+                
+                if (bundledSku) {
+                  const { data } = await supabase
+                    .from('inventory_products')
+                    .select('id')
+                    .eq('sku', bundledSku)
+                    .maybeSingle();
+                  componentProduct = data;
+                }
+                
+                if (!componentProduct && bundledProduct.title) {
+                  const { data } = await supabase
+                    .from('inventory_products')
+                    .select('id')
+                    .ilike('name', bundledProduct.title)
+                    .maybeSingle();
+                  componentProduct = data;
+                }
+                
+                if (componentProduct) {
+                  await supabase
+                    .from('product_bundles')
+                    .upsert({
+                      parent_product_id: existingProduct.id,
+                      component_product_id: componentProduct.id,
+                      component_quantity: bundledId.quantity || 1,
+                    }, {
+                      onConflict: 'parent_product_id,component_product_id',
+                    });
+                  bundles++;
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing bundle metafield:', e);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return { synced, bundles };
+}
+
+async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+  let synced = 0;
+  let bundles = 0;
+  
+  // OpenCart REST API - fetch products
+  const productsUrl = `${config.store_url}/index.php?route=api/product&limit=1000`;
+  const productsRes = await fetch(productsUrl, {
+    headers: {
+      'X-Oc-Restadmin-Id': config.api_key,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!productsRes.ok) {
+    console.error('Failed to fetch OpenCart products');
+    return { synced: 0, bundles: 0 };
+  }
+  
+  const productsData = await productsRes.json();
+  const products = productsData.products || [];
+  
+  console.log(`Found ${products.length} OpenCart products`);
+  
+  for (const ocProduct of products) {
+    let existingProduct = null;
+    
+    if (ocProduct.model) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name')
+        .eq('sku', ocProduct.model)
+        .maybeSingle();
+      existingProduct = data;
+    }
+    
+    if (!existingProduct && ocProduct.name) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name')
+        .ilike('name', ocProduct.name)
+        .maybeSingle();
+      existingProduct = data;
+    }
+    
+    if (existingProduct) {
+      await supabase
+        .from('inventory_products')
+        .update({
+          is_bundle: false,
+          external_bundle_type: null,
+        })
+        .eq('id', existingProduct.id);
+      synced++;
+    }
+  }
+  
+  return { synced, bundles };
+}
+
+async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promise<{ synced: number; bundles: number }> {
+  let synced = 0;
+  let bundles = 0;
+  
+  // Get Magento admin token
+  const tokenUrl = `${config.store_url}/rest/V1/integration/admin/token`;
+  const tokenRes = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: config.api_key,
+      password: config.api_secret,
+    }),
+  });
+  
+  if (!tokenRes.ok) {
+    console.error('Failed to get Magento token');
+    return { synced: 0, bundles: 0 };
+  }
+  
+  const token = await tokenRes.json();
+  const authHeader = `Bearer ${token.replace(/"/g, '')}`;
+  
+  // Fetch all products
+  const productsUrl = `${config.store_url}/rest/V1/products?searchCriteria[pageSize]=1000`;
+  const productsRes = await fetch(productsUrl, {
+    headers: { 'Authorization': authHeader },
+  });
+  
+  if (!productsRes.ok) {
+    console.error('Failed to fetch Magento products');
+    return { synced: 0, bundles: 0 };
+  }
+  
+  const productsData = await productsRes.json();
+  const products = productsData.items || [];
+  
+  console.log(`Found ${products.length} Magento products`);
+  
+  for (const magentoProduct of products) {
+    let existingProduct = null;
+    
+    if (magentoProduct.sku) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name')
+        .eq('sku', magentoProduct.sku)
+        .maybeSingle();
+      existingProduct = data;
+    }
+    
+    if (!existingProduct && magentoProduct.name) {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name')
+        .ilike('name', magentoProduct.name)
+        .maybeSingle();
+      existingProduct = data;
+    }
+    
+    // Check if bundle type
+    const isBundleType = magentoProduct.type_id === 'bundle' || magentoProduct.type_id === 'grouped';
+    
+    if (existingProduct) {
+      await supabase
+        .from('inventory_products')
+        .update({
+          is_bundle: isBundleType,
+          external_bundle_type: isBundleType ? magentoProduct.type_id : null,
+        })
+        .eq('id', existingProduct.id);
+      synced++;
+      
+      // Handle bundles
+      if (isBundleType) {
+        // Fetch bundle options
+        const bundleUrl = `${config.store_url}/rest/V1/bundle-products/${encodeURIComponent(magentoProduct.sku)}/options/all`;
+        const bundleRes = await fetch(bundleUrl, {
+          headers: { 'Authorization': authHeader },
+        });
+        
+        if (bundleRes.ok) {
+          const bundleOptions = await bundleRes.json();
+          
+          for (const option of bundleOptions) {
+            for (const selection of option.product_links || []) {
+              // Find component product
+              const { data: componentProduct } = await supabase
+                .from('inventory_products')
+                .select('id')
+                .eq('sku', selection.sku)
+                .maybeSingle();
+              
+              if (componentProduct) {
+                await supabase
+                  .from('product_bundles')
+                  .upsert({
+                    parent_product_id: existingProduct.id,
+                    component_product_id: componentProduct.id,
+                    component_quantity: selection.qty || 1,
+                  }, {
+                    onConflict: 'parent_product_id,component_product_id',
+                  });
+                bundles++;
+              }
+            }
+          }
+        }
+        
+        // For grouped products
+        if (magentoProduct.type_id === 'grouped') {
+          const linkedUrl = `${config.store_url}/rest/V1/products/${encodeURIComponent(magentoProduct.sku)}/links/associated`;
+          const linkedRes = await fetch(linkedUrl, {
+            headers: { 'Authorization': authHeader },
+          });
+          
+          if (linkedRes.ok) {
+            const linkedProducts = await linkedRes.json();
+            
+            for (const linked of linkedProducts) {
+              const { data: componentProduct } = await supabase
+                .from('inventory_products')
+                .select('id')
+                .eq('sku', linked.linked_product_sku)
+                .maybeSingle();
+              
+              if (componentProduct) {
+                await supabase
+                  .from('product_bundles')
+                  .upsert({
+                    parent_product_id: existingProduct.id,
+                    component_product_id: componentProduct.id,
+                    component_quantity: linked.qty || 1,
+                  }, {
+                    onConflict: 'parent_product_id,component_product_id',
+                  });
+                bundles++;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return { synced, bundles };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -361,7 +683,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get enabled platforms
     const { data: platforms } = await supabase
       .from('ecommerce_platforms')
       .select('*')
@@ -403,7 +724,15 @@ Deno.serve(async (req) => {
         case 'prestashop':
           results[p.name] = await syncPrestaShopProducts(config, supabase);
           break;
-        // TODO: Add Shopify, OpenCart, Magento sync
+        case 'shopify':
+          results[p.name] = await syncShopifyProducts(config, supabase);
+          break;
+        case 'opencart':
+          results[p.name] = await syncOpenCartProducts(config, supabase);
+          break;
+        case 'magento':
+          results[p.name] = await syncMagentoProducts(config, supabase);
+          break;
         default:
           results[p.name] = { synced: 0, bundles: 0 };
       }
