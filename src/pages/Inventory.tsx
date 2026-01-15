@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle, DollarSign
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle, DollarSign, Tag, ClipboardList
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -28,6 +28,9 @@ import { ForecastTab } from '@/components/inventory/ForecastTab';
 import { PriceHistoryTab } from '@/components/inventory/PriceHistoryTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
+import { BarcodeLabelPrinter } from '@/components/inventory/BarcodeLabelPrinter';
+import { AuditLogTab } from '@/components/inventory/AuditLogTab';
+import { WarehouseSettings } from '@/components/inventory/WarehouseSettings';
 
 export default function Inventory() {
   const navigate = useNavigate();
