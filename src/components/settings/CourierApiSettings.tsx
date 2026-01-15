@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Truck, Loader2, Check, X, Eye, EyeOff, Settings2, MapPin, Package } from 'lucide-react';
+import { Truck, Loader2, Check, Eye, EyeOff, Settings2, MapPin, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 interface Courier {
   id: string;
@@ -18,47 +19,39 @@ interface Courier {
 interface CourierApiSetting {
   id?: string;
   courier_id: string;
-  api_url?: string | null;
-  username?: string | null;
-  password?: string | null;
-  client_id?: string | null;
-  client_secret?: string | null;
-  api_key?: string | null;
-  is_test_mode?: boolean;
-  is_enabled?: boolean;
-  extra_config?: Record<string, unknown> | null;
+  api_url: string | null;
+  username: string | null;
+  password: string | null;
+  client_id: string | null;
+  client_secret: string | null;
+  api_key: string | null;
+  is_test_mode: boolean;
+  is_enabled: boolean;
+  extra_config: Record<string, string>;
 }
+
+const createEmptySetting = (courierId: string): CourierApiSetting => ({
+  courier_id: courierId,
+  api_url: null,
+  username: null,
+  password: null,
+  client_id: null,
+  client_secret: null,
+  api_key: null,
+  is_test_mode: true,
+  is_enabled: false,
+  extra_config: {},
+});
 
 // Courier type definitions for auth requirements
 const COURIER_AUTH_TYPES: Record<string, { fields: string[], displayName: string }> = {
-  'econt': { 
-    fields: ['username', 'password'], 
-    displayName: 'Еконт' 
-  },
-  'speedy': { 
-    fields: ['username', 'password'], 
-    displayName: 'Спиди' 
-  },
-  'box now': { 
-    fields: ['client_id', 'client_secret'], 
-    displayName: 'Box Now' 
-  },
-  'boxnow': { 
-    fields: ['client_id', 'client_secret'], 
-    displayName: 'Box Now' 
-  },
-  'sameday': { 
-    fields: ['username', 'password'], 
-    displayName: 'Sameday' 
-  },
-  'dhl': { 
-    fields: ['username', 'password', 'account_number'], 
-    displayName: 'DHL' 
-  },
-  'evropat': { 
-    fields: ['api_key'], 
-    displayName: 'Европат' 
-  },
+  'econt': { fields: ['username', 'password'], displayName: 'Еконт' },
+  'speedy': { fields: ['username', 'password'], displayName: 'Спиди' },
+  'box now': { fields: ['client_id', 'client_secret'], displayName: 'Box Now' },
+  'boxnow': { fields: ['client_id', 'client_secret'], displayName: 'Box Now' },
+  'sameday': { fields: ['username', 'password'], displayName: 'Sameday' },
+  'dhl': { fields: ['username', 'password', 'account_number'], displayName: 'DHL' },
+  'evropat': { fields: ['api_key'], displayName: 'Европат' },
 };
 
 export const CourierApiSettings = () => {
@@ -77,7 +70,6 @@ export const CourierApiSettings = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch couriers
       const { data: couriersData, error: couriersError } = await supabase
         .from('couriers')
         .select('id, name, logo_url')
@@ -85,7 +77,6 @@ export const CourierApiSettings = () => {
 
       if (couriersError) throw couriersError;
 
-      // Fetch existing settings
       const { data: settingsData, error: settingsError } = await supabase
         .from('courier_api_settings')
         .select('*');
@@ -99,21 +90,25 @@ export const CourierApiSettings = () => {
       
       (settingsData || []).forEach((s) => {
         const setting: CourierApiSetting = {
-          ...s,
-          extra_config: (s.extra_config as Record<string, unknown>) || {},
+          id: s.id,
+          courier_id: s.courier_id,
+          api_url: s.api_url,
+          username: s.username,
+          password: s.password,
+          client_id: s.client_id,
+          client_secret: s.client_secret,
+          api_key: s.api_key,
+          is_test_mode: s.is_test_mode ?? true,
+          is_enabled: s.is_enabled ?? false,
+          extra_config: (s.extra_config as Record<string, string>) || {},
         };
         settingsMap[s.courier_id] = setting;
         formMap[s.courier_id] = { ...setting };
       });
       
-      // Initialize form data for couriers without settings
       (couriersData || []).forEach((c) => {
         if (!formMap[c.id]) {
-          formMap[c.id] = {
-            courier_id: c.id,
-            is_test_mode: true,
-            is_enabled: false,
-          };
+          formMap[c.id] = createEmptySetting(c.id);
         }
       });
       
@@ -146,72 +141,53 @@ export const CourierApiSettings = () => {
     return type ? COURIER_AUTH_TYPES[type].fields : ['api_key'];
   };
 
-  const handleFormChange = (courierId: string, field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [courierId]: {
-        ...prev[courierId],
-        [field]: value,
-      }
-    }));
+  const handleFormChange = (courierId: string, field: string, value: string | boolean | Record<string, string>) => {
+    setFormData(prev => {
+      const current = prev[courierId] || createEmptySetting(courierId);
+      return {
+        ...prev,
+        [courierId]: {
+          ...current,
+          [field]: value,
+        }
+      };
+    });
   };
 
   const handleSave = async (courier: Courier) => {
     setSaving(courier.id);
     try {
-      const data = formData[courier.id];
+      const data = formData[courier.id] || createEmptySetting(courier.id);
+      const payload = {
+        api_url: data.api_url || null,
+        username: data.username || null,
+        password: data.password || null,
+        client_id: data.client_id || null,
+        client_secret: data.client_secret || null,
+        api_key: data.api_key || null,
+        is_test_mode: data.is_test_mode,
+        is_enabled: data.is_enabled,
+        extra_config: data.extra_config as unknown as Json,
+      };
       
       if (settings[courier.id]) {
-        // Update existing
         const { error } = await supabase
           .from('courier_api_settings')
-          .update({
-            api_url: data.api_url || null,
-            username: data.username || null,
-            password: data.password || null,
-            client_id: data.client_id || null,
-            client_secret: data.client_secret || null,
-            api_key: data.api_key || null,
-            is_test_mode: data.is_test_mode ?? true,
-            is_enabled: data.is_enabled ?? false,
-            extra_config: (data.extra_config || {}) as Record<string, unknown>,
-          })
+          .update(payload)
           .eq('courier_id', courier.id);
-          
         if (error) throw error;
       } else {
-        // Insert new
         const { error } = await supabase
           .from('courier_api_settings')
-          .insert([{
-            courier_id: courier.id,
-            api_url: data.api_url || null,
-            username: data.username || null,
-            password: data.password || null,
-            client_id: data.client_id || null,
-            client_secret: data.client_secret || null,
-            api_key: data.api_key || null,
-            is_test_mode: data.is_test_mode ?? true,
-            is_enabled: data.is_enabled ?? false,
-            extra_config: (data.extra_config || {}) as Record<string, unknown>,
-          }]);
-          
+          .insert([{ courier_id: courier.id, ...payload }]);
         if (error) throw error;
       }
 
-      toast({
-        title: 'Успех',
-        description: `Настройките за ${courier.name} бяха запазени`,
-      });
-      
+      toast({ title: 'Успех', description: `Настройките за ${courier.name} бяха запазени` });
       fetchData();
     } catch (error) {
       console.error('Save error:', error);
-      toast({
-        title: 'Грешка',
-        description: 'Неуспешно запазване на настройките',
-        variant: 'destructive',
-      });
+      toast({ title: 'Грешка', description: 'Неуспешно запазване на настройките', variant: 'destructive' });
     } finally {
       setSaving(null);
     }
@@ -220,67 +196,42 @@ export const CourierApiSettings = () => {
   const handleTest = async (courier: Courier) => {
     setTesting(courier.id);
     try {
-      const data = formData[courier.id];
+      const data = formData[courier.id] || createEmptySetting(courier.id);
       const courierType = getCourierType(courier.name);
       
       if (!courierType) {
-        toast({
-          title: 'Грешка',
-          description: 'Неподдържан тип куриер',
-          variant: 'destructive',
-        });
+        toast({ title: 'Грешка', description: 'Неподдържан тип куриер', variant: 'destructive' });
         return;
       }
 
       const functionName = `courier-${courierType.replace(' ', '')}`;
-      
-      let credentials: Record<string, unknown> = {
-        is_test_mode: data.is_test_mode ?? true,
-      };
+      const credentials: Record<string, unknown> = { is_test_mode: data.is_test_mode };
       
       const authFields = getAuthFields(courier.name);
       authFields.forEach(field => {
         if (field === 'account_number') {
-          credentials.account_number = (data.extra_config as Record<string, string>)?.account_number || '';
+          credentials.account_number = data.extra_config?.account_number || '';
         } else {
           credentials[field] = data[field as keyof CourierApiSetting] || '';
         }
       });
 
       const { data: result, error } = await supabase.functions.invoke(functionName, {
-        body: {
-          action: 'validateCredentials',
-          credentials,
-        },
+        body: { action: 'validateCredentials', credentials },
       });
 
       if (error) throw error;
       
       if (result?.error) {
-        toast({
-          title: 'Грешка при валидация',
-          description: result.error,
-          variant: 'destructive',
-        });
+        toast({ title: 'Грешка при валидация', description: result.error, variant: 'destructive' });
       } else if (result?.success !== false) {
-        toast({
-          title: 'Успех',
-          description: `Връзката с ${courier.name} е успешна!`,
-        });
+        toast({ title: 'Успех', description: `Връзката с ${courier.name} е успешна!` });
       } else {
-        toast({
-          title: 'Грешка',
-          description: 'Невалидни данни за достъп',
-          variant: 'destructive',
-        });
+        toast({ title: 'Грешка', description: 'Невалидни данни за достъп', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Test error:', error);
-      toast({
-        title: 'Грешка',
-        description: 'Неуспешен тест на връзката',
-        variant: 'destructive',
-      });
+      toast({ title: 'Грешка', description: 'Неуспешен тест на връзката', variant: 'destructive' });
     } finally {
       setTesting(null);
     }
@@ -288,7 +239,7 @@ export const CourierApiSettings = () => {
 
   const renderAuthFields = (courier: Courier) => {
     const fields = getAuthFields(courier.name);
-    const data = formData[courier.id] || {};
+    const data = formData[courier.id] || createEmptySetting(courier.id);
 
     return (
       <div className="space-y-4">
@@ -393,11 +344,11 @@ export const CourierApiSettings = () => {
             <Label htmlFor={`account-${courier.id}`}>Номер на акаунт (DHL)</Label>
             <Input
               id={`account-${courier.id}`}
-              value={(data.extra_config as Record<string, string>)?.account_number || ''}
+              value={data.extra_config?.account_number || ''}
               onChange={(e) => handleFormChange(courier.id, 'extra_config', { 
-                ...(data.extra_config || {}), 
+                ...data.extra_config, 
                 account_number: e.target.value 
-              } as unknown as string)}
+              })}
               placeholder="DHL Account Number"
             />
           </div>
@@ -414,7 +365,6 @@ export const CourierApiSettings = () => {
     );
   }
 
-  // Filter only supported couriers
   const supportedCouriers = couriers.filter(c => getCourierType(c.name) !== null);
 
   return (
@@ -437,31 +387,22 @@ export const CourierApiSettings = () => {
         ) : (
           <Accordion type="single" collapsible className="w-full">
             {supportedCouriers.map((courier) => {
-              const data = formData[courier.id] || {};
-              const isEnabled = data.is_enabled ?? false;
-              const isTestMode = data.is_test_mode ?? true;
+              const data = formData[courier.id] || createEmptySetting(courier.id);
+              const isEnabled = data.is_enabled;
+              const isTestMode = data.is_test_mode;
               
               return (
                 <AccordionItem key={courier.id} value={courier.id}>
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex items-center gap-4 w-full pr-4">
-                      {/* Logo */}
                       <div className="w-16 h-8 flex items-center justify-center bg-muted rounded overflow-hidden flex-shrink-0">
                         {courier.logo_url ? (
-                          <img
-                            src={courier.logo_url}
-                            alt={courier.name}
-                            className="max-w-full max-h-full object-contain"
-                          />
+                          <img src={courier.logo_url} alt={courier.name} className="max-w-full max-h-full object-contain" />
                         ) : (
                           <Truck className="w-4 h-4 text-muted-foreground" />
                         )}
                       </div>
-                      
-                      {/* Name */}
                       <span className="font-medium flex-1 text-left">{courier.name}</span>
-                      
-                      {/* Status badges */}
                       <div className="flex items-center gap-2">
                         {isEnabled && (
                           <span className="px-2 py-0.5 text-xs rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
@@ -478,7 +419,6 @@ export const CourierApiSettings = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="pt-4 space-y-6">
-                      {/* Enable/Test mode toggles */}
                       <div className="flex flex-wrap gap-6">
                         <div className="flex items-center space-x-2">
                           <Switch
@@ -488,7 +428,6 @@ export const CourierApiSettings = () => {
                           />
                           <Label htmlFor={`enabled-${courier.id}`}>Активирай интеграция</Label>
                         </div>
-                        
                         <div className="flex items-center space-x-2">
                           <Switch
                             id={`test-${courier.id}`}
@@ -499,10 +438,8 @@ export const CourierApiSettings = () => {
                         </div>
                       </div>
 
-                      {/* Auth fields */}
                       {renderAuthFields(courier)}
 
-                      {/* Features info */}
                       <div className="flex flex-wrap gap-2 pt-2">
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Package className="w-3.5 h-3.5" />
@@ -514,28 +451,13 @@ export const CourierApiSettings = () => {
                         </div>
                       </div>
 
-                      {/* Actions */}
                       <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          onClick={() => handleTest(courier)}
-                          variant="outline"
-                          disabled={testing === courier.id}
-                        >
-                          {testing === courier.id ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <Check className="w-4 h-4 mr-2" />
-                          )}
+                        <Button onClick={() => handleTest(courier)} variant="outline" disabled={testing === courier.id}>
+                          {testing === courier.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
                           Тест връзка
                         </Button>
-                        
-                        <Button
-                          onClick={() => handleSave(courier)}
-                          disabled={saving === courier.id}
-                        >
-                          {saving === courier.id ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : null}
+                        <Button onClick={() => handleSave(courier)} disabled={saving === courier.id}>
+                          {saving === courier.id && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           Запази настройки
                         </Button>
                       </div>
