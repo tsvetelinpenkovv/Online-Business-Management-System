@@ -131,28 +131,33 @@ Deno.serve(async (req) => {
     // Read body as text first for signature verification
     const bodyText = await req.text();
     
-    // Verify signature if secret is configured
-    if (webhookSecret) {
-      if (!signature) {
-        console.error('Missing webhook signature');
-        return new Response(JSON.stringify({ error: 'Missing signature' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      const isValid = await verifyPrestaShopSignature(bodyText, signature, webhookSecret);
-      if (!isValid) {
-        console.error('Invalid webhook signature');
-        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      console.log('Webhook signature verified');
-    } else {
-      console.warn('PRESTASHOP_WEBHOOK_SECRET not configured - signature verification skipped');
+    // Webhook secret is mandatory - reject if not configured
+    if (!webhookSecret) {
+      console.error('PRESTASHOP_WEBHOOK_SECRET not configured - webhook authentication disabled');
+      return new Response(JSON.stringify({ error: 'Webhook authentication not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
+
+    // Verify signature
+    if (!signature) {
+      console.error('Missing webhook signature');
+      return new Response(JSON.stringify({ error: 'Missing signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const isValid = await verifyPrestaShopSignature(bodyText, signature, webhookSecret);
+    if (!isValid) {
+      console.error('Invalid webhook signature');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    console.log('Webhook signature verified');
 
     const body = JSON.parse(bodyText);
     const eventType = body.event || body.type || 'order';

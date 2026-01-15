@@ -144,28 +144,33 @@ Deno.serve(async (req) => {
     // Read body as text first for signature verification
     const bodyText = await req.text();
     
-    // Verify signature if secret is configured
-    if (webhookSecret) {
-      if (!hmac) {
-        console.error('Missing webhook signature');
-        return new Response(JSON.stringify({ error: 'Missing signature' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      const isValid = await verifyShopifySignature(bodyText, hmac, webhookSecret);
-      if (!isValid) {
-        console.error('Invalid webhook signature');
-        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      console.log('Webhook signature verified');
-    } else {
-      console.warn('SHOPIFY_WEBHOOK_SECRET not configured - signature verification skipped');
+    // Webhook secret is mandatory - reject if not configured
+    if (!webhookSecret) {
+      console.error('SHOPIFY_WEBHOOK_SECRET not configured - webhook authentication disabled');
+      return new Response(JSON.stringify({ error: 'Webhook authentication not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
+
+    // Verify signature
+    if (!hmac) {
+      console.error('Missing webhook signature');
+      return new Response(JSON.stringify({ error: 'Missing signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const isValid = await verifyShopifySignature(bodyText, hmac, webhookSecret);
+    if (!isValid) {
+      console.error('Invalid webhook signature');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    console.log('Webhook signature verified');
 
     const topic = req.headers.get('x-shopify-topic');
     console.log('Webhook topic:', topic);
