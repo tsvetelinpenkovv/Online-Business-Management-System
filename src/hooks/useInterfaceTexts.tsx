@@ -39,7 +39,7 @@ const AVAILABLE_ICONS = {
   Mail: LucideIcons.Mail,
   MapPin: LucideIcons.MapPin,
   Hash: LucideIcons.Hash,
-  DollarSign: LucideIcons.DollarSign,
+  Euro: LucideIcons.Euro,
   ShoppingCart: LucideIcons.ShoppingCart,
   Archive: LucideIcons.Archive,
   Clipboard: LucideIcons.Clipboard,

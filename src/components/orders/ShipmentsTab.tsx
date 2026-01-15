@@ -436,7 +436,7 @@ export const ShipmentsTab = () => {
                     </TableCell>
                     <TableCell>
                       {shipment.cod_amount ? (
-                        <span className="font-medium">{shipment.cod_amount.toFixed(2)} лв</span>
+                        <span className="font-medium">{shipment.cod_amount.toFixed(2)} €</span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
