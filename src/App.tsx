@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { InterfaceTextsProvider } from "@/hooks/useInterfaceTexts";
 import { SecretPathGuard } from "@/components/SecretPathGuard";
+import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
@@ -25,6 +26,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <SessionTimeoutWarning />
             <BrowserRouter>
               <SecretPathGuard>
                 <Routes>
