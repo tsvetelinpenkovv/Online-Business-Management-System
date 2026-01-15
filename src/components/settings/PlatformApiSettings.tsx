@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Save, TestTube, Copy, Check, RefreshCw, Package, FolderSync, Download, Upload } from 'lucide-react';
+import { Loader2, Save, TestTube, Copy, Check, RefreshCw } from 'lucide-react';
 import { useEcommercePlatforms, EcommercePlatform } from '@/hooks/useEcommercePlatforms';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -63,7 +63,7 @@ export const PlatformApiSettings: FC = () => {
   const [saving, setSaving] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
   const [syncing, setSyncing] = useState<string | null>(null);
-  const [syncingCategories, setSyncingCategories] = useState<{ platform: string; direction: 'import' | 'export' } | null>(null);
+  
   const [copiedWebhook, setCopiedWebhook] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -240,11 +240,29 @@ export const PlatformApiSettings: FC = () => {
     setSyncing(platform.name);
 
     // Add initial log
-    addLog('info', `Стартиране на синхронизация с ${platform.display_name}...`);
+    addLog('info', `Стартиране на пълна синхронизация с ${platform.display_name}...`);
     addLog('info', `URL: ${config.store_url}`);
 
     try {
-      // First, estimate total products (show loading)
+      // Step 1: Sync categories first
+      addLog('info', 'Синхронизиране на категории...');
+      
+      const { data: categoryData, error: categoryError } = await supabase.functions.invoke('sync-categories', {
+        body: { platform: platform.name, direction: 'import' }
+      });
+
+      if (categoryError) {
+        addLog('warning', 'Грешка при синхронизация на категории', categoryError.message);
+      } else {
+        const importedCategories = categoryData?.imported || 0;
+        if (importedCategories > 0) {
+          addLog('success', `Импортирани ${importedCategories} категории`);
+        } else {
+          addLog('info', 'Няма нови категории за импорт');
+        }
+      }
+
+      // Step 2: Sync products
       addLog('info', 'Извличане на продукти от платформата...');
       
       const { data, error } = await supabase.functions.invoke('sync-products', {
@@ -259,7 +277,7 @@ export const PlatformApiSettings: FC = () => {
       const total = synced + created;
       const errors = data?.errors || 0;
 
-      // Simulate progress updates from results
+      // Update stats with results
       addLog('success', `Намерени ${total} продукта за обработка`);
       
       setSyncStats({
@@ -285,11 +303,11 @@ export const PlatformApiSettings: FC = () => {
         addLog('warning', `${errors} продукта не бяха синхронизирани поради грешки`);
       }
       
-      addLog('success', 'Синхронизацията завърши успешно!');
+      addLog('success', 'Пълната синхронизация завърши успешно!');
       
       toast({ 
         title: 'Синхронизация завършена', 
-        description: `Синхронизирани: ${synced}, Създадени: ${created}${bundles > 0 ? `, Комплекти: ${bundles}` : ''} от ${platform.display_name}` 
+        description: `Продукти: ${synced + created}, Комплекти: ${bundles} от ${platform.display_name}` 
       });
     } catch (err: any) {
       const errorMessage = err.message || 'Неуспешна синхронизация';
@@ -315,30 +333,6 @@ export const PlatformApiSettings: FC = () => {
     setSyncLogs([]);
   };
 
-  const syncCategories = async (platform: EcommercePlatform, direction: 'import' | 'export') => {
-    setSyncingCategories({ platform: platform.name, direction });
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-categories', {
-        body: { platform: platform.name, direction }
-      });
-
-      if (error) throw error;
-
-      const count = direction === 'import' ? data?.imported : data?.exported;
-      toast({
-        title: direction === 'import' ? 'Категории импортирани' : 'Категории експортирани',
-        description: `${count || 0} категории ${direction === 'import' ? 'импортирани от' : 'експортирани към'} ${platform.display_name}`,
-      });
-    } catch (err: any) {
-      toast({
-        title: 'Грешка',
-        description: err.message || 'Неуспешна синхронизация на категории',
-        variant: 'destructive',
-      });
-    } finally {
-      setSyncingCategories(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -487,42 +481,15 @@ export const PlatformApiSettings: FC = () => {
                       size="sm"
                       onClick={() => syncProducts(platform)}
                       disabled={syncing === platform.name || !platform.is_enabled}
-                      title={!platform.is_enabled ? 'Активирайте платформата първо' : 'Синхронизирай продукти и комплекти'}
+                      title={!platform.is_enabled ? 'Активирайте платформата първо' : 'Синхронизирай всичко (категории, продукти, комплекти)'}
                     >
                       {syncing === platform.name ? (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       ) : (
-                        <Package className="w-4 h-4 mr-2" />
+                        <RefreshCw className="w-4 h-4 mr-2" />
                       )}
-                      <span className="hidden sm:inline">Синхронизирай </span>продукти
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => syncCategories(platform, 'import')}
-                      disabled={syncingCategories?.platform === platform.name || !platform.is_enabled}
-                      title="Импортирай категории от платформата"
-                    >
-                      {syncingCategories?.platform === platform.name && syncingCategories.direction === 'import' ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4 mr-2" />
-                      )}
-                      <span className="hidden md:inline">Импорт </span>категории
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => syncCategories(platform, 'export')}
-                      disabled={syncingCategories?.platform === platform.name || !platform.is_enabled}
-                      title="Експортирай категории към платформата"
-                    >
-                      {syncingCategories?.platform === platform.name && syncingCategories.direction === 'export' ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Upload className="w-4 h-4 mr-2" />
-                      )}
-                      <span className="hidden md:inline">Експорт </span>категории
+                      <span className="hidden sm:inline">Синхронизация</span>
+                      <span className="sm:hidden">Sync</span>
                     </Button>
                   </div>
                 </div>
