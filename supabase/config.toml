@@ -38,3 +38,12 @@ verify_jwt = false
 
 [functions.connectix-send]
 verify_jwt = false
+
+[functions.sync-categories]
+verify_jwt = false
+
+[functions.sync-prices]
+verify_jwt = false
+
+[functions.push-order-status]
+verify_jwt = false

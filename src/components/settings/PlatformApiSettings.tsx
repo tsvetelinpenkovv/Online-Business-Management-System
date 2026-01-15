@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Save, TestTube, Copy, Check, RefreshCw, Package } from 'lucide-react';
+import { Loader2, Save, TestTube, Copy, Check, RefreshCw, Package, FolderSync, Download, Upload } from 'lucide-react';
 import { useEcommercePlatforms, EcommercePlatform } from '@/hooks/useEcommercePlatforms';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +63,7 @@ export const PlatformApiSettings: FC = () => {
   const [saving, setSaving] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncingCategories, setSyncingCategories] = useState<{ platform: string; direction: 'import' | 'export' } | null>(null);
   const [copiedWebhook, setCopiedWebhook] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -314,6 +315,31 @@ export const PlatformApiSettings: FC = () => {
     setSyncLogs([]);
   };
 
+  const syncCategories = async (platform: EcommercePlatform, direction: 'import' | 'export') => {
+    setSyncingCategories({ platform: platform.name, direction });
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-categories', {
+        body: { platform: platform.name, direction }
+      });
+
+      if (error) throw error;
+
+      const count = direction === 'import' ? data?.imported : data?.exported;
+      toast({
+        title: direction === 'import' ? 'Категории импортирани' : 'Категории експортирани',
+        description: `${count || 0} категории ${direction === 'import' ? 'импортирани от' : 'експортирани към'} ${platform.display_name}`,
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Грешка',
+        description: err.message || 'Неуспешна синхронизация на категории',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingCategories(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -468,7 +494,35 @@ export const PlatformApiSettings: FC = () => {
                       ) : (
                         <Package className="w-4 h-4 mr-2" />
                       )}
-                      Синхронизирай продукти
+                      <span className="hidden sm:inline">Синхронизирай </span>продукти
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => syncCategories(platform, 'import')}
+                      disabled={syncingCategories?.platform === platform.name || !platform.is_enabled}
+                      title="Импортирай категории от платформата"
+                    >
+                      {syncingCategories?.platform === platform.name && syncingCategories.direction === 'import' ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 mr-2" />
+                      )}
+                      <span className="hidden md:inline">Импорт </span>категории
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => syncCategories(platform, 'export')}
+                      disabled={syncingCategories?.platform === platform.name || !platform.is_enabled}
+                      title="Експортирай категории към платформата"
+                    >
+                      {syncingCategories?.platform === platform.name && syncingCategories.direction === 'export' ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      <span className="hidden md:inline">Експорт </span>категории
                     </Button>
                   </div>
                 </div>
