@@ -488,8 +488,7 @@ export const PlatformApiSettings: FC = () => {
                       ) : (
                         <RefreshCw className="w-4 h-4 mr-2" />
                       )}
-                      <span className="hidden sm:inline">Синхронизация</span>
-                      <span className="sm:hidden">Sync</span>
+                      Синхронизация
                     </Button>
                   </div>
                 </div>
