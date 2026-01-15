@@ -3,9 +3,9 @@ import {
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown,
-  Send, Loader2, Smartphone
+  Send, Loader2
 } from 'lucide-react';
-import { Order, ORDER_STATUSES } from '@/types/order';
+import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
@@ -295,7 +295,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   };
 
   const [copiedCatalog, setCopiedCatalog] = useState<string | null>(null);
-  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
 
   const handleCopyCatalog = (catalogNumber: string) => {
     navigator.clipboard.writeText(catalogNumber);
@@ -304,16 +303,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
     toast({
       title: 'Копирано',
       description: `Каталожен номер ${catalogNumber} е копиран`,
-    });
-  };
-
-  const handleCopyPhone = (phone: string) => {
-    navigator.clipboard.writeText(phone);
-    setCopiedPhone(phone);
-    setTimeout(() => setCopiedPhone(null), 2000);
-    toast({
-      title: 'Копирано',
-      description: `Телефон ${phone} е копиран`,
     });
   };
 

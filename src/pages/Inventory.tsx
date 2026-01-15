@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
-import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
+
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle, Euro, Tag, ClipboardList
+  FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -28,9 +28,6 @@ import { ForecastTab } from '@/components/inventory/ForecastTab';
 import { PriceHistoryTab } from '@/components/inventory/PriceHistoryTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
-import { BarcodeLabelPrinter } from '@/components/inventory/BarcodeLabelPrinter';
-import { AuditLogTab } from '@/components/inventory/AuditLogTab';
-import { WarehouseSettings } from '@/components/inventory/WarehouseSettings';
 
 export default function Inventory() {
   const navigate = useNavigate();

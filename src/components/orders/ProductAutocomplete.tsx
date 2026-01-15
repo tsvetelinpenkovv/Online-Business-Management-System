@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useRef } from 'react';
+import { forwardRef, useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { Package, Barcode, Loader2, AlertTriangle } from 'lucide-react';
@@ -21,7 +21,7 @@ interface ProductAutocompleteProps {
   showStockWarning?: boolean;
 }
 
-export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
+export const ProductAutocomplete = forwardRef<HTMLDivElement, ProductAutocompleteProps>(({
   value,
   onChange,
   onSelect,
@@ -29,7 +29,7 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
   className = '',
   requiredQuantity = 1,
   showStockWarning = true,
-}) => {
+}, ref) => {
   const [products, setProducts] = useState<InventoryProduct[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -123,8 +123,8 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
   const showWarning = showStockWarning && selectedProduct && selectedProduct.current_stock < requiredQuantity;
 
   return (
-    <div ref={wrapperRef} className={`relative ${className}`}>
-      <div className="relative">
+    <div ref={ref || wrapperRef} className={`relative ${className}`}>
+      <div ref={wrapperRef} className="relative">
         <Input
           ref={inputRef}
           value={value}
@@ -198,4 +198,6 @@ export const ProductAutocomplete: FC<ProductAutocompleteProps> = ({
       )}
     </div>
   );
-};
+});
+
+ProductAutocomplete.displayName = 'ProductAutocomplete';
