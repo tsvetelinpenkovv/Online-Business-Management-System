@@ -178,6 +178,32 @@ export interface TextConfig {
   inventory_document_supplier: string;
   inventory_document_total: string;
   
+  // Courier/Shipment texts
+  courier_create_shipment_button: string;
+  courier_bulk_shipment_button: string;
+  courier_search_offices_title: string;
+  courier_search_offices_placeholder: string;
+  courier_refresh_offices_button: string;
+  courier_select_courier_label: string;
+  courier_delivery_type_label: string;
+  courier_delivery_to_address: string;
+  courier_delivery_to_office: string;
+  courier_cod_amount_label: string;
+  courier_weight_label: string;
+  courier_sender_name_label: string;
+  courier_sender_phone_label: string;
+  courier_sender_city_label: string;
+  courier_sender_address_label: string;
+  courier_recipient_name_label: string;
+  courier_recipient_phone_label: string;
+  courier_recipient_city_label: string;
+  courier_recipient_address_label: string;
+  courier_product_description_label: string;
+  courier_test_connection_button: string;
+  courier_save_settings_button: string;
+  courier_api_settings_title: string;
+  courier_api_settings_description: string;
+  
   // Common
   common_save_button: string;
   common_cancel_button: string;
@@ -325,6 +351,33 @@ const defaultTexts: TextConfig = {
   inventory_document_date: 'Дата',
   inventory_document_supplier: 'Доставчик',
   inventory_document_total: 'Сума',
+  
+  // Courier/Shipment texts
+  courier_create_shipment_button: 'Създай товарителница',
+  courier_bulk_shipment_button: 'Създай товарителници',
+  courier_search_offices_title: 'Търсене на офиси и автомати',
+  courier_search_offices_placeholder: 'Търси по име, адрес или град...',
+  courier_refresh_offices_button: 'Обнови офиси',
+  courier_select_courier_label: 'Избери куриер',
+  courier_delivery_type_label: 'Тип доставка',
+  courier_delivery_to_address: 'До адрес',
+  courier_delivery_to_office: 'До офис/автомат',
+  courier_cod_amount_label: 'Наложен платеж',
+  courier_weight_label: 'Тегло (кг)',
+  courier_sender_name_label: 'Име на подател',
+  courier_sender_phone_label: 'Телефон на подател',
+  courier_sender_city_label: 'Град на подател',
+  courier_sender_address_label: 'Адрес на подател',
+  courier_recipient_name_label: 'Име на получател',
+  courier_recipient_phone_label: 'Телефон на получател',
+  courier_recipient_city_label: 'Град на получател',
+  courier_recipient_address_label: 'Адрес на получател',
+  courier_product_description_label: 'Описание на пратка',
+  courier_test_connection_button: 'Тест връзка',
+  courier_save_settings_button: 'Запази настройки',
+  courier_api_settings_title: 'API настройки на куриери',
+  courier_api_settings_description: 'Конфигурирайте API достъп за автоматично създаване на товарителници',
+  
   common_save_button: 'Запази',
   common_cancel_button: 'Отказ',
   common_delete_button: 'Изтрий',

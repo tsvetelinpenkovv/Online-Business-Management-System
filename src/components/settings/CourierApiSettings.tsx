@@ -465,14 +465,14 @@ export const CourierApiSettings = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="pt-4 space-y-6">
-                      <div className="flex flex-wrap gap-6">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                         <div className="flex items-center space-x-2">
                           <Switch
                             id={`enabled-${courier.id}`}
                             checked={isEnabled}
                             onCheckedChange={(checked) => handleFormChange(courier.id, 'is_enabled', checked)}
                           />
-                          <Label htmlFor={`enabled-${courier.id}`}>Активирай интеграция</Label>
+                          <Label htmlFor={`enabled-${courier.id}`} className="text-sm">Активирай интеграция</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Switch
@@ -480,7 +480,7 @@ export const CourierApiSettings = () => {
                             checked={isTestMode}
                             onCheckedChange={(checked) => handleFormChange(courier.id, 'is_test_mode', checked)}
                           />
-                          <Label htmlFor={`test-${courier.id}`}>Тестов режим</Label>
+                          <Label htmlFor={`test-${courier.id}`} className="text-sm">Тестов режим</Label>
                         </div>
                       </div>
 
@@ -497,8 +497,14 @@ export const CourierApiSettings = () => {
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button onClick={() => handleTest(courier)} variant="outline" disabled={testing === courier.id}>
+                      <div className="flex flex-col sm:flex-row flex-wrap gap-2 pt-2">
+                        <Button 
+                          onClick={() => handleTest(courier)} 
+                          variant="outline" 
+                          disabled={testing === courier.id}
+                          className="w-full sm:w-auto"
+                          size="sm"
+                        >
                           {testing === courier.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
                           Тест връзка
                         </Button>
@@ -507,11 +513,18 @@ export const CourierApiSettings = () => {
                           variant="outline" 
                           disabled={refreshingOffices === courier.id || !formData[courier.id]?.is_enabled}
                           title="Обнови офиси и автомати от API"
+                          className="w-full sm:w-auto"
+                          size="sm"
                         >
                           {refreshingOffices === courier.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                           Обнови офиси
                         </Button>
-                        <Button onClick={() => handleSave(courier)} disabled={saving === courier.id}>
+                        <Button 
+                          onClick={() => handleSave(courier)} 
+                          disabled={saving === courier.id}
+                          className="w-full sm:w-auto"
+                          size="sm"
+                        >
                           {saving === courier.id && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           Запази настройки
                         </Button>

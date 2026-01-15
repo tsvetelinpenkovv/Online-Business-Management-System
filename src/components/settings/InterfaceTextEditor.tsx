@@ -157,6 +157,32 @@ interface TextConfig {
   inventory_document_supplier: string;
   inventory_document_total: string;
   
+  // Courier/Shipment texts
+  courier_create_shipment_button: string;
+  courier_bulk_shipment_button: string;
+  courier_search_offices_title: string;
+  courier_search_offices_placeholder: string;
+  courier_refresh_offices_button: string;
+  courier_select_courier_label: string;
+  courier_delivery_type_label: string;
+  courier_delivery_to_address: string;
+  courier_delivery_to_office: string;
+  courier_cod_amount_label: string;
+  courier_weight_label: string;
+  courier_sender_name_label: string;
+  courier_sender_phone_label: string;
+  courier_sender_city_label: string;
+  courier_sender_address_label: string;
+  courier_recipient_name_label: string;
+  courier_recipient_phone_label: string;
+  courier_recipient_city_label: string;
+  courier_recipient_address_label: string;
+  courier_product_description_label: string;
+  courier_test_connection_button: string;
+  courier_save_settings_button: string;
+  courier_api_settings_title: string;
+  courier_api_settings_description: string;
+  
   // Common
   common_save_button: string;
   common_cancel_button: string;
@@ -329,6 +355,32 @@ const defaultTexts: TextConfig = {
   inventory_document_date: 'Дата',
   inventory_document_supplier: 'Доставчик',
   inventory_document_total: 'Сума',
+  
+  // Courier/Shipment texts
+  courier_create_shipment_button: 'Създай товарителница',
+  courier_bulk_shipment_button: 'Създай товарителници',
+  courier_search_offices_title: 'Търсене на офиси и автомати',
+  courier_search_offices_placeholder: 'Търси по име, адрес или град...',
+  courier_refresh_offices_button: 'Обнови офиси',
+  courier_select_courier_label: 'Избери куриер',
+  courier_delivery_type_label: 'Тип доставка',
+  courier_delivery_to_address: 'До адрес',
+  courier_delivery_to_office: 'До офис/автомат',
+  courier_cod_amount_label: 'Наложен платеж',
+  courier_weight_label: 'Тегло (кг)',
+  courier_sender_name_label: 'Име на подател',
+  courier_sender_phone_label: 'Телефон на подател',
+  courier_sender_city_label: 'Град на подател',
+  courier_sender_address_label: 'Адрес на подател',
+  courier_recipient_name_label: 'Име на получател',
+  courier_recipient_phone_label: 'Телефон на получател',
+  courier_recipient_city_label: 'Град на получател',
+  courier_recipient_address_label: 'Адрес на получател',
+  courier_product_description_label: 'Описание на пратка',
+  courier_test_connection_button: 'Тест връзка',
+  courier_save_settings_button: 'Запази настройки',
+  courier_api_settings_title: 'API настройки на куриери',
+  courier_api_settings_description: 'Конфигурирайте API достъп за автоматично създаване на товарителници',
   
   // Common
   common_save_button: 'Запази',
@@ -650,6 +702,33 @@ export const InterfaceTextEditor: FC = () => {
     { key: 'inventory_document_total', label: 'Колона Сума' },
   ] as const;
 
+  const courierTexts = [
+    { key: 'courier_create_shipment_button', label: 'Бутон Създай товарителница' },
+    { key: 'courier_bulk_shipment_button', label: 'Бутон Масово създаване' },
+    { key: 'courier_search_offices_title', label: 'Заглавие търсене офиси' },
+    { key: 'courier_search_offices_placeholder', label: 'Placeholder търсене' },
+    { key: 'courier_refresh_offices_button', label: 'Бутон обнови офиси' },
+    { key: 'courier_select_courier_label', label: 'Етикет избор куриер' },
+    { key: 'courier_delivery_type_label', label: 'Етикет тип доставка' },
+    { key: 'courier_delivery_to_address', label: 'До адрес' },
+    { key: 'courier_delivery_to_office', label: 'До офис/автомат' },
+    { key: 'courier_cod_amount_label', label: 'Етикет наложен платеж' },
+    { key: 'courier_weight_label', label: 'Етикет тегло' },
+    { key: 'courier_sender_name_label', label: 'Име на подател' },
+    { key: 'courier_sender_phone_label', label: 'Телефон подател' },
+    { key: 'courier_sender_city_label', label: 'Град подател' },
+    { key: 'courier_sender_address_label', label: 'Адрес подател' },
+    { key: 'courier_recipient_name_label', label: 'Име на получател' },
+    { key: 'courier_recipient_phone_label', label: 'Телефон получател' },
+    { key: 'courier_recipient_city_label', label: 'Град получател' },
+    { key: 'courier_recipient_address_label', label: 'Адрес получател' },
+    { key: 'courier_product_description_label', label: 'Описание на пратка' },
+    { key: 'courier_test_connection_button', label: 'Бутон тест връзка' },
+    { key: 'courier_save_settings_button', label: 'Бутон запази настройки' },
+    { key: 'courier_api_settings_title', label: 'Заглавие API настройки' },
+    { key: 'courier_api_settings_description', label: 'Описание API настройки' },
+  ] as const;
+
   const commonTextsConfig = [
     { key: 'common_save_button', label: 'Бутон Запази' },
     { key: 'common_cancel_button', label: 'Бутон Отказ' },
@@ -771,14 +850,18 @@ export const InterfaceTextEditor: FC = () => {
         </div>
 
         <Tabs value={activeSection} onValueChange={setActiveSection}>
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="orders" className="gap-2">
               <Package className="w-4 h-4" />
-              Поръчки
+              <span className="hidden sm:inline">Поръчки</span>
             </TabsTrigger>
             <TabsTrigger value="inventory" className="gap-2">
               <Warehouse className="w-4 h-4" />
-              Склад
+              <span className="hidden sm:inline">Склад</span>
+            </TabsTrigger>
+            <TabsTrigger value="courier" className="gap-2">
+              <Truck className="w-4 h-4" />
+              <span className="hidden sm:inline">Куриери</span>
             </TabsTrigger>
           </TabsList>
 
@@ -903,6 +986,21 @@ export const InterfaceTextEditor: FC = () => {
                   </Accordion>
                 </ScrollArea>
               </TabsContent>
+
+              <TabsContent value="courier" className="space-y-4">
+                <ScrollArea className="h-[450px] pr-4">
+                  <Accordion type="multiple" defaultValue={['courier-texts']} className="space-y-2">
+                    <AccordionItem value="courier-texts" className="border rounded-lg px-4">
+                      <AccordionTrigger className="hover:no-underline py-3">
+                        <span className="text-sm font-medium">Товарителници и офиси</span>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4">
+                        {renderTextFields(courierTexts)}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </ScrollArea>
+              </TabsContent>
             </>
           ) : (
             <>
@@ -920,6 +1018,17 @@ export const InterfaceTextEditor: FC = () => {
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium text-muted-foreground">Иконки на табове и бутони</h3>
                     {renderIconFields(inventoryIcons)}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="courier" className="space-y-4">
+                <ScrollArea className="h-[450px] pr-4">
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <Truck className="w-12 h-12 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground text-center">
+                      Куриерските иконки се конфигурират<br />от логата в секция "Куриери"
+                    </p>
                   </div>
                 </ScrollArea>
               </TabsContent>
