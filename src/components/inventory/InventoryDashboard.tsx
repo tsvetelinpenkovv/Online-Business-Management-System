@@ -1,8 +1,8 @@
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Package, AlertTriangle, XCircle, TrendingUp, 
-  Euro, Warehouse, ArrowUpRight, ArrowDownRight 
+  Euro, Warehouse, ArrowUpRight, ArrowDownRight, Lock, Unlock
 } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
 import { MOVEMENT_TYPE_LABELS } from '@/types/inventory';
@@ -20,6 +20,15 @@ export const InventoryDashboard: FC<InventoryDashboardProps> = ({ inventory }) =
     p => p.current_stock <= p.min_stock_level && p.current_stock > 0
   );
   const outOfStockProducts = inventory.products.filter(p => p.current_stock <= 0);
+
+  // Calculate available stock stats (current - reserved)
+  const availableStockStats = useMemo(() => {
+    const totalReserved = inventory.products.reduce((sum, p) => sum + ((p as any).reserved_stock || 0), 0);
+    const totalCurrent = inventory.products.reduce((sum, p) => sum + p.current_stock, 0);
+    const totalAvailable = totalCurrent - totalReserved;
+    const productsWithReservations = inventory.products.filter(p => ((p as any).reserved_stock || 0) > 0).length;
+    return { totalReserved, totalCurrent, totalAvailable, productsWithReservations };
+  }, [inventory.products]);
 
   return (
     <div className="space-y-6">
@@ -74,16 +83,30 @@ export const InventoryDashboard: FC<InventoryDashboardProps> = ({ inventory }) =
         </Card>
       </div>
 
-      {/* Second Row Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      {/* Second Row Stats - Including Available Stock */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Продажна стойност</p>
-                <p className="text-2xl font-bold">{stats.totalSaleValue.toFixed(2)} €</p>
+                <p className="text-sm text-muted-foreground">Свободна наличност</p>
+                <p className="text-2xl font-bold text-primary">{availableStockStats.totalAvailable.toFixed(0)}</p>
+                <p className="text-xs text-muted-foreground">от {availableStockStats.totalCurrent.toFixed(0)} общо</p>
               </div>
-              <Euro className="w-8 h-8 text-primary opacity-80" />
+              <Unlock className="w-8 h-8 text-primary opacity-80" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Резервирано</p>
+                <p className="text-2xl font-bold text-amber-600">{availableStockStats.totalReserved.toFixed(0)}</p>
+                <p className="text-xs text-muted-foreground">{availableStockStats.productsWithReservations} артикула</p>
+              </div>
+              <Lock className="w-8 h-8 text-amber-600 opacity-80" />
             </div>
           </CardContent>
         </Card>
