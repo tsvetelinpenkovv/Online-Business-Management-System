@@ -89,6 +89,7 @@ export type Database = {
           orders_page_title: string | null
           phone: string | null
           registered_address: string | null
+          secret_path: string | null
           updated_at: string
           vat_number: string | null
           vat_registered: boolean | null
@@ -117,6 +118,7 @@ export type Database = {
           orders_page_title?: string | null
           phone?: string | null
           registered_address?: string | null
+          secret_path?: string | null
           updated_at?: string
           vat_number?: string | null
           vat_registered?: boolean | null
@@ -145,6 +147,7 @@ export type Database = {
           orders_page_title?: string | null
           phone?: string | null
           registered_address?: string | null
+          secret_path?: string | null
           updated_at?: string
           vat_number?: string | null
           vat_registered?: boolean | null

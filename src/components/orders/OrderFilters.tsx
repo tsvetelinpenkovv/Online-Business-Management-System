@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle, ShieldAlert } from 'lucide-react';
+import { buildPath } from '@/components/SecretPathGuard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ORDER_STATUSES } from '@/types/order';
@@ -228,7 +229,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 
         <Button 
           variant="outline" 
-          onClick={() => navigate('/inventory')}
+          onClick={() => navigate(buildPath('/inventory'))}
           className="bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
         >
           <Warehouse className="w-4 h-4 mr-2" />
@@ -238,7 +239,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         {connectixEnabled && (
           <Button 
             variant="outline" 
-            onClick={() => navigate('/messages')}
+            onClick={() => navigate(buildPath('/messages'))}
             className="bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
@@ -249,7 +250,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
         {nekorektenEnabled && (
           <Button 
             variant="outline" 
-            onClick={() => navigate('/nekorekten')}
+            onClick={() => navigate(buildPath('/nekorekten'))}
             className="bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-foreground hover:text-foreground"
           >
             <ShieldAlert className="w-4 h-4 mr-2" />

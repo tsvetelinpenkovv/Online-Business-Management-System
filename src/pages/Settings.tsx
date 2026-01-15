@@ -5,6 +5,7 @@ import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useFavicon } from '@/hooks/useFavicon';
 import { useLoginBackground } from '@/hooks/useLoginBackground';
 import { supabase } from '@/integrations/supabase/client';
+import { buildPath } from '@/components/SecretPathGuard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { CourierApiSettings } from '@/components/settings/CourierApiSettings';
@@ -62,6 +63,7 @@ interface CompanySettings {
   login_title: string | null;
   login_description: string | null;
   login_background_color: string | null;
+  secret_path: string | null;
 }
 
 const Settings = () => {
@@ -147,7 +149,7 @@ const Settings = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate(buildPath('/auth'));
     }
   }, [user, authLoading, navigate]);
 
@@ -237,6 +239,7 @@ const Settings = () => {
           footer_link_text: companySettings.footer_link_text,
           footer_link: companySettings.footer_link,
           footer_website: companySettings.footer_website,
+          secret_path: companySettings.secret_path,
         })
         .eq('id', companySettings.id);
 
@@ -547,7 +550,7 @@ const Settings = () => {
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate(buildPath('/'))} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-lg sm:text-xl font-semibold truncate">Настройки</h1>
@@ -885,6 +888,83 @@ const Settings = () => {
                             className="bg-background"
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        Защита на URL адреса
+                      </h3>
+                      <div className="p-4 bg-background rounded-lg border space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="secret-path">Секретен път (URL защита)</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="secret-path"
+                              placeholder="/b36s739rbf12"
+                              value={companySettings.secret_path || ''}
+                              onChange={(e) => {
+                                let value = e.target.value;
+                                // Ensure it starts with /
+                                if (value && !value.startsWith('/')) {
+                                  value = '/' + value;
+                                }
+                                setCompanySettings({...companySettings, secret_path: value});
+                              }}
+                              className="bg-background font-mono"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                // Generate random secret path
+                                const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+                                let result = '/';
+                                for (let i = 0; i < 16; i++) {
+                                  result += chars.charAt(Math.floor(Math.random() * chars.length));
+                                }
+                                setCompanySettings({...companySettings, secret_path: result});
+                              }}
+                              title="Генерирай случаен път"
+                            >
+                              <Key className="w-4 h-4" />
+                            </Button>
+                            {companySettings.secret_path && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCompanySettings({...companySettings, secret_path: null})}
+                                title="Премахни защитата"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Добавете секретен път след домейна за допълнителна защита. 
+                            Например: <code className="bg-muted px-1 rounded">sklad.bestauto.bg<strong>{companySettings.secret_path || '/секретен-път'}</strong></code>
+                          </p>
+                        </div>
+                        
+                        {companySettings.secret_path && (
+                          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                              <div className="text-sm text-amber-800 dark:text-amber-200">
+                                <p className="font-medium">Важно!</p>
+                                <p className="text-xs mt-1">
+                                  След запазване, системата ще бъде достъпна само на адрес със секретния път.
+                                  Запазете този път на сигурно място!
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 

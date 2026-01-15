@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { InterfaceTextsProvider } from "@/hooks/useInterfaceTexts";
+import { SecretPathGuard } from "@/components/SecretPathGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
@@ -25,15 +26,28 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/nekorekten" element={<Nekorekten />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <SecretPathGuard>
+                <Routes>
+                  {/* Routes without secret path prefix */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/nekorekten" element={<Nekorekten />} />
+                  
+                  {/* Routes with secret path prefix - using wildcard to capture any prefix */}
+                  <Route path="/:secretPath/" element={<Index />} />
+                  <Route path="/:secretPath/auth" element={<Auth />} />
+                  <Route path="/:secretPath/settings" element={<Settings />} />
+                  <Route path="/:secretPath/inventory" element={<Inventory />} />
+                  <Route path="/:secretPath/messages" element={<Messages />} />
+                  <Route path="/:secretPath/nekorekten" element={<Nekorekten />} />
+                  
+                  {/* Catch-all for 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </SecretPathGuard>
             </BrowserRouter>
           </TooltipProvider>
         </InterfaceTextsProvider>

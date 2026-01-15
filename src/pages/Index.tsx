@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { printOrderReceipts } from '@/components/orders/OrderReceipt';
 import { AddOrderDialog } from '@/components/orders/AddOrderDialog';
 import { BulkShipmentDialog } from '@/components/orders/BulkShipmentDialog';
+import { buildPath } from '@/components/SecretPathGuard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,7 +85,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate(buildPath('/auth'));
     }
   }, [user, authLoading, navigate]);
 
@@ -214,7 +215,7 @@ const Index = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate(buildPath('/auth'));
   };
 
   const handleBulkPrintReceipts = () => {
@@ -671,7 +672,7 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
-            <Button variant="outline" size="icon" onClick={() => navigate('/settings')} title={getText('orders_settings_button_label')}>
+            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')}>
               <Settings className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" onClick={handleSignOut} title={getText('orders_logout_button_label')}>
@@ -761,7 +762,7 @@ const Index = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>

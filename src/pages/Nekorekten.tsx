@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, ShieldAlert, CheckCircle2, XCircle, HelpCircle, Loader2, RefreshCw, ExternalLink, Phone, User, Download, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { buildPath } from '@/components/SecretPathGuard';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -58,7 +59,7 @@ const Nekorekten = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate(buildPath('/auth'));
     }
   }, [user, authLoading, navigate]);
 
@@ -272,7 +273,7 @@ const Nekorekten = () => {
           {/* Header */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 md:gap-3 min-w-0">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate(buildPath('/'))} className="shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="min-w-0">
