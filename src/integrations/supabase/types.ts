@@ -220,6 +220,62 @@ export type Database = {
           },
         ]
       }
+      courier_api_settings: {
+        Row: {
+          api_key: string | null
+          api_url: string | null
+          client_id: string | null
+          client_secret: string | null
+          courier_id: string
+          created_at: string
+          extra_config: Json | null
+          id: string
+          is_enabled: boolean | null
+          is_test_mode: boolean | null
+          password: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          api_url?: string | null
+          client_id?: string | null
+          client_secret?: string | null
+          courier_id: string
+          created_at?: string
+          extra_config?: Json | null
+          id?: string
+          is_enabled?: boolean | null
+          is_test_mode?: boolean | null
+          password?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          api_url?: string | null
+          client_id?: string | null
+          client_secret?: string | null
+          courier_id?: string
+          created_at?: string
+          extra_config?: Json | null
+          id?: string
+          is_enabled?: boolean | null
+          is_test_mode?: boolean | null
+          password?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_api_settings_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: true
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couriers: {
         Row: {
           created_at: string
@@ -636,6 +692,47 @@ export type Database = {
           },
         ]
       }
+      price_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          field_changed: string
+          id: string
+          new_value: number | null
+          old_value: number | null
+          product_id: string
+          reason: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          field_changed: string
+          id?: string
+          new_value?: number | null
+          old_value?: number | null
+          product_id: string
+          reason?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          field_changed?: string
+          id?: string
+          new_value?: number | null
+          old_value?: number | null
+          product_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_bundles: {
         Row: {
           component_product_id: string
@@ -674,6 +771,105 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipments: {
+        Row: {
+          cod_amount: number | null
+          courier_id: string
+          courier_response: Json | null
+          created_at: string
+          declared_value: number | null
+          delivery_type: string | null
+          id: string
+          label_url: string | null
+          notes: string | null
+          order_id: number | null
+          recipient_address: string | null
+          recipient_city: string | null
+          recipient_name: string
+          recipient_office_code: string | null
+          recipient_phone: string
+          sender_address: string | null
+          sender_city: string | null
+          sender_name: string | null
+          sender_office_code: string | null
+          sender_phone: string | null
+          service_type: string | null
+          status: string | null
+          updated_at: string
+          waybill_number: string
+          weight: number | null
+        }
+        Insert: {
+          cod_amount?: number | null
+          courier_id: string
+          courier_response?: Json | null
+          created_at?: string
+          declared_value?: number | null
+          delivery_type?: string | null
+          id?: string
+          label_url?: string | null
+          notes?: string | null
+          order_id?: number | null
+          recipient_address?: string | null
+          recipient_city?: string | null
+          recipient_name: string
+          recipient_office_code?: string | null
+          recipient_phone: string
+          sender_address?: string | null
+          sender_city?: string | null
+          sender_name?: string | null
+          sender_office_code?: string | null
+          sender_phone?: string | null
+          service_type?: string | null
+          status?: string | null
+          updated_at?: string
+          waybill_number: string
+          weight?: number | null
+        }
+        Update: {
+          cod_amount?: number | null
+          courier_id?: string
+          courier_response?: Json | null
+          created_at?: string
+          declared_value?: number | null
+          delivery_type?: string | null
+          id?: string
+          label_url?: string | null
+          notes?: string | null
+          order_id?: number | null
+          recipient_address?: string | null
+          recipient_city?: string | null
+          recipient_name?: string
+          recipient_office_code?: string | null
+          recipient_phone?: string
+          sender_address?: string | null
+          sender_city?: string | null
+          sender_name?: string | null
+          sender_office_code?: string | null
+          sender_phone?: string | null
+          service_type?: string | null
+          status?: string | null
+          updated_at?: string
+          waybill_number?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]

@@ -47,3 +47,21 @@ verify_jwt = false
 
 [functions.push-order-status]
 verify_jwt = false
+
+[functions.courier-econt]
+verify_jwt = false
+
+[functions.courier-speedy]
+verify_jwt = false
+
+[functions.courier-boxnow]
+verify_jwt = false
+
+[functions.courier-sameday]
+verify_jwt = false
+
+[functions.courier-dhl]
+verify_jwt = false
+
+[functions.courier-evropat]
+verify_jwt = false
