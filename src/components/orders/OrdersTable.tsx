@@ -49,6 +49,7 @@ import {
 
 import { format } from 'date-fns';
 import { EditOrderDialog } from './EditOrderDialog';
+import { CreateShipmentDialog } from './CreateShipmentDialog';
 
 type OrderSortKey = 'id' | 'created_at' | 'customer_name' | 'phone' | 'total_price' | 'product_name' | 'catalog_number' | 'quantity' | 'status';
 
@@ -147,6 +148,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
   const [sendingMessage, setSendingMessage] = useState<number | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -819,6 +821,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         Печат на поръчка
                       </DropdownMenuItem>
                       <DropdownMenuItem 
+                        onClick={() => setShipmentOrder(order)}
+                      >
+                        <FileBox className="w-4 h-4 mr-2" />
+                        Създай товарителница
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
                         onClick={() => {
                           if (order.courier_tracking_url) {
                             window.open(order.courier_tracking_url.startsWith('http') ? order.courier_tracking_url : `https://${order.courier_tracking_url}`, '_blank');
@@ -827,8 +835,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         disabled={!order.courier_tracking_url}
                         className={!order.courier_tracking_url ? 'opacity-50' : ''}
                       >
-                        <FileBox className="w-4 h-4 mr-2" />
-                        Печат на товарителница
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Отвори товарителница
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleSendMessage(order)}
@@ -910,6 +918,13 @@ export const OrdersTable: FC<OrdersTableProps> = ({
         order={invoiceOrder}
         open={invoiceOrder !== null}
         onOpenChange={(open) => !open && setInvoiceOrder(null)}
+      />
+
+      <CreateShipmentDialog
+        order={shipmentOrder}
+        open={shipmentOrder !== null}
+        onOpenChange={(open) => !open && setShipmentOrder(null)}
+        onSuccess={() => setShipmentOrder(null)}
       />
     </>
   );
