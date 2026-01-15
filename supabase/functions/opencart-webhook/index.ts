@@ -29,47 +29,57 @@ interface OpenCartOrder {
     quantity: number;
     price: string;
   }>;
-  // UTM tracking fields (from OpenCart tracking extensions)
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
-  // Tracking data from extensions
   tracking?: {
     source?: string;
     medium?: string;
     campaign?: string;
     referrer?: string;
   };
-  // Custom fields
   custom_field?: Record<string, string>;
-  // Affiliate/referrer data
   affiliate_id?: number;
   affiliate_name?: string;
   marketing_id?: number;
   marketing_tracking?: string;
 }
 
-// Detect marketing source from UTM data
+// Verify OpenCart webhook signature
+async function verifyOpenCartSignature(bodyText: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
+    const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBytes)));
+    return signature === expectedSignature;
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
+}
+
 function detectMarketingSource(order: OpenCartOrder): string | null {
-  // Check direct UTM fields
   let utmSource = order.utm_source || '';
   
-  // Check tracking object
   if (order.tracking) {
     utmSource = order.tracking.source || utmSource;
   }
   
-  // Check custom fields
   if (order.custom_field) {
     utmSource = order.custom_field.utm_source || order.custom_field.source || utmSource;
   }
   
-  // Check marketing tracking code
   if (order.marketing_tracking) {
     utmSource = order.marketing_tracking || utmSource;
   }
   
-  // Normalize and detect source
   const source = utmSource.toLowerCase();
   
   if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
@@ -80,7 +90,6 @@ function detectMarketingSource(order: OpenCartOrder): string | null {
     return 'google';
   }
   
-  // Return null to use default platform source
   return null;
 }
 
@@ -104,11 +113,38 @@ Deno.serve(async (req) => {
 
   try {
     console.log('OpenCart webhook received');
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
+    // Get webhook signature and secret
+    const signature = req.headers.get('x-opencart-signature');
+    const webhookSecret = Deno.env.get('OPENCART_WEBHOOK_SECRET');
+    
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+    
+    // Verify signature if secret is configured
+    if (webhookSecret) {
+      if (!signature) {
+        console.error('Missing webhook signature');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const isValid = await verifyOpenCartSignature(bodyText, signature, webhookSecret);
+      if (!isValid) {
+        console.error('Invalid webhook signature');
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log('Webhook signature verified');
+    } else {
+      console.warn('OPENCART_WEBHOOK_SECRET not configured - signature verification skipped');
+    }
 
-    const body = await req.json();
-    console.log('Webhook body:', JSON.stringify(body, null, 2));
-
+    const body = JSON.parse(bodyText);
     const order = body as OpenCartOrder;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -129,7 +165,6 @@ Deno.serve(async (req) => {
     const catalogNumbers = order.products?.map(item => item.model).filter(Boolean).join(', ') || null;
     const totalQuantity = order.products?.reduce((sum, item) => sum + item.quantity, 0) || 1;
 
-    // Detect marketing source from UTM data
     const marketingSource = detectMarketingSource(order);
     const orderSource = marketingSource || 'opencart';
     console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);

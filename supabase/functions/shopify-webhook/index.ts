@@ -49,29 +49,43 @@ interface ShopifyOrder {
     quantity: number;
     price: string;
   }>;
-  // UTM tracking fields (Shopify native)
   landing_site?: string;
   referring_site?: string;
   source_name?: string;
-  // Note attributes (can contain UTM data)
   note_attributes?: Array<{
     name: string;
     value: string;
   }>;
-  // Marketing consent and attribution
   buyer_accepts_marketing?: boolean;
   source_identifier?: string;
   source_url?: string;
 }
 
-// Detect marketing source from UTM data
+// Verify Shopify webhook signature
+async function verifyShopifySignature(bodyText: string, hmac: string, secret: string): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
+    const expectedHmac = btoa(String.fromCharCode(...new Uint8Array(signatureBytes)));
+    return hmac === expectedHmac;
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
+}
+
 function detectMarketingSource(order: ShopifyOrder): string | null {
-  // Check Shopify's native tracking fields
   let utmSource = order.source_name || '';
   const referringSite = order.referring_site || '';
   const landingSite = order.landing_site || '';
   
-  // Check note attributes for UTM data
   if (order.note_attributes) {
     for (const attr of order.note_attributes) {
       if (attr.name.toLowerCase() === 'utm_source' || attr.name.toLowerCase() === 'source') {
@@ -80,7 +94,6 @@ function detectMarketingSource(order: ShopifyOrder): string | null {
     }
   }
   
-  // Parse landing site URL for UTM parameters
   if (landingSite) {
     try {
       const url = new URL(landingSite.startsWith('http') ? landingSite : `https://example.com${landingSite}`);
@@ -93,7 +106,6 @@ function detectMarketingSource(order: ShopifyOrder): string | null {
     }
   }
   
-  // Combine sources for detection
   const allSources = `${utmSource} ${referringSite} ${landingSite}`.toLowerCase();
   
   if (allSources.includes('facebook') || allSources.includes('fb.') || allSources.includes('instagram') || allSources.includes('ig.') || allSources.includes('meta')) {
@@ -104,7 +116,6 @@ function detectMarketingSource(order: ShopifyOrder): string | null {
     return 'google';
   }
   
-  // Return null to use default platform source
   return null;
 }
 
@@ -125,12 +136,40 @@ Deno.serve(async (req) => {
 
   try {
     console.log('Shopify webhook received');
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
+    // Get webhook signature and secret
+    const hmac = req.headers.get('x-shopify-hmac-sha256');
+    const webhookSecret = Deno.env.get('SHOPIFY_WEBHOOK_SECRET');
+    
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+    
+    // Verify signature if secret is configured
+    if (webhookSecret) {
+      if (!hmac) {
+        console.error('Missing webhook signature');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const isValid = await verifyShopifySignature(bodyText, hmac, webhookSecret);
+      if (!isValid) {
+        console.error('Invalid webhook signature');
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log('Webhook signature verified');
+    } else {
+      console.warn('SHOPIFY_WEBHOOK_SECRET not configured - signature verification skipped');
+    }
 
     const topic = req.headers.get('x-shopify-topic');
     console.log('Webhook topic:', topic);
 
-    // Only process order events
     if (!topic || (!topic.includes('orders/create') && !topic.includes('orders/updated'))) {
       console.log('Ignoring non-order webhook:', topic);
       return new Response(JSON.stringify({ success: true, message: 'Ignored non-order webhook' }), {
@@ -139,9 +178,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = await req.json();
-    console.log('Webhook body:', JSON.stringify(body, null, 2));
-
+    const body = JSON.parse(bodyText);
     const order = body as ShopifyOrder;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -167,7 +204,6 @@ Deno.serve(async (req) => {
     const catalogNumbers = order.line_items?.map(item => item.sku).filter(Boolean).join(', ') || null;
     const totalQuantity = order.line_items?.reduce((sum, item) => sum + item.quantity, 0) || 1;
 
-    // Detect marketing source from UTM data
     const marketingSource = detectMarketingSource(order);
     const orderSource = marketingSource || 'shopify';
     console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
