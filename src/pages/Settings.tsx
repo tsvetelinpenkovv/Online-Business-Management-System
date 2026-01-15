@@ -947,7 +947,7 @@ const Settings = () => {
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Добавете секретен път след домейна за допълнителна защита. 
-                            Например: <code className="bg-muted px-1 rounded">sklad.bestauto.bg<strong>{companySettings.secret_path || '/секретен-път'}</strong></code>
+                            Например: <code className="bg-muted px-1 rounded">penkovstudio.eu<strong>{companySettings.secret_path || '/секретен-път'}</strong></code>
                           </p>
                         </div>
                         
