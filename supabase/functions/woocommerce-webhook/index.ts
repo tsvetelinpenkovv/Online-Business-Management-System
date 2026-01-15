@@ -40,28 +40,42 @@ interface WooCommerceOrder {
     quantity: number;
     price: number;
   }>;
-  // UTM tracking fields (from WooCommerce UTM tracking plugins)
   meta_data?: Array<{
     key: string;
     value: string;
   }>;
-  // Alternative UTM fields
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
-  // WooCommerce Analytics data
   customer_note?: string;
-  // Referrer data
   _wc_order_attribution_utm_source?: string;
   _wc_order_attribution_referrer?: string;
 }
 
+// Verify WooCommerce webhook signature
+async function verifyWooCommerceSignature(bodyText: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
+    const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBytes)));
+    return signature === expectedSignature;
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
+}
+
 // Detect marketing source from UTM data
 function detectMarketingSource(order: WooCommerceOrder): string | null {
-  // Check meta_data for UTM parameters (most common format)
   const metaData = order.meta_data || [];
   
-  // Keys to check for UTM source
   const utmSourceKeys = [
     '_wc_order_attribution_utm_source',
     'utm_source',
@@ -71,7 +85,6 @@ function detectMarketingSource(order: WooCommerceOrder): string | null {
     '_referer_source'
   ];
   
-  // Keys to check for referrer
   const referrerKeys = [
     '_wc_order_attribution_referrer',
     'referrer',
@@ -82,7 +95,6 @@ function detectMarketingSource(order: WooCommerceOrder): string | null {
   let utmSource = order.utm_source || order._wc_order_attribution_utm_source || '';
   let referrer = order._wc_order_attribution_referrer || '';
   
-  // Search in meta_data
   for (const meta of metaData) {
     if (utmSourceKeys.includes(meta.key)) {
       utmSource = meta.value;
@@ -92,7 +104,6 @@ function detectMarketingSource(order: WooCommerceOrder): string | null {
     }
   }
   
-  // Normalize and detect source
   const source = (utmSource || referrer).toLowerCase();
   
   if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
@@ -103,11 +114,9 @@ function detectMarketingSource(order: WooCommerceOrder): string | null {
     return 'google';
   }
   
-  // Return null to use default platform source
   return null;
 }
 
-// Map WooCommerce status to our status
 function mapWooStatus(wcStatus: string): string {
   const statusMap: Record<string, string> = {
     'pending': 'Нова',
@@ -122,19 +131,46 @@ function mapWooStatus(wcStatus: string): string {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log('WooCommerce webhook received');
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
+    // Get webhook signature and secret
+    const signature = req.headers.get('x-wc-webhook-signature');
+    const webhookSecret = Deno.env.get('WC_WEBHOOK_SECRET');
+    
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+    
+    // Verify signature if secret is configured
+    if (webhookSecret) {
+      if (!signature) {
+        console.error('Missing webhook signature');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const isValid = await verifyWooCommerceSignature(bodyText, signature, webhookSecret);
+      if (!isValid) {
+        console.error('Invalid webhook signature');
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log('Webhook signature verified');
+    } else {
+      console.warn('WC_WEBHOOK_SECRET not configured - signature verification skipped');
+    }
 
     const topic = req.headers.get('x-wc-webhook-topic');
     console.log('Webhook topic:', topic);
 
-    // Only process order.created and order.updated events
     if (!topic || (!topic.includes('order.created') && !topic.includes('order.updated'))) {
       console.log('Ignoring non-order webhook:', topic);
       return new Response(JSON.stringify({ success: true, message: 'Ignored non-order webhook' }), {
@@ -143,17 +179,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = await req.json();
-    console.log('Webhook body:', JSON.stringify(body, null, 2));
-
+    const body = JSON.parse(bodyText);
     const order = body as WooCommerceOrder;
 
-    // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Build full delivery address
     const shipping = order.shipping;
     const addressParts = [
       shipping.address_1,
@@ -165,20 +197,15 @@ Deno.serve(async (req) => {
     ].filter(Boolean);
     const deliveryAddress = addressParts.join(', ') || null;
 
-    // Build customer name
     const customerName = `${order.billing.first_name} ${order.billing.last_name}`.trim() || 'Без име';
-
-    // Build product info from line items
     const productNames = order.line_items.map(item => item.name).join(', ');
     const catalogNumbers = order.line_items.map(item => item.sku).filter(Boolean).join(', ');
     const totalQuantity = order.line_items.reduce((sum, item) => sum + item.quantity, 0);
 
-    // Detect marketing source from UTM data
     const marketingSource = detectMarketingSource(order);
     const orderSource = marketingSource || 'woocommerce';
     console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
 
-    // Check if order already exists (by WooCommerce order ID as code)
     const orderCode = `WC-${order.id}`;
     const { data: existingOrder } = await supabase
       .from('orders')
@@ -203,7 +230,6 @@ Deno.serve(async (req) => {
     };
 
     if (existingOrder) {
-      // Update existing order
       console.log('Updating existing order:', existingOrder.id);
       const { error } = await supabase
         .from('orders')
@@ -216,7 +242,6 @@ Deno.serve(async (req) => {
       }
       console.log('Order updated successfully');
     } else {
-      // Create new order
       console.log('Creating new order');
       const { error } = await supabase
         .from('orders')

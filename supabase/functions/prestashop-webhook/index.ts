@@ -34,18 +34,14 @@ interface PrestaShopOrder {
     product_quantity: number;
     unit_price_tax_incl: string;
   }>;
-  // UTM tracking fields (from PrestaShop tracking modules)
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
-  // Connection info
   connection?: {
     http_referer?: string;
     id_referer?: number;
   };
-  // Custom fields from modules
   custom_fields?: Record<string, string>;
-  // Marketing data
   marketing?: {
     source?: string;
     medium?: string;
@@ -54,28 +50,42 @@ interface PrestaShopOrder {
   };
 }
 
-// Detect marketing source from UTM data
+// Verify PrestaShop webhook signature
+async function verifyPrestaShopSignature(bodyText: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
+    const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBytes)));
+    return signature === expectedSignature;
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
+}
+
 function detectMarketingSource(order: PrestaShopOrder): string | null {
-  // Check direct UTM fields
   let utmSource = order.utm_source || '';
   
-  // Check marketing object
   if (order.marketing) {
     utmSource = order.marketing.source || utmSource;
   }
   
-  // Check custom fields
   if (order.custom_fields) {
     utmSource = order.custom_fields.utm_source || order.custom_fields.source || utmSource;
   }
   
-  // Check referrer from connection
   let referrer = '';
   if (order.connection) {
     referrer = order.connection.http_referer || '';
   }
   
-  // Normalize and detect source
   const source = (utmSource || referrer).toLowerCase();
   
   if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
@@ -86,15 +96,10 @@ function detectMarketingSource(order: PrestaShopOrder): string | null {
     return 'google';
   }
   
-  // Return null to use default platform source
   return null;
 }
 
-// Map PrestaShop order state to our status
 function mapPrestaShopStatus(stateId: number): string {
-  // PrestaShop default states:
-  // 1 = Awaiting check payment, 2 = Payment accepted, 3 = Processing in progress
-  // 4 = Shipped, 5 = Delivered, 6 = Canceled, 7 = Refunded
   const statusMap: Record<number, string> = {
     1: 'Нова',
     2: 'Платена с карта',
@@ -112,23 +117,47 @@ function mapPrestaShopStatus(stateId: number): string {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log('PrestaShop webhook received');
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
+    // Get webhook signature and secret
+    const signature = req.headers.get('x-prestashop-signature');
+    const webhookSecret = Deno.env.get('PRESTASHOP_WEBHOOK_SECRET');
+    
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+    
+    // Verify signature if secret is configured
+    if (webhookSecret) {
+      if (!signature) {
+        console.error('Missing webhook signature');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const isValid = await verifyPrestaShopSignature(bodyText, signature, webhookSecret);
+      if (!isValid) {
+        console.error('Invalid webhook signature');
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log('Webhook signature verified');
+    } else {
+      console.warn('PRESTASHOP_WEBHOOK_SECRET not configured - signature verification skipped');
+    }
 
-    const body = await req.json();
-    console.log('Webhook body:', JSON.stringify(body, null, 2));
-
-    // PrestaShop can send different event types
+    const body = JSON.parse(bodyText);
     const eventType = body.event || body.type || 'order';
     console.log('Event type:', eventType);
 
-    // Check if this is an order event
     if (!eventType.includes('order')) {
       console.log('Ignoring non-order webhook:', eventType);
       return new Response(JSON.stringify({ success: true, message: 'Ignored non-order webhook' }), {
@@ -139,12 +168,10 @@ Deno.serve(async (req) => {
 
     const order = body.order || body as PrestaShopOrder;
 
-    // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Build full delivery address
     const address = order.address_delivery || {};
     const addressParts = [
       address.address1,
@@ -155,26 +182,21 @@ Deno.serve(async (req) => {
     ].filter(Boolean);
     const deliveryAddress = addressParts.join(', ') || null;
 
-    // Build customer name
     const customer = order.customer || {};
     const customerName = `${customer.firstname || ''} ${customer.lastname || ''}`.trim() || 
                          `${address.firstname || ''} ${address.lastname || ''}`.trim() || 'Без име';
 
-    // Build phone number
     const phone = address.phone_mobile || address.phone || 'Няма';
 
-    // Build product info from order rows
     const orderRows: Array<{product_name: string; product_reference: string; product_quantity: number}> = order.order_rows || [];
     const productNames = orderRows.map((item) => item.product_name).join(', ');
     const catalogNumbers = orderRows.map((item) => item.product_reference).filter(Boolean).join(', ');
     const totalQuantity = orderRows.reduce((sum: number, item) => sum + (item.product_quantity || 1), 0);
 
-    // Detect marketing source from UTM data
     const marketingSource = detectMarketingSource(order);
     const orderSource = marketingSource || 'prestashop';
     console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
 
-    // Check if order already exists (by PrestaShop reference as code)
     const orderCode = `PS-${order.reference || order.id}`;
     const { data: existingOrder } = await supabase
       .from('orders')
@@ -199,7 +221,6 @@ Deno.serve(async (req) => {
     };
 
     if (existingOrder) {
-      // Update existing order
       console.log('Updating existing order:', existingOrder.id);
       const { error } = await supabase
         .from('orders')
@@ -212,7 +233,6 @@ Deno.serve(async (req) => {
       }
       console.log('Order updated successfully');
     } else {
-      // Create new order
       console.log('Creating new order');
       const { error } = await supabase
         .from('orders')

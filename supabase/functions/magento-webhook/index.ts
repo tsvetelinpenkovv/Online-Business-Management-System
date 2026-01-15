@@ -35,7 +35,6 @@ interface MagentoOrder {
         };
       };
     }>;
-    // UTM tracking from Magento extensions
     utm_source?: string;
     utm_medium?: string;
     utm_campaign?: string;
@@ -49,30 +48,44 @@ interface MagentoOrder {
     qty_ordered: number;
     price: number;
   }>;
-  // Direct UTM fields
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
-  // Custom attributes array
   custom_attributes?: Array<{
     attribute_code: string;
     value: string;
   }>;
 }
 
-// Detect marketing source from UTM data
+// Verify Magento webhook signature
+async function verifyMagentoSignature(bodyText: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
+    const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBytes)));
+    return signature === expectedSignature;
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
+}
+
 function detectMarketingSource(order: MagentoOrder): string | null {
-  // Check direct UTM fields
   let utmSource = order.utm_source || '';
   
-  // Check extension attributes (Magento 2 style)
   if (order.extension_attributes) {
     utmSource = order.extension_attributes.utm_source || 
                 order.extension_attributes.marketing_source || 
                 utmSource;
   }
   
-  // Check custom attributes
   if (order.custom_attributes) {
     for (const attr of order.custom_attributes) {
       if (attr.attribute_code === 'utm_source' || attr.attribute_code === 'marketing_source') {
@@ -81,7 +94,6 @@ function detectMarketingSource(order: MagentoOrder): string | null {
     }
   }
   
-  // Normalize and detect source
   const source = utmSource.toLowerCase();
   
   if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
@@ -92,7 +104,6 @@ function detectMarketingSource(order: MagentoOrder): string | null {
     return 'google';
   }
   
-  // Return null to use default platform source
   return null;
 }
 
@@ -117,18 +128,44 @@ Deno.serve(async (req) => {
 
   try {
     console.log('Magento webhook received');
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
+    // Get webhook signature and secret
+    const signature = req.headers.get('x-magento-signature');
+    const webhookSecret = Deno.env.get('MAGENTO_WEBHOOK_SECRET');
+    
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+    
+    // Verify signature if secret is configured
+    if (webhookSecret) {
+      if (!signature) {
+        console.error('Missing webhook signature');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const isValid = await verifyMagentoSignature(bodyText, signature, webhookSecret);
+      if (!isValid) {
+        console.error('Invalid webhook signature');
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log('Webhook signature verified');
+    } else {
+      console.warn('MAGENTO_WEBHOOK_SECRET not configured - signature verification skipped');
+    }
 
-    const body = await req.json();
-    console.log('Webhook body:', JSON.stringify(body, null, 2));
-
+    const body = JSON.parse(bodyText);
     const order = body as MagentoOrder;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get shipping address
     const shippingAssignment = order.extension_attributes?.shipping_assignments?.[0];
     const shippingAddress = shippingAssignment?.shipping?.address || order.billing_address;
     
@@ -145,7 +182,6 @@ Deno.serve(async (req) => {
     const catalogNumbers = order.items?.map(item => item.sku).filter(Boolean).join(', ') || null;
     const totalQuantity = order.items?.reduce((sum, item) => sum + (item.qty_ordered || 0), 0) || 1;
 
-    // Detect marketing source from UTM data
     const marketingSource = detectMarketingSource(order);
     const orderSource = marketingSource || 'magento';
     console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
