@@ -66,6 +66,29 @@ export interface CreateShipmentResult {
   rawResponse?: unknown;
 }
 
+export interface PriceCalculation {
+  success: boolean;
+  price?: number;
+  currency?: string;
+  deliveryDays?: number;
+  error?: string;
+}
+
+export interface TrackingEvent {
+  date: string;
+  status: string;
+  location?: string;
+  description?: string;
+}
+
+export interface TrackingResult {
+  success: boolean;
+  status?: string;
+  events?: TrackingEvent[];
+  delivered?: boolean;
+  error?: string;
+}
+
 const COURIER_FUNCTION_MAP: Record<string, string> = {
   'econt': 'courier-econt',
   'speedy': 'courier-speedy',
@@ -655,6 +678,197 @@ export const useCourierApi = () => {
     }
   }, [getCredentials, getFunctionName, getCourierType, invokeAction]);
 
+  // Calculate shipping price
+  const calculatePrice = useCallback(async (
+    courierId: string,
+    courierName: string,
+    data: {
+      senderCity: string;
+      recipientCity: string;
+      weight: number;
+      codAmount?: number;
+      declaredValue?: number;
+      deliveryType?: 'office' | 'address';
+    }
+  ): Promise<PriceCalculation> => {
+    setLoading(true);
+    try {
+      const credentials = await getCredentials(courierId);
+      if (!credentials) {
+        return { success: false, error: 'Няма конфигурирани данни за този куриер' };
+      }
+
+      const functionName = getFunctionName(courierName);
+      if (!functionName) {
+        return { success: false, error: 'Неподдържан куриер' };
+      }
+
+      const courierType = getCourierType(courierName);
+      let result: unknown;
+
+      switch (courierType) {
+        case 'econt':
+          // Econt doesn't have a separate calculate endpoint, price comes with label
+          return { success: true, price: undefined };
+        case 'speedy':
+          result = await invokeAction(functionName, 'calculate', credentials, {
+            senderSiteId: data.senderCity,
+            recipientSiteId: data.recipientCity,
+            weight: data.weight,
+            codAmount: data.codAmount || 0,
+            serviceId: 505,
+          });
+          break;
+        case 'cvc':
+          result = await invokeAction(functionName, 'calculatePrice', credentials, {
+            senderCityId: data.senderCity,
+            receiverCityId: data.recipientCity,
+            weight: data.weight,
+            codAmount: data.codAmount || 0,
+          });
+          break;
+        case 'evropat':
+          result = await invokeAction(functionName, 'calculatePrice', credentials, {
+            sender: { city: data.senderCity },
+            recipient: { city: data.recipientCity },
+            weight: data.weight,
+            codAmount: data.codAmount || 0,
+            deliveryType: data.deliveryType || 'office',
+          });
+          break;
+        default:
+          return { success: true, price: undefined };
+      }
+
+      const priceResult = result as { price?: number; total?: number; amount?: number; currency?: string; error?: string };
+      const price = priceResult?.price || priceResult?.total || priceResult?.amount;
+      
+      if (price !== undefined) {
+        return { success: true, price, currency: priceResult?.currency || 'BGN' };
+      }
+      return { success: false, error: priceResult?.error || 'Не може да се изчисли цена' };
+    } catch (err) {
+      console.error('Error calculating price:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Неизвестна грешка' };
+    } finally {
+      setLoading(false);
+    }
+  }, [getCredentials, getFunctionName, getCourierType, invokeAction]);
+
+  // Track shipment
+  const trackShipment = useCallback(async (
+    courierId: string,
+    courierName: string,
+    waybillNumber: string
+  ): Promise<TrackingResult> => {
+    setLoading(true);
+    try {
+      const credentials = await getCredentials(courierId);
+      if (!credentials) {
+        return { success: false, error: 'Няма конфигурирани данни за този куриер' };
+      }
+
+      const functionName = getFunctionName(courierName);
+      if (!functionName) {
+        return { success: false, error: 'Неподдържан куриер' };
+      }
+
+      const courierType = getCourierType(courierName);
+      let result: unknown;
+
+      switch (courierType) {
+        case 'econt':
+          result = await invokeAction(functionName, 'track', credentials, { shipmentNumber: waybillNumber });
+          break;
+        case 'speedy':
+          result = await invokeAction(functionName, 'track', credentials, { shipmentId: waybillNumber });
+          break;
+        case 'sameday':
+          result = await invokeAction(functionName, 'trackAwb', credentials, { awbNumber: waybillNumber });
+          break;
+        case 'dhl':
+          result = await invokeAction(functionName, 'track', credentials, { trackingNumber: waybillNumber });
+          break;
+        case 'cvc':
+          result = await invokeAction(functionName, 'track', credentials, { waybillNumber });
+          break;
+        case 'evropat':
+          result = await invokeAction(functionName, 'track', credentials, { waybillNumber });
+          break;
+        default:
+          return { success: false, error: 'Неподдържан куриер' };
+      }
+
+      const trackResult = result as { 
+        status?: string; 
+        events?: TrackingEvent[]; 
+        history?: TrackingEvent[];
+        delivered?: boolean;
+        error?: string 
+      };
+      
+      if (trackResult?.status || trackResult?.events || trackResult?.history) {
+        return { 
+          success: true, 
+          status: trackResult.status,
+          events: trackResult.events || trackResult.history || [],
+          delivered: trackResult.delivered || trackResult.status?.toLowerCase().includes('deliver'),
+        };
+      }
+      return { success: false, error: trackResult?.error || 'Грешка при проследяване' };
+    } catch (err) {
+      console.error('Error tracking shipment:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Неизвестна грешка' };
+    } finally {
+      setLoading(false);
+    }
+  }, [getCredentials, getFunctionName, getCourierType, invokeAction]);
+
+  // Cancel shipment
+  const cancelShipment = useCallback(async (
+    courierId: string,
+    courierName: string,
+    waybillNumber: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
+    try {
+      const credentials = await getCredentials(courierId);
+      if (!credentials) {
+        return { success: false, error: 'Няма конфигурирани данни за този куриер' };
+      }
+
+      const functionName = getFunctionName(courierName);
+      if (!functionName) {
+        return { success: false, error: 'Неподдържан куриер' };
+      }
+
+      const courierType = getCourierType(courierName);
+      let result: unknown;
+
+      switch (courierType) {
+        case 'cvc':
+          result = await invokeAction(functionName, 'cancelShipment', credentials, { waybillNumber });
+          break;
+        case 'evropat':
+          result = await invokeAction(functionName, 'cancelShipment', credentials, { waybillNumber });
+          break;
+        default:
+          return { success: false, error: 'Анулиране не се поддържа за този куриер' };
+      }
+
+      const cancelResult = result as { success?: boolean; error?: string };
+      if (cancelResult?.success !== false) {
+        return { success: true };
+      }
+      return { success: false, error: cancelResult?.error || 'Грешка при анулиране' };
+    } catch (err) {
+      console.error('Error canceling shipment:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Неизвестна грешка' };
+    } finally {
+      setLoading(false);
+    }
+  }, [getCredentials, getFunctionName, getCourierType, invokeAction]);
+
   return useMemo(() => ({
     loading,
     offices,
@@ -663,7 +877,10 @@ export const useCourierApi = () => {
     fetchCities,
     createShipment,
     getLabel,
+    calculatePrice,
+    trackShipment,
+    cancelShipment,
     getCourierType,
     getFunctionName,
-  }), [loading, offices, cities, fetchOffices, fetchCities, createShipment, getLabel, getCourierType, getFunctionName]);
+  }), [loading, offices, cities, fetchOffices, fetchCities, createShipment, getLabel, calculatePrice, trackShipment, cancelShipment, getCourierType, getFunctionName]);
 };
