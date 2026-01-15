@@ -55,16 +55,46 @@ const Auth = () => {
     threshold: 0.5
   });
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockRemainingMinutes, setBlockRemainingMinutes] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState(5);
   const { signIn, signOut, user } = useAuth();
   const { logoUrl, loading: logoLoading } = useCompanyLogo();
   const { backgroundUrl } = useLoginBackground();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if IP is blocked on mount
+  const checkRateLimit = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-login-rate', {
+        body: { action: 'check' }
+      });
+      
+      if (error) {
+        console.error('Error checking rate limit:', error);
+        return;
+      }
+      
+      if (data.blocked) {
+        setIsBlocked(true);
+        setBlockRemainingMinutes(data.remainingMinutes);
+      } else {
+        setIsBlocked(false);
+        setRemainingAttempts(data.maxAttempts - data.attempts);
+      }
+    } catch (err) {
+      console.error('Error checking rate limit:', err);
+    }
+  }, []);
+
   // Check if system has users
   useEffect(() => {
     const checkSystemStatus = async () => {
       try {
+        // Check rate limit first
+        await checkRateLimit();
+        
         const { data, error } = await supabase.functions.invoke('setup-first-admin', {
           method: 'GET',
         });
@@ -84,7 +114,7 @@ const Auth = () => {
     };
 
     checkSystemStatus();
-  }, []);
+  }, [checkRateLimit]);
 
   // Load reCAPTCHA settings
   useEffect(() => {
@@ -287,6 +317,27 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     
+    // Check if IP is blocked first
+    try {
+      const { data: rateData, error: rateError } = await supabase.functions.invoke('check-login-rate', {
+        body: { action: 'check' }
+      });
+      
+      if (!rateError && rateData?.blocked) {
+        setIsBlocked(true);
+        setBlockRemainingMinutes(rateData.remainingMinutes);
+        toast({
+          title: 'Временно блокиран',
+          description: `Твърде много неуспешни опити. Опитайте отново след ${rateData.remainingMinutes} минути.`,
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.error('Rate limit check error:', err);
+    }
+    
     // Verify reCAPTCHA first
     const recaptchaValid = await verifyRecaptcha('login');
     if (!recaptchaValid) {
@@ -303,6 +354,12 @@ const Auth = () => {
     const { data: isAllowed, error: checkError } = await supabase.rpc('is_allowed_user', { _email: email });
 
     if (checkError || !isAllowed) {
+      // Record failed attempt for non-allowed user
+      await supabase.functions.invoke('check-login-rate', {
+        body: { action: 'record_failure', email }
+      });
+      await checkRateLimit();
+      
       toast({
         title: 'Достъп отказан',
         description: 'Нямате право на достъп до системата',
@@ -315,12 +372,35 @@ const Auth = () => {
     const { error } = await signIn(email, password);
     
     if (error) {
-      toast({
-        title: 'Грешка при вход',
-        description: error.message === 'Invalid login credentials' 
-          ? 'Невалиден имейл или парола' 
-          : error.message,
-        variant: 'destructive',
+      // Record failed login attempt
+      const { data: failData } = await supabase.functions.invoke('check-login-rate', {
+        body: { action: 'record_failure', email }
+      });
+      
+      if (failData?.blocked) {
+        setIsBlocked(true);
+        toast({
+          title: 'Временно блокиран',
+          description: 'Твърде много неуспешни опити. Опитайте отново след 15 минути.',
+          variant: 'destructive',
+        });
+      } else {
+        setRemainingAttempts(failData?.remainingAttempts || 0);
+        const attemptsMsg = failData?.remainingAttempts > 0 
+          ? ` Оставащи опити: ${failData.remainingAttempts}`
+          : '';
+        toast({
+          title: 'Грешка при вход',
+          description: (error.message === 'Invalid login credentials' 
+            ? 'Невалиден имейл или парола' 
+            : error.message) + attemptsMsg,
+          variant: 'destructive',
+        });
+      }
+    } else {
+      // Record successful login (clears failed attempts)
+      await supabase.functions.invoke('check-login-rate', {
+        body: { action: 'record_success', email }
       });
     }
     
@@ -523,83 +603,39 @@ const Auth = () => {
             </form>
           ) : (
             <>
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Имейл</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="email@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="pl-10"
-                    />
+              {isBlocked ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+                    <ShieldCheck className="w-8 h-8 text-destructive" />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Парола</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="pl-10 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <div className="pt-4 space-y-2">
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Влизане...
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="w-4 h-4 mr-2" />
-                        Вход
-                      </>
-                    )}
-                  </Button>
-                  {recaptchaSettings.enabled && recaptchaSettings.siteKey && (
-                    <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
-                      <ShieldCheck className="w-3 h-3" />
-                      Защитено с reCAPTCHA v3
+                  <div>
+                    <h3 className="text-lg font-semibold text-destructive">Временно блокиран</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Твърде много неуспешни опити за вход.
                     </p>
-                  )}
+                    <p className="text-sm text-muted-foreground">
+                      Опитайте отново след <strong>{blockRemainingMinutes}</strong> минути.
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={async () => {
+                      await checkRateLimit();
+                    }}
+                    className="mt-4"
+                  >
+                    Провери отново
+                  </Button>
                 </div>
-              </form>
-
-              {showForgotPassword ? (
-                <div className="mt-6 pt-6 border-t">
-                  <p className="text-sm text-muted-foreground mb-4 text-center">
-                    Въведете имейл адреса си и ще ви изпратим линк за възстановяване на паролата
-                  </p>
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
+              ) : (
+                <>
+                  <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="reset-email">Имейл</Label>
+                      <Label htmlFor="email">Имейл</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
-                          id="reset-email"
+                          id="email"
                           type="email"
                           placeholder="email@example.com"
                           value={email}
@@ -609,40 +645,119 @@ const Auth = () => {
                         />
                       </div>
                     </div>
-                    <Button type="submit" className="w-full" variant="outline" disabled={isResetting}>
-                      {isResetting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Изпращане...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4 mr-2" />
-                          Изпрати линк за възстановяване
-                        </>
-                      )}
-                    </Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Парола</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="pl-10 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="pt-4 space-y-2">
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Влизане...
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="w-4 h-4 mr-2" />
+                            Вход
+                          </>
+                        )}
+                      </Button>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        {recaptchaSettings.enabled && recaptchaSettings.siteKey && (
+                          <p className="flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3" />
+                            reCAPTCHA v3
+                          </p>
+                        )}
+                        {remainingAttempts < 5 && remainingAttempts > 0 && (
+                          <p className="text-amber-600">
+                            Оставащи опити: {remainingAttempts}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </form>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full mt-2 text-xs" 
-                    onClick={() => setShowForgotPassword(false)}
-                  >
-                    <ArrowLeft className="w-3 h-3 mr-1" />
-                    Обратно към вход
-                  </Button>
-                </div>
-              ) : (
-                <div className="mt-4 text-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="text-xs text-muted-foreground hover:text-primary underline inline-flex items-center gap-1"
-                  >
-                    <KeyRound className="w-3 h-3" />
-                    Забравена парола?
-                  </button>
-                </div>
+
+                  {showForgotPassword ? (
+                    <div className="mt-6 pt-6 border-t">
+                      <p className="text-sm text-muted-foreground mb-4 text-center">
+                        Въведете имейл адреса си и ще ви изпратим линк за възстановяване на паролата
+                      </p>
+                      <form onSubmit={handleForgotPassword} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="reset-email">Имейл</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="reset-email"
+                              type="email"
+                              placeholder="email@example.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                              className="pl-10"
+                            />
+                          </div>
+                        </div>
+                        <Button type="submit" className="w-full" variant="outline" disabled={isResetting}>
+                          {isResetting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Изпращане...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4 mr-2" />
+                              Изпрати линк за възстановяване
+                            </>
+                          )}
+                        </Button>
+                      </form>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full mt-2 text-xs" 
+                        onClick={() => setShowForgotPassword(false)}
+                      >
+                        <ArrowLeft className="w-3 h-3 mr-1" />
+                        Обратно към вход
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-xs text-muted-foreground hover:text-primary underline inline-flex items-center gap-1"
+                      >
+                        <KeyRound className="w-3 h-3" />
+                        Забравена парола?
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

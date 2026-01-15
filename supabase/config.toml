@@ -68,3 +68,9 @@ verify_jwt = false
 
 [functions.courier-cvc]
 verify_jwt = false
+
+[functions.check-login-rate]
+verify_jwt = false
+
+[functions.verify-recaptcha]
+verify_jwt = false
