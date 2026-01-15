@@ -155,7 +155,7 @@ export const PriceHistoryTab = () => {
       return (
         <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
           <TrendingUp className="w-4 h-4" />
-          <span>+{change.toFixed(2)} лв</span>
+          <span>+{change.toFixed(2)} €</span>
           {percent !== null && (
             <span className="text-xs text-muted-foreground">
               (+{percent.toFixed(1)}%)
@@ -167,7 +167,7 @@ export const PriceHistoryTab = () => {
       return (
         <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
           <TrendingDown className="w-4 h-4" />
-          <span>{change.toFixed(2)} лв</span>
+          <span>{change.toFixed(2)} €</span>
           {percent !== null && (
             <span className="text-xs text-muted-foreground">
               ({percent.toFixed(1)}%)
@@ -313,10 +313,10 @@ export const PriceHistoryTab = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {item.old_value !== null ? `${item.old_value.toFixed(2)} лв` : '-'}
+                          {item.old_value !== null ? `${item.old_value.toFixed(2)} €` : '-'}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {item.new_value !== null ? `${item.new_value.toFixed(2)} лв` : '-'}
+                          {item.new_value !== null ? `${item.new_value.toFixed(2)} €` : '-'}
                         </TableCell>
                         <TableCell className="text-right">
                           {renderPriceChange(item.old_value, item.new_value)}

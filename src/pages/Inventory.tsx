@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle, DollarSign, Tag, ClipboardList
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle, Euro, Tag, ClipboardList
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -325,7 +325,7 @@ export default function Inventory() {
                   <span>Отчети</span>
                 </TabsTrigger>
                 <TabsTrigger value="price-history" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-                  <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Euro className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Цени</span>
                 </TabsTrigger>
                 <TabsTrigger

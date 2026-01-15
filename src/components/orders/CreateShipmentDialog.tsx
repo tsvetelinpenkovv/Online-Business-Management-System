@@ -615,7 +615,7 @@ export const CreateShipmentDialog = ({
               </h3>
 
               <div className="space-y-2">
-                <Label htmlFor="codAmount">Наложен платеж (лв)</Label>
+                <Label htmlFor="codAmount">Наложен платеж (€)</Label>
                 <div className="relative">
                   <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input

@@ -11,7 +11,7 @@ import {
   MessageCircle, ShieldAlert, Settings, LogOut, Plus, Trash2, Printer,
   Download, RefreshCw, Filter, Calendar, Globe, BarChart3, X, FileText,
   Eye, Edit, Check, Clock, Truck, Box, Users, Boxes, FileBox, Receipt,
-  Tags, Phone, Mail, MapPin, Hash, DollarSign, ShoppingCart, Archive,
+  Tags, Phone, Mail, MapPin, Hash, Euro, ShoppingCart, Archive,
   Clipboard, AlertTriangle, TrendingUp, PieChart, Activity, Layers,
   FolderOpen, FileInput, FileOutput, ArrowLeftRight, ChevronDown
 } from 'lucide-react';
@@ -27,7 +27,7 @@ const AVAILABLE_ICONS = {
   Settings, LogOut, Plus, Trash2, Printer, Download, RefreshCw, Filter, 
   Calendar, Globe, BarChart3, X, FileText, Eye, Edit, Check, Clock, 
   Truck, Box, Users, Boxes, FileBox, Receipt, Tags, Phone, Mail, MapPin, 
-  Hash, DollarSign, ShoppingCart, Archive, Clipboard, AlertTriangle,
+  Hash, Euro, ShoppingCart, Archive, Clipboard, AlertTriangle,
   TrendingUp, PieChart, Activity, Layers, FolderOpen, FileInput, FileOutput,
   ArrowLeftRight, ChevronDown
 };
