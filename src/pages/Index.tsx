@@ -18,6 +18,7 @@ import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { printOrderReceipts } from '@/components/orders/OrderReceipt';
 import { AddOrderDialog } from '@/components/orders/AddOrderDialog';
+import { BulkShipmentDialog } from '@/components/orders/BulkShipmentDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +55,7 @@ const Index = () => {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showBulkShipmentDialog, setShowBulkShipmentDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [showAddOrderDialog, setShowAddOrderDialog] = useState(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
@@ -441,6 +443,11 @@ const Index = () => {
                   <DropdownMenuItem onClick={handleBulkPrintInvoices} className="cursor-pointer">
                     <FileText className="w-4 h-4 mr-2" />
                     {getText('orders_print_invoices_label')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setShowBulkShipmentDialog(true)} className="cursor-pointer">
+                    <FileBox className="w-4 h-4 mr-2" />
+                    Създай товарителници
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -982,6 +989,16 @@ const Index = () => {
         open={showAddOrderDialog} 
         onOpenChange={setShowAddOrderDialog}
         onCreateOrder={createOrder}
+      />
+
+      <BulkShipmentDialog
+        orders={orders.filter(o => selectedOrders.includes(o.id))}
+        open={showBulkShipmentDialog}
+        onOpenChange={setShowBulkShipmentDialog}
+        onComplete={() => {
+          refetch();
+          setSelectedOrders([]);
+        }}
       />
 
       {/* Mobile/Tablet FAB for new order */}

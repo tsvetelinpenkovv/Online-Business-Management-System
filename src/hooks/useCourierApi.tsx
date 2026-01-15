@@ -74,6 +74,7 @@ const COURIER_FUNCTION_MAP: Record<string, string> = {
   'sameday': 'courier-sameday',
   'dhl': 'courier-dhl',
   'evropat': 'courier-evropat',
+  'cvc': 'courier-cvc',
 };
 
 export const useCourierApi = () => {

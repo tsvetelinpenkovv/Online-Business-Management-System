@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.courier-evropat]
 verify_jwt = false
+
+[functions.courier-cvc]
+verify_jwt = false
