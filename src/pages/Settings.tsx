@@ -16,6 +16,7 @@ import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, S
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { CourierApiSettings } from '@/components/settings/CourierApiSettings';
+import { SenderDefaultsSettings } from '@/components/settings/SenderDefaultsSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
 import { PlatformApiSettings } from '@/components/settings/PlatformApiSettings';
@@ -644,6 +645,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="couriers" className="space-y-6">
+            <SenderDefaultsSettings />
             <CourierApiSettings />
             <CourierSettings />
           </TabsContent>

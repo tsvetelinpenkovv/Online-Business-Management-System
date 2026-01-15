@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { OfficeSearchDialog } from './OfficeSearchDialog';
 import {
@@ -25,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Truck, MapPin, Package, User, Phone, Mail, Home, CreditCard, FileBox, ExternalLink } from 'lucide-react';
+import { Loader2, Truck, MapPin, Package, User, Phone, Mail, Home, CreditCard, FileBox, Download, Calculator } from 'lucide-react';
 
 interface CreateShipmentDialogProps {
   order: Order | null;
@@ -39,6 +40,8 @@ interface SenderConfig {
   phone: string;
   city: string;
   address: string;
+  postCode?: string;
+  officeCode?: string;
 }
 
 interface EnabledCourier {
@@ -56,13 +59,17 @@ export const CreateShipmentDialog = ({
 }: CreateShipmentDialogProps) => {
   const { toast } = useToast();
   const { couriers } = useCouriers();
-  const { loading, createShipment, getCourierType } = useCourierApi();
+  const { loading, createShipment, getLabel, calculatePrice, getCourierType } = useCourierApi();
 
   const [enabledCouriers, setEnabledCouriers] = useState<EnabledCourier[]>([]);
   const [selectedCourierId, setSelectedCourierId] = useState<string>('');
   const [showOfficeSearch, setShowOfficeSearch] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'office' | 'address'>('address');
   const [creating, setCreating] = useState(false);
+  const [createdWaybill, setCreatedWaybill] = useState<string | null>(null);
+  const [downloadingLabel, setDownloadingLabel] = useState(false);
+  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [calculatingPrice, setCalculatingPrice] = useState(false);
 
   // Sender (company) data
   const [sender, setSender] = useState<SenderConfig>({
@@ -70,6 +77,8 @@ export const CreateShipmentDialog = ({
     phone: '',
     city: '',
     address: '',
+    postCode: '',
+    officeCode: '',
   });
 
   // Recipient data (from order)
@@ -93,9 +102,13 @@ export const CreateShipmentDialog = ({
 
   // Load enabled couriers and sender config
   useEffect(() => {
-    loadEnabledCouriers();
-    loadSenderConfig();
-  }, []);
+    if (open) {
+      loadEnabledCouriers();
+      loadSenderDefaults();
+      setCreatedWaybill(null);
+      setEstimatedPrice(null);
+    }
+  }, [open]);
 
   // Auto-fill recipient when order changes
   useEffect(() => {
@@ -144,13 +157,31 @@ export const CreateShipmentDialog = ({
     }
   };
 
-  const loadSenderConfig = async () => {
+  const loadSenderDefaults = async () => {
     try {
+      // First try to get from api_settings (sender_defaults)
+      const { data: settingsData } = await supabase
+        .from('api_settings')
+        .select('setting_value')
+        .eq('setting_key', 'sender_defaults')
+        .maybeSingle();
+
+      if (settingsData?.setting_value) {
+        try {
+          const parsed = JSON.parse(settingsData.setting_value);
+          setSender(prev => ({ ...prev, ...parsed }));
+          return;
+        } catch {
+          // Invalid JSON, continue to company settings
+        }
+      }
+
+      // Fallback to company settings
       const { data, error } = await supabase
         .from('company_settings')
         .select('company_name, phone, correspondence_address')
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
 
@@ -164,6 +195,70 @@ export const CreateShipmentDialog = ({
       }
     } catch (err) {
       console.error('Error loading sender config:', err);
+    }
+  };
+
+  const handleCalculatePrice = async () => {
+    const selectedCourier = enabledCouriers.find((c) => c.id === selectedCourierId);
+    if (!selectedCourier || !sender.city || !recipient.city) return;
+
+    setCalculatingPrice(true);
+    try {
+      const result = await calculatePrice(selectedCourierId, selectedCourier.name, {
+        senderCity: sender.city,
+        recipientCity: recipient.city,
+        weight,
+        codAmount,
+        deliveryType,
+      });
+
+      if (result.success && result.price !== undefined) {
+        setEstimatedPrice(result.price);
+      } else {
+        toast({
+          title: 'Информация',
+          description: result.error || 'Цената ще бъде изчислена при създаване',
+        });
+      }
+    } catch (err) {
+      console.error('Error calculating price:', err);
+    } finally {
+      setCalculatingPrice(false);
+    }
+  };
+
+  const handleDownloadLabel = async () => {
+    if (!createdWaybill || !selectedCourierId) return;
+    
+    const selectedCourier = enabledCouriers.find((c) => c.id === selectedCourierId);
+    if (!selectedCourier) return;
+
+    setDownloadingLabel(true);
+    try {
+      const result = await getLabel(selectedCourierId, selectedCourier.name, createdWaybill);
+      
+      if (result.success && result.labelUrl) {
+        // If it's a base64 PDF, create download link
+        if (result.labelUrl.startsWith('JVB') || result.labelUrl.length > 100) {
+          const link = document.createElement('a');
+          link.href = `data:application/pdf;base64,${result.labelUrl}`;
+          link.download = `label-${createdWaybill}.pdf`;
+          link.click();
+        } else {
+          window.open(result.labelUrl, '_blank');
+        }
+        toast({ title: 'Успех', description: 'Етикетът е изтеглен' });
+      } else {
+        toast({
+          title: 'Грешка',
+          description: result.error || 'Неуспешно изтегляне на етикет',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error('Error downloading label:', err);
+    } finally {
+      setDownloadingLabel(false);
     }
   };
 
