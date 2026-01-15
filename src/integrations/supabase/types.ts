@@ -544,6 +544,30 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          attempt_time: string
+          email: string | null
+          id: string
+          ip_address: string
+          success: boolean
+        }
+        Insert: {
+          attempt_time?: string
+          email?: string | null
+          id?: string
+          ip_address: string
+          success?: boolean
+        }
+        Update: {
+          attempt_time?: string
+          email?: string | null
+          id?: string
+          ip_address?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           catalog_number: string | null
@@ -1128,6 +1152,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_login_attempts: { Args: never; Returns: undefined }
       generate_document_number: {
         Args: { doc_type: Database["public"]["Enums"]["document_type"] }
         Returns: string
