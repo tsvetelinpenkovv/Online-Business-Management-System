@@ -2,7 +2,7 @@ import { FC, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Package, AlertTriangle, XCircle, TrendingUp, 
-  Euro, Warehouse, ArrowUpRight, ArrowDownRight, Lock, Unlock
+  Warehouse, ArrowUpRight, ArrowDownRight, Lock, Unlock
 } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
 import { MOVEMENT_TYPE_LABELS } from '@/types/inventory';

@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { forwardRef } from 'react';
 import { MessageCircle, Smartphone, Check, CheckCheck, Clock, XCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -9,12 +9,12 @@ interface MessageStatusIconProps {
   className?: string;
 }
 
-export const MessageStatusIcon: FC<MessageStatusIconProps> = ({ 
+export const MessageStatusIcon = forwardRef<HTMLDivElement, MessageStatusIconProps>(({ 
   channel, 
   status, 
   sentAt,
   className = '' 
-}) => {
+}, ref) => {
   const getStatusIcon = () => {
     switch (status) {
       case 'read':
@@ -49,7 +49,7 @@ export const MessageStatusIcon: FC<MessageStatusIconProps> = ({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className={`relative inline-flex ${className}`}>
+          <div ref={ref} className={`relative inline-flex ${className}`}>
             {channel === 'viber' ? (
               <MessageCircle className={`w-4 h-4 ${getChannelColor()}`} />
             ) : (
@@ -73,4 +73,6 @@ export const MessageStatusIcon: FC<MessageStatusIconProps> = ({
       </Tooltip>
     </TooltipProvider>
   );
-};
+});
+
+MessageStatusIcon.displayName = 'MessageStatusIcon';

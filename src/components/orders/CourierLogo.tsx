@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { forwardRef } from 'react';
 import { Truck } from 'lucide-react';
 import { useCouriers } from '@/hooks/useCouriers';
 
@@ -9,12 +9,12 @@ interface CourierLogoProps {
   showLink?: boolean;
 }
 
-export const CourierLogo: FC<CourierLogoProps> = ({ 
+export const CourierLogo = forwardRef<HTMLDivElement, CourierLogoProps>(({ 
   trackingUrl, 
   courierId,
   className = "w-8 h-8",
   showLink = true 
-}) => {
+}, ref) => {
   // Always call hooks at the top level - before any early returns!
   const { couriers, loading, getCourierByUrl } = useCouriers();
   
@@ -23,7 +23,7 @@ export const CourierLogo: FC<CourierLogoProps> = ({
   
   // While loading couriers, show empty placeholder to prevent flash
   if (loading) {
-    return <div className={className} />;
+    return <div ref={ref} className={className} />;
   }
   
   // First try to find courier by ID, then by URL
@@ -47,17 +47,21 @@ export const CourierLogo: FC<CourierLogoProps> = ({
 
   if (showLink && trackingUrl) {
     return (
-      <a 
-        href={trackingUrl} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="hover:opacity-80 transition-opacity cursor-pointer flex items-center"
-        title={courier ? `Отвори товарителница - ${courier.name}` : 'Отвори товарителница'}
-      >
-        {content}
-      </a>
+      <div ref={ref}>
+        <a 
+          href={trackingUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="hover:opacity-80 transition-opacity cursor-pointer flex items-center"
+          title={courier ? `Отвори товарителница - ${courier.name}` : 'Отвори товарителница'}
+        >
+          {content}
+        </a>
+      </div>
     );
   }
 
-  return content;
-};
+  return <div ref={ref}>{content}</div>;
+});
+
+CourierLogo.displayName = 'CourierLogo';
