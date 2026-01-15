@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle
+  FileSpreadsheet, ShoppingCart, ChevronLeft, ChevronRight, Loader2, TrendingUp, AlertTriangle, DollarSign
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -24,6 +24,7 @@ import { DocumentsTab } from '@/components/inventory/DocumentsTab';
 import { MovementsTab } from '@/components/inventory/MovementsTab';
 import { ReportsTab } from '@/components/inventory/ReportsTab';
 import { ForecastTab } from '@/components/inventory/ForecastTab';
+import { PriceHistoryTab } from '@/components/inventory/PriceHistoryTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
 
@@ -319,6 +320,10 @@ export default function Inventory() {
                   <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Отчети</span>
                 </TabsTrigger>
+                <TabsTrigger value="price-history" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
+                  <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Цени</span>
+                </TabsTrigger>
                 <TabsTrigger
                   value="forecast"
                   className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
@@ -364,6 +369,10 @@ export default function Inventory() {
 
           <TabsContent value="reports" className="mt-4 sm:mt-6">
             <ReportsTab inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="price-history" className="mt-4 sm:mt-6">
+            <PriceHistoryTab />
           </TabsContent>
 
           <TabsContent value="forecast" className="mt-4 sm:mt-6">
