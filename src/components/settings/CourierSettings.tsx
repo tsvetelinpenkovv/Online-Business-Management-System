@@ -299,25 +299,29 @@ export const CourierSettings = () => {
                 key={courier.id}
                 className="p-4 border rounded-lg bg-muted/30 space-y-3"
               >
-                <div className="flex items-center gap-4">
-                  {/* Logo preview */}
-                  <div className="w-20 h-8 flex items-center justify-center bg-background rounded border overflow-hidden flex-shrink-0">
-                    {courier.logo_url ? (
-                      <img
-                        src={courier.logo_url}
-                        alt={courier.name}
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    ) : (
-                      <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                    )}
+                {/* Mobile: Stack layout, Desktop: Row layout */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  {/* Logo and Name row */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {/* Logo preview */}
+                    <div className="w-16 h-8 flex items-center justify-center bg-background rounded border overflow-hidden flex-shrink-0">
+                      {courier.logo_url ? (
+                        <img
+                          src={courier.logo_url}
+                          alt={courier.name}
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      ) : (
+                        <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+
+                    {/* Name */}
+                    <span className="font-medium truncate">{courier.name}</span>
                   </div>
 
-                  {/* Name */}
-                  <span className="font-medium flex-1">{courier.name}</span>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  {/* Actions - wrap on mobile */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <input
                       type="file"
                       accept="image/*"
@@ -336,6 +340,7 @@ export const CourierSettings = () => {
                         size="sm"
                         onClick={() => handleRemoveLogo(courier.id)}
                         disabled={uploadingId === courier.id}
+                        className="h-8 px-2"
                       >
                         {uploadingId === courier.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -350,13 +355,14 @@ export const CourierSettings = () => {
                       size="sm"
                       onClick={() => fileInputRefs.current[courier.id]?.click()}
                       disabled={uploadingId === courier.id}
+                      className="h-8"
                     >
                       {uploadingId === courier.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <>
-                          <Upload className="w-4 h-4 mr-1" />
-                          {courier.logo_url ? 'Смени' : 'Качи'}
+                          <Upload className="w-4 h-4 sm:mr-1" />
+                          <span className="hidden sm:inline">{courier.logo_url ? 'Смени' : 'Качи'}</span>
                         </>
                       )}
                     </Button>
@@ -366,7 +372,7 @@ export const CourierSettings = () => {
                       size="sm"
                       onClick={() => handleDeleteCourier(courier.id)}
                       disabled={deletingId === courier.id}
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive h-8 px-2"
                     >
                       {deletingId === courier.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
