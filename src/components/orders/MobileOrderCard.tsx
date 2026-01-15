@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { 
   User, Phone, Euro, Package, Truck, MessageCircle, 
   MoreHorizontal, Pencil, Trash2, Printer, Calendar,
-  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check, FileText, AlertCircle
+  Barcode, ExternalLink, Search, Globe, FileBox, Copy, Check, FileText, AlertCircle, Send
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Order, OrderStatus } from '@/types/order';
@@ -21,6 +21,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { type ColumnKey } from './ColumnVisibilityToggle';
@@ -41,6 +42,7 @@ interface MobileOrderCardProps {
   onDelete: () => void;
   onPrint: () => void;
   onInvoice: () => void;
+  onCreateShipment?: () => void;
   onStatusChange?: (orderId: number, newStatus: string) => void;
   messageInfo?: {
     channel: 'viber' | 'sms';
@@ -76,6 +78,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   onDelete,
   onPrint,
   onInvoice,
+  onCreateShipment,
   onStatusChange,
   messageInfo,
   nekorektenEnabled = true,
@@ -235,9 +238,14 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
                   <FileBox className="w-4 h-4 mr-2" />
                   Печат на товарителница
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onCreateShipment}>
+                  <Send className="w-4 h-4 mr-2" />
+                  Създай товарителница
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => {
-                    // Ръчна проверка - в бъдеще ще използва API
                     toast({
                       title: 'Проверка в Некоректен',
                       description: 'API за Некоректен не е вързано. Моля конфигурирайте го в Настройки.',

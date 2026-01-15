@@ -405,6 +405,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 onDelete={() => setDeleteId(order.id)}
                 onPrint={() => handlePrint(order)}
                 onInvoice={() => setInvoiceOrder(order)}
+                onCreateShipment={() => setShipmentOrder(order)}
                 onStatusChange={(orderId, newStatus) => {
                   const orderToUpdate = orders.find(o => o.id === orderId);
                   if (orderToUpdate) {
