@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff, UserPlus, Sparkles, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { buildPath } from '@/components/SecretPathGuard';
 
 interface CompanySettings {
   login_title?: string;
@@ -226,7 +227,7 @@ const Auth = () => {
             variant: 'destructive',
           });
         } else {
-          navigate('/');
+          navigate(buildPath('/'));
         }
       }
     };

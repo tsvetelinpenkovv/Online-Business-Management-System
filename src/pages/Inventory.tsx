@@ -6,6 +6,7 @@ import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { buildPath } from '@/components/SecretPathGuard';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -103,7 +104,7 @@ export default function Inventory() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate(buildPath('/auth'));
     }
   }, [user, authLoading, navigate]);
 
@@ -160,7 +161,7 @@ export default function Inventory() {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => navigate('/')}
+                onClick={() => navigate(buildPath('/'))}
                 title="Назад към поръчки"
                 className="flex-shrink-0"
               >
