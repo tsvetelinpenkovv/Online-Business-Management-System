@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Truck, Loader2, Check, Eye, EyeOff, Settings2, MapPin, Package } from 'lucide-react';
+import { Truck, Loader2, Check, Eye, EyeOff, Settings2, MapPin, Package, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -52,6 +52,7 @@ const COURIER_AUTH_TYPES: Record<string, { fields: string[], displayName: string
   'sameday': { fields: ['username', 'password'], displayName: 'Sameday' },
   'dhl': { fields: ['username', 'password', 'account_number'], displayName: 'DHL' },
   'evropat': { fields: ['api_key'], displayName: 'Европат' },
+  'cvc': { fields: ['username', 'password'], displayName: 'CVC' },
 };
 
 export const CourierApiSettings = () => {
@@ -61,6 +62,7 @@ export const CourierApiSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
+  const [refreshingOffices, setRefreshingOffices] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState<Record<string, CourierApiSetting>>({});
 
@@ -234,6 +236,50 @@ export const CourierApiSettings = () => {
       toast({ title: 'Грешка', description: 'Неуспешен тест на връзката', variant: 'destructive' });
     } finally {
       setTesting(null);
+    }
+  };
+
+  const handleRefreshOffices = async (courier: Courier) => {
+    setRefreshingOffices(courier.id);
+    try {
+      const data = formData[courier.id] || createEmptySetting(courier.id);
+      const courierType = getCourierType(courier.name);
+      
+      if (!courierType) {
+        toast({ title: 'Грешка', description: 'Неподдържан тип куриер', variant: 'destructive' });
+        return;
+      }
+
+      const functionName = `courier-${courierType.replace(' ', '')}`;
+      const credentials: Record<string, unknown> = { is_test_mode: data.is_test_mode };
+      
+      const authFields = getAuthFields(courier.name);
+      authFields.forEach(field => {
+        if (field === 'account_number') {
+          credentials.account_number = data.extra_config?.account_number || '';
+        } else {
+          credentials[field] = data[field as keyof CourierApiSetting] || '';
+        }
+      });
+
+      // Try to fetch offices
+      const { data: result, error } = await supabase.functions.invoke(functionName, {
+        body: { action: 'getOffices', credentials },
+      });
+
+      if (error) throw error;
+      
+      const officesCount = result?.offices?.length || result?.destinations?.length || result?.data?.length || 0;
+      
+      toast({ 
+        title: 'Успех', 
+        description: `Заредени ${officesCount} офиси/автомати от ${courier.name}` 
+      });
+    } catch (error) {
+      console.error('Refresh offices error:', error);
+      toast({ title: 'Грешка', description: 'Неуспешно обновяване на офиси', variant: 'destructive' });
+    } finally {
+      setRefreshingOffices(null);
     }
   };
 
@@ -455,6 +501,15 @@ export const CourierApiSettings = () => {
                         <Button onClick={() => handleTest(courier)} variant="outline" disabled={testing === courier.id}>
                           {testing === courier.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
                           Тест връзка
+                        </Button>
+                        <Button 
+                          onClick={() => handleRefreshOffices(courier)} 
+                          variant="outline" 
+                          disabled={refreshingOffices === courier.id || !formData[courier.id]?.is_enabled}
+                          title="Обнови офиси и автомати от API"
+                        >
+                          {refreshingOffices === courier.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                          Обнови офиси
                         </Button>
                         <Button onClick={() => handleSave(courier)} disabled={saving === courier.id}>
                           {saving === courier.id && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
