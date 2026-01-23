@@ -1,17 +1,14 @@
-<h2>🚀 Online Business Management System</h2>
+Online Business Management System
 
-<p>
   A complete end-to-end solution for managing online businesses.
   The system automates core processes, ensures precise inventory control,
   provides full order traceability, and integrates seamlessly with external
   services and e-commerce platforms.
-</p>
 
-<hr />
 
-<h3>✨ Key Features</h3>
+✨ Key Features</h3>
 
-<h4>📦 Orders Management</h4>
+📦 Orders Management</h4>
 <ul>
   <li>Centralized order management from multiple platforms</li>
   <li>Advanced filtering and bulk actions</li>
