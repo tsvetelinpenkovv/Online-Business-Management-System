@@ -395,6 +395,7 @@ const Settings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Save API settings
       const updates = Object.entries(settings).map(([key, value]) => ({
         setting_key: key,
         setting_value: value,
@@ -415,9 +416,14 @@ const Settings = () => {
           .upsert(update, { onConflict: 'setting_key' });
       }
 
+      // Also save company settings if they exist
+      if (companySettings) {
+        await handleSaveCompanySettings();
+      }
+
       toast({
         title: 'Успех',
-        description: 'Настройките бяха запазени',
+        description: 'Всички настройки бяха запазени',
       });
     } catch (error: any) {
       toast({

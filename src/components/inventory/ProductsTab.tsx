@@ -1,7 +1,8 @@
-import { FC, useState, useMemo, useEffect } from 'react';
+import { FC, useState, useMemo, useEffect, useCallback } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { InventoryProduct } from '@/types/inventory';
 import { supabase } from '@/integrations/supabase/client';
+import { useStockSync } from '@/hooks/useStockSync';
 type SortKey = 'name' | 'sku' | 'current_stock' | 'purchase_price' | 'sale_price' | 'category';
 type SortDirection = 'asc' | 'desc';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Pencil, Trash2, Package, 
   AlertTriangle, ArrowUpDown, MoreHorizontal, Barcode, Copy, Check, Layers, Eye,
-  Hash, FileText, FolderOpen, Boxes, Euro, TrendingUp, Activity, Lock, Unlock
+  Hash, FileText, FolderOpen, Boxes, Euro, TrendingUp, Activity, Lock, Unlock, BarChart3
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -61,9 +62,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { InlineStockEditor } from './InlineStockEditor';
+import { ProductDetailDialog } from './ProductDetailDialog';
 
 interface ProductsTabProps {
   inventory: ReturnType<typeof useInventory>;
+  syncStockToWoo?: boolean;
 }
 
 interface BundleComponent {
@@ -78,8 +82,9 @@ interface BundleComponent {
   } | null;
 }
 
-export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
+export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = true }) => {
   const isMobile = useIsMobile();
+  const { syncProductStock } = useStockSync();
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -88,6 +93,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
   const [bundleViewProduct, setBundleViewProduct] = useState<InventoryProduct | null>(null);
   const [bundleComponents, setBundleComponents] = useState<BundleComponent[]>([]);
   const [loadingComponents, setLoadingComponents] = useState(false);
+  const [detailProduct, setDetailProduct] = useState<InventoryProduct | null>(null);
   const [formData, setFormData] = useState({
     sku: '',
     name: '',
@@ -103,6 +109,34 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
   });
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  // Handle inline stock save
+  const handleInlineStockSave = useCallback(async (productId: string, newStock: number): Promise<boolean> => {
+    const product = inventory.products.find(p => p.id === productId);
+    if (!product) return false;
+
+    // Update in database using adjustment movement
+    const success = await inventory.createStockMovement(
+      productId,
+      'adjustment',
+      newStock,
+      0,
+      'Ръчна корекция на наличността',
+      undefined,
+      undefined,
+      !syncStockToWoo // Skip sync if syncStockToWoo is false
+    );
+
+    if (success) {
+      // If sync is enabled, manually trigger sync
+      if (syncStockToWoo && product.sku) {
+        await syncProductStock(productId, product.sku, product.name, newStock);
+      }
+      toast.success('Наличността е актуализирана');
+      return true;
+    }
+    return false;
+  }, [inventory, syncStockToWoo, syncProductStock]);
 
   const filteredAndSortedProducts = useMemo(() => {
     const filtered = inventory.products.filter(p => 
@@ -557,13 +591,27 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <p className="font-medium max-w-[200px] truncate cursor-pointer">{product.name}</p>
+                                    <button 
+                                      onClick={() => setDetailProduct(product)}
+                                      className="font-medium max-w-[200px] truncate cursor-pointer text-left hover:text-primary hover:underline transition-colors"
+                                    >
+                                      {product.name}
+                                    </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="top" className="max-w-[300px]">
-                                    <p>{product.name}</p>
+                                    <p>Кликни за статистика на продукта</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-6 w-6"
+                                onClick={() => setDetailProduct(product)}
+                                title="Виж статистика"
+                              >
+                                <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
                               {getBundleTypeBadge(product)}
                             </div>
                             {product.barcode && (
@@ -587,19 +635,28 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
                         </TableCell>
                         <TableCell>{product.category?.name || '-'}</TableCell>
                         <TableCell className="text-right">
-                          <Badge 
-                            variant="secondary" 
-                            className={`pointer-events-none ${
-                              product.current_stock <= 0 
-                                ? 'bg-destructive/20 text-destructive' 
-                                : product.current_stock <= product.min_stock_level 
-                                  ? 'bg-warning/20 text-warning' 
-                                  : 'bg-success/20 text-success'
-                            }`}
-                          >
-                            {product.current_stock} {product.unit?.abbreviation || 'бр.'}
-                          </Badge>
+                          <InlineStockEditor
+                            productId={product.id}
+                            currentStock={product.current_stock}
+                            unit={product.unit?.abbreviation || 'бр.'}
+                            minStockLevel={product.min_stock_level}
+                            onSave={handleInlineStockSave}
+                          />
                         </TableCell>
+                        <TableCell className="text-right">
+                          {(product as any).reserved_stock > 0 ? (
+                            <Badge 
+                              variant="secondary" 
+                              className="pointer-events-none bg-destructive/20 text-destructive"
+                            >
+                              {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right text-warning font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right text-success font-medium">{product.sale_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right">
                           {(product as any).reserved_stock > 0 ? (
                             <Badge 
@@ -886,6 +943,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Product Detail Dialog */}
+      <ProductDetailDialog 
+        product={detailProduct} 
+        onClose={() => setDetailProduct(null)} 
+      />
     </div>
   );
 };

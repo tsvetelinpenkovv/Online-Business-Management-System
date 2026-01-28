@@ -3,7 +3,7 @@ import {
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown,
-  Send, Loader2
+  Send, Loader2, Boxes
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -18,6 +18,7 @@ import { InvoiceDialog } from './InvoiceDialog';
 import { MessageStatusIcon } from './MessageStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -62,6 +63,11 @@ const cleanProductName = (name: string): string => {
 };
 
 import { type ColumnKey } from './ColumnVisibilityToggle';
+
+// Stock info type
+interface ProductStockInfo {
+  [catalogNumber: string]: number;
+}
 
 interface OrdersTableProps {
   orders: Order[];
@@ -134,7 +140,7 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
 };
 
 // Default visible columns (all)
-const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'delivery', 'tracking', 'status', 'comment']);
+const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'comment']);
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
@@ -150,6 +156,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
   const [sendingMessage, setSendingMessage] = useState<number | null>(null);
+  const [stockInfo, setStockInfo] = useState<ProductStockInfo>({});
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [sortKey, setSortKey] = useState<OrderSortKey>('created_at');
@@ -158,6 +165,26 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   // Fetch messages for orders
   const orderIds = useMemo(() => orders.map(o => o.id), [orders]);
   const { getOrderMessage, refetch: refetchMessages } = useOrderMessages(orderIds);
+
+  // Fetch stock info for catalog numbers
+  useEffect(() => {
+    const fetchStockInfo = async () => {
+      const catalogNumbers = [...new Set(orders.map(o => o.catalog_number).filter(Boolean))] as string[];
+      if (catalogNumbers.length === 0) return;
+
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('sku, current_stock')
+        .in('sku', catalogNumbers);
+
+      if (data) {
+        const info: ProductStockInfo = {};
+        data.forEach(p => { info[p.sku] = p.current_stock; });
+        setStockInfo(info);
+      }
+    };
+    fetchStockInfo();
+  }, [orders]);
 
   const handleSendMessage = async (order: Order) => {
     setSendingMessage(order.id);
@@ -518,6 +545,11 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
+              {visibleColumns.has('stock') && (
+                <TableHead className="w-[60px] text-center" title="Наличност в склада">
+                  <Boxes className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                </TableHead>
+              )}
               {visibleColumns.has('delivery') && (
                 <TableHead className="w-[120px]">
                   <div className="flex items-center gap-1.5">
@@ -710,6 +742,26 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       quantity={order.quantity}
                       catalogNumber={order.catalog_number}
                     />
+                  </TableCell>
+                )}
+                {visibleColumns.has('stock') && (
+                  <TableCell className="text-center">
+                    {order.catalog_number && stockInfo[order.catalog_number] !== undefined ? (
+                      <Badge 
+                        variant="secondary" 
+                        className={`${
+                          stockInfo[order.catalog_number] <= 0 
+                            ? 'bg-destructive/20 text-destructive' 
+                            : stockInfo[order.catalog_number] <= 5 
+                              ? 'bg-warning/20 text-warning' 
+                              : 'bg-success/20 text-success'
+                        }`}
+                      >
+                        {stockInfo[order.catalog_number]}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
                 )}
                 {visibleColumns.has('delivery') && (

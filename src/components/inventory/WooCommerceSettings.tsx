@@ -14,6 +14,7 @@ import woocommerceLogo from '@/assets/woocommerce-logo.png';
 
 interface WooCommerceSettingsProps {
   onSync?: () => void;
+  onSyncEnabledChange?: (enabled: boolean) => void;
 }
 
 interface WooCommerceConfig {
@@ -22,18 +23,20 @@ interface WooCommerceConfig {
   consumer_secret: string;
   is_enabled: boolean;
   auto_sync: boolean;
+  sync_stock_to_woo: boolean;
   last_sync: string | null;
 }
 
 const SETTING_KEY = 'woocommerce_config';
 
-export const WooCommerceSettings: FC<WooCommerceSettingsProps> = ({ onSync }) => {
+export const WooCommerceSettings: FC<WooCommerceSettingsProps> = ({ onSync, onSyncEnabledChange }) => {
   const [config, setConfig] = useState<WooCommerceConfig>({
     store_url: '',
     consumer_key: '',
     consumer_secret: '',
     is_enabled: false,
     auto_sync: false,
+    sync_stock_to_woo: true,
     last_sync: null,
   });
   const [loading, setLoading] = useState(true);
@@ -261,6 +264,23 @@ export const WooCommerceSettings: FC<WooCommerceSettingsProps> = ({ onSync }) =>
           <Switch
             checked={config.auto_sync}
             onCheckedChange={(checked) => setConfig(prev => ({ ...prev, auto_sync: checked }))}
+          />
+        </div>
+
+        {/* Sync Stock TO WooCommerce Toggle */}
+        <div className="flex items-center justify-between p-4 border rounded-lg border-warning/50">
+          <div className="space-y-0.5">
+            <Label className="text-base">Изпращай наличности към WooCommerce</Label>
+            <p className="text-sm text-muted-foreground">
+              Когато е изключено, наличностите се водят само в системата и НЕ се изпращат към WooCommerce
+            </p>
+          </div>
+          <Switch
+            checked={config.sync_stock_to_woo}
+            onCheckedChange={(checked) => {
+              setConfig(prev => ({ ...prev, sync_stock_to_woo: checked }));
+              onSyncEnabledChange?.(checked);
+            }}
           />
         </div>
 
