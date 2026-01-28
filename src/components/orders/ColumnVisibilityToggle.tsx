@@ -20,7 +20,8 @@ export type ColumnKey =
   | 'price' 
   | 'product' 
   | 'catalog' 
-  | 'quantity' 
+  | 'quantity'
+  | 'stock' 
   | 'delivery' 
   | 'tracking' 
   | 'status' 
@@ -43,6 +44,7 @@ export const COLUMNS_CONFIG: ColumnConfig[] = [
   { key: 'product', label: 'Продукт', defaultVisible: true },
   { key: 'catalog', label: 'Кат.№', defaultVisible: true },
   { key: 'quantity', label: 'Количество', defaultVisible: true },
+  { key: 'stock', label: 'Наличност', defaultVisible: true },
   { key: 'delivery', label: 'Доставка', defaultVisible: true },
   { key: 'tracking', label: 'Товарителница', defaultVisible: true },
   { key: 'status', label: 'Статус', defaultVisible: true },
