@@ -25,6 +25,7 @@ export type ColumnKey =
   | 'delivery' 
   | 'tracking' 
   | 'status' 
+  | 'callStatus'
   | 'comment';
 
 interface ColumnConfig {
@@ -48,6 +49,7 @@ export const COLUMNS_CONFIG: ColumnConfig[] = [
   { key: 'delivery', label: 'Доставка', defaultVisible: true },
   { key: 'tracking', label: 'Товарителница', defaultVisible: true },
   { key: 'status', label: 'Статус', defaultVisible: true },
+  { key: 'callStatus', label: 'Статус обаждане', defaultVisible: true },
   { key: 'comment', label: 'Коментар', defaultVisible: true },
 ];
 

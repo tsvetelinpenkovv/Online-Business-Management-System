@@ -173,10 +173,36 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
         setStats(calculateStats(currentOrders || []));
         setPreviousStats(calculateStats(prevOrders || []));
 
-        // Try to get product image from WooCommerce if woocommerce_id exists
+        // Try to get product image from WooCommerce API if woocommerce_id exists
         if (product.woocommerce_id) {
-          // Image would be fetched from WooCommerce API - for now show placeholder
-          setProductImage(null);
+          try {
+            // Fetch from ecommerce_platforms config
+            const { data: platformData } = await supabase
+              .from('ecommerce_platforms')
+              .select('config')
+              .eq('name', 'woocommerce')
+              .maybeSingle();
+            
+            if (platformData?.config) {
+              const config = platformData.config as { store_url?: string; consumer_key?: string; consumer_secret?: string };
+              if (config.store_url && config.consumer_key && config.consumer_secret) {
+                const baseUrl = config.store_url.replace(/\/$/, '');
+                const productUrl = `${baseUrl}/wp-json/wc/v3/products/${product.woocommerce_id}?consumer_key=${config.consumer_key}&consumer_secret=${config.consumer_secret}`;
+                
+                const response = await fetch(productUrl);
+                if (response.ok) {
+                  const productData = await response.json();
+                  if (productData.images && productData.images.length > 0) {
+                    // Use medium size or first available
+                    const image = productData.images[0];
+                    setProductImage(image.src);
+                  }
+                }
+              }
+            }
+          } catch (imgErr) {
+            console.error('Error fetching product image:', imgErr);
+          }
         }
       } catch (err) {
         console.error('Error fetching stats:', err);
@@ -250,18 +276,21 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
         </DialogHeader>
 
         {/* Product Info Header */}
-        <div className="flex gap-4 p-4 bg-muted/50 rounded-lg">
-          <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="flex flex-col sm:flex-row gap-4 p-4 bg-muted/50 rounded-lg">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-muted rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
             {productImage ? (
               <img src={productImage} alt={product.name} className="w-full h-full object-cover" />
             ) : (
               <Package className="w-12 h-12 text-muted-foreground" />
             )}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 text-center sm:text-left">
             <h3 className="font-semibold text-lg truncate">{product.name}</h3>
             <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-            <div className="flex gap-2 mt-2">
+            {product.woocommerce_id && (
+              <p className="text-xs text-muted-foreground">WooCommerce ID: {product.woocommerce_id}</p>
+            )}
+            <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
               <Badge variant="secondary" className={
                 product.current_stock <= 0 ? 'bg-destructive/20 text-destructive' :
                 product.current_stock <= product.min_stock_level ? 'bg-warning/20 text-warning' :
@@ -269,7 +298,10 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
               }>
                 Наличност: {product.current_stock} {product.unit?.abbreviation || 'бр.'}
               </Badge>
-              <Badge variant="outline">
+              <Badge variant="outline" className="text-warning border-warning/50">
+                Покупна: {product.purchase_price.toFixed(2)} €
+              </Badge>
+              <Badge variant="outline" className="text-success border-success/50">
                 Продажна: {product.sale_price.toFixed(2)} €
               </Badge>
             </div>
@@ -277,9 +309,9 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
           <Select value={selectedSource} onValueChange={setSelectedSource}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Всички сайтове" />
             </SelectTrigger>
             <SelectContent>
@@ -296,7 +328,7 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
           </Select>
 
           <Select value={selectedCourier} onValueChange={setSelectedCourier}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Всички куриери" />
             </SelectTrigger>
             <SelectContent>
@@ -308,7 +340,7 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
           </Select>
 
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

@@ -20,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
-type ExportType = 'products' | 'suppliers' | 'categories' | 'documents';
+type ExportType = 'products' | 'suppliers' | 'categories' | 'documents' | 'revision';
 type FileFormat = 'csv' | 'xlsx' | 'xls' | 'ods';
 type ImportStep = 'select' | 'mapping' | 'preview';
 
@@ -87,6 +87,12 @@ const FIELD_DEFINITIONS: Record<ExportType, { key: string; label: string; requir
     { key: 'counterparty', label: 'Контрагент' },
     { key: 'amount', label: 'Сума' },
     { key: 'notes', label: 'Бележки' },
+  ],
+  revision: [
+    { key: 'sku', label: 'SKU', required: true },
+    { key: 'name', label: 'Име' },
+    { key: 'current_stock', label: 'Системна наличност' },
+    { key: 'actual_stock', label: 'Реална наличност', required: true },
   ]
 };
 
@@ -116,6 +122,13 @@ const TEMPLATE_DATA: Record<ExportType, { headers: string[]; sampleRows: string[
   documents: {
     headers: ['Номер', 'Тип', 'Дата', 'Контрагент', 'Сума', 'Бележки'],
     sampleRows: []
+  },
+  revision: {
+    headers: ['SKU', 'Име', 'Системна наличност', 'Реална наличност'],
+    sampleRows: [
+      ['PRD-001', 'Примерен продукт 1', '100', ''],
+      ['PRD-002', 'Примерен продукт 2', '50', ''],
+    ]
   }
 };
 
@@ -123,7 +136,8 @@ const TYPE_LABELS: Record<ExportType, string> = {
   products: 'Артикули',
   suppliers: 'Доставчици',
   categories: 'Категории',
-  documents: 'Документи'
+  documents: 'Документи',
+  revision: 'Ревизия'
 };
 
 // Try to auto-detect column mapping based on header names
@@ -243,6 +257,17 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             d.supplier?.name || d.counterparty_name || '',
             d.total_amount.toString(),
             d.notes || ''
+          ])
+        };
+
+      case 'revision':
+        return {
+          headers: TEMPLATE_DATA.revision.headers,
+          rows: inventory.products.map(p => [
+            p.sku,
+            p.name,
+            p.current_stock.toString(),
+            '' // Empty column for actual stock to be filled during revision
           ])
         };
     }
@@ -449,6 +474,37 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             success++;
             break;
           }
+          case 'revision': {
+            const sku = getMappedValue(row, 'sku');
+            const actualStock = parseFloat(getMappedValue(row, 'actual_stock'));
+            
+            if (!sku) {
+              errors.push(`Ред ${i + 2}: Липсва SKU`);
+              continue;
+            }
+            if (isNaN(actualStock)) {
+              errors.push(`Ред ${i + 2}: Липсва или невалидна реална наличност`);
+              continue;
+            }
+            
+            // Find product by SKU and update stock
+            const product = inventory.products.find(p => p.sku === sku);
+            if (!product) {
+              errors.push(`Ред ${i + 2}: Продукт с SKU "${sku}" не е намерен`);
+              continue;
+            }
+            
+            // Create adjustment movement to set new stock
+            await inventory.createStockMovement(
+              product.id,
+              'adjustment',
+              actualStock,
+              0,
+              'Ревизия на наличности'
+            );
+            success++;
+            break;
+          }
         }
       } catch (err) {
         errors.push(`Ред ${i + 2}: ${err instanceof Error ? err.message : 'Неизвестна грешка'}`);
@@ -476,6 +532,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
 
   const exportButtons = [
     { type: 'products' as ExportType, label: 'Артикули', icon: Package, color: 'bg-primary' },
+    { type: 'revision' as ExportType, label: 'Ревизия', icon: FileSpreadsheet, color: 'bg-purple' },
     { type: 'suppliers' as ExportType, label: 'Доставчици', icon: Users, color: 'bg-success' },
     { type: 'categories' as ExportType, label: 'Категории', icon: FolderTree, color: 'bg-info' },
     { type: 'documents' as ExportType, label: 'Документи', icon: FileText, color: 'bg-warning' },

@@ -71,12 +71,12 @@ export const InlineStockEditor: FC<InlineStockEditorProps> = ({
 
   const getBadgeClass = () => {
     if (currentStock <= 0) {
-      return 'bg-destructive/20 text-destructive hover:bg-destructive/30';
+      return 'bg-destructive/20 text-destructive';
     }
     if (currentStock <= minStockLevel) {
-      return 'bg-warning/20 text-warning hover:bg-warning/30';
+      return 'bg-purple/20 text-purple';
     }
-    return 'bg-success/20 text-success hover:bg-success/30';
+    return 'bg-purple/20 text-purple';
   };
 
   if (isEditing) {
