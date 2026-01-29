@@ -3,7 +3,7 @@ import {
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown,
-  Send, Loader2, Boxes
+  Send, Loader2, Boxes, PhoneOff, PhoneCall
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -16,6 +16,7 @@ import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { MobileOrderCard } from './MobileOrderCard';
 import { InvoiceDialog } from './InvoiceDialog';
 import { MessageStatusIcon } from './MessageStatusIcon';
+import { CallStatusBadge, CallStatus } from './CallStatusBadge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -140,7 +141,7 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
 };
 
 // Default visible columns (all)
-const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'comment']);
+const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'callStatus', 'comment']);
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
@@ -569,6 +570,14 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Статус
                 </SortableHead>
               )}
+              {visibleColumns.has('callStatus') && (
+                <TableHead className="w-[80px] text-center" title="Статус на обаждане">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <PhoneCall className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="hidden xl:inline">Обаждане</span>
+                  </div>
+                </TableHead>
+              )}
               {visibleColumns.has('comment') && (
                 <TableHead className="w-[160px]">
                   <div className="flex items-center gap-1.5">
@@ -689,13 +698,30 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                               <Layers className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                               <strong>Количество:</strong> 
                               {order.quantity > 1 ? (
-                                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold">
+                                <span className="inline-flex items-center justify-center min-w-[40px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold">
                                   {order.quantity} бр.
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
+                                <span className="inline-flex items-center justify-center min-w-[40px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
                                   {order.quantity} бр.
                                 </span>
+                              )}
+                            </p>
+                            <p className="flex items-center gap-2">
+                              <Boxes className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                              <strong>Наличност:</strong> 
+                              {order.catalog_number && stockInfo[order.catalog_number] !== undefined ? (
+                                <span className={`inline-flex items-center justify-center min-w-[50px] px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                  stockInfo[order.catalog_number] <= 0 
+                                    ? 'bg-destructive/20 text-destructive' 
+                                    : stockInfo[order.catalog_number] <= 5 
+                                      ? 'bg-warning/20 text-warning' 
+                                      : 'bg-success/20 text-success'
+                                }`}>
+                                  {stockInfo[order.catalog_number]} бр.
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">Няма данни</span>
                               )}
                             </p>
                             <p className="flex items-center gap-2">
@@ -816,6 +842,19 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       status={order.status} 
                       editable 
                       onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus as any })}
+                    />
+                  </TableCell>
+                )}
+                {visibleColumns.has('callStatus') && (
+                  <TableCell className="text-center">
+                    <CallStatusBadge 
+                      status={(order as any).call_status || 'none'}
+                      editable
+                      onStatusChange={(newStatus) => {
+                        // For now, this would need to update a call_status field
+                        // Store in comment or separate tracking
+                        console.log('Call status change:', order.id, newStatus);
+                      }}
                     />
                   </TableCell>
                 )}
