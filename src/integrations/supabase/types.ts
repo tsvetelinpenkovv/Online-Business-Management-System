@@ -844,6 +844,42 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_edit: boolean | null
+          can_view: boolean | null
+          created_at: string
+          id: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shipments: {
         Row: {
           cod_amount: number | null
@@ -1296,11 +1332,20 @@ export type Database = {
         Args: { doc_type: Database["public"]["Enums"]["document_type"] }
         Returns: string
       }
+      has_permission: {
+        Args: { _action: string; _email: string; _module: string }
+        Returns: boolean
+      }
       is_admin: { Args: { _email: string }; Returns: boolean }
       is_allowed_user: { Args: { _email: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role:
+        | "admin"
+        | "user"
+        | "warehouse_worker"
+        | "order_operator"
+        | "finance"
       document_type:
         | "receiving"
         | "dispatch"
@@ -1435,7 +1480,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: [
+        "admin",
+        "user",
+        "warehouse_worker",
+        "order_operator",
+        "finance",
+      ],
       document_type: [
         "receiving",
         "dispatch",

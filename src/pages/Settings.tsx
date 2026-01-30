@@ -13,7 +13,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw } from 'lucide-react';
+import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
+import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { CourierApiSettings } from '@/components/settings/CourierApiSettings';
@@ -629,6 +631,8 @@ const Settings = () => {
                 <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-6 lg:flex-1 lg:justify-center">Статуси</TabsTrigger>
                 <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-7 lg:flex-1 lg:justify-center">Фирма</TabsTrigger>
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8 lg:flex-1 lg:justify-center">Потребители</TabsTrigger>}
+                {isAdmin && <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1"><Shield className="w-4 h-4 mr-1" />Роли</TabsTrigger>}
+                {isAdmin && <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center gap-1 text-destructive"><RotateCcw className="w-4 h-4 mr-1" />Изчисти</TabsTrigger>}
                 <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1" title="Редактор на интерфейса">
                   <Type className="w-4 h-4" />
                   <span className="hidden lg:inline">Интерфейс</span>
@@ -1809,6 +1813,37 @@ const Settings = () => {
           <TabsContent value="docs" className="space-y-6">
             <DocumentationTab />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="roles" className="space-y-6">
+              <RolePermissionsManager />
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="danger" className="space-y-6">
+              <Card className="border-destructive/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-destructive">
+                    <Trash2 className="w-5 h-5" />
+                    Опасна зона
+                  </CardTitle>
+                  <CardDescription>
+                    Тези действия са необратими. Моля бъдете внимателни.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+                    <h4 className="font-medium text-destructive mb-2">Фабрични настройки</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Изтрийте всички данни от системата и започнете отначало. Това действие е необратимо!
+                    </p>
+                    <FactoryResetDialog />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 
