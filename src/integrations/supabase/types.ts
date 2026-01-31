@@ -689,6 +689,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          call_status: string | null
           catalog_number: string | null
           code: string
           comment: string | null
@@ -710,6 +711,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          call_status?: string | null
           catalog_number?: string | null
           code: string
           comment?: string | null
@@ -731,6 +733,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          call_status?: string | null
           catalog_number?: string | null
           code?: string
           comment?: string | null

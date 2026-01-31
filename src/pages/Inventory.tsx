@@ -288,11 +288,11 @@ export default function Inventory() {
 
             <div
               ref={tabsContainerRef}
-              className="overflow-x-auto -mx-3 lg:mx-0 px-3 lg:px-0"
+              className="overflow-x-auto overflow-y-visible -mx-3 lg:mx-0 px-3 lg:px-0 pt-2"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               onScroll={checkScrollPosition}
             >
-              <TabsList className="inline-flex w-max lg:w-auto lg:flex lg:flex-wrap h-auto gap-1 p-1.5 bg-muted dark:bg-muted/70 rounded-lg [&::-webkit-scrollbar]:hidden">
+              <TabsList className="inline-flex w-max lg:w-auto lg:flex lg:flex-wrap h-auto gap-1 p-1.5 bg-muted dark:bg-muted/70 rounded-lg [&::-webkit-scrollbar]:hidden overflow-visible">
                 <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
                   <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Табло</span>
@@ -327,14 +327,14 @@ export default function Inventory() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="forecast"
-                  className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm"
+                  className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/60 data-[state=active]:bg-red-600 dark:data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:hover:bg-red-700 dark:data-[state=active]:hover:bg-red-700 data-[state=active]:shadow-sm overflow-visible"
                 >
                   <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Прогнози</span>
                   {criticalStockInfo.totalCritical > 0 && (
                     <Badge
                       variant="destructive"
-                      className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1 flex items-center justify-center text-[10px] font-bold animate-pulse"
+                      className="absolute -top-1.5 -right-1.5 h-5 min-w-[20px] px-1 flex items-center justify-center text-[10px] font-bold animate-pulse z-10"
                     >
                       {criticalStockInfo.totalCritical}
                     </Badge>

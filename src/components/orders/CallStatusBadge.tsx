@@ -6,7 +6,9 @@ import {
   PhoneCall, 
   PhoneIncoming,
   PhoneMissed,
-  Check
+  PhoneForwarded,
+  Check,
+  AlertTriangle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -14,8 +16,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { CallStatus } from '@/types/order';
 
-export type CallStatus = 'none' | 'no_answer' | 'busy' | 'called' | 'confirmed';
+// Re-export type for backward compatibility
+export type { CallStatus } from '@/types/order';
 
 interface CallStatusBadgeProps {
   status: CallStatus;
@@ -39,6 +43,16 @@ const statusConfig: Record<CallStatus, { label: string; icon: React.ElementType;
     icon: PhoneMissed, 
     className: 'bg-warning/20 text-warning' 
   },
+  wrong_number: { 
+    label: 'Грешен номер', 
+    icon: AlertTriangle, 
+    className: 'bg-orange-500/20 text-orange-600 dark:text-orange-400' 
+  },
+  callback: { 
+    label: 'Обратно обаждане', 
+    icon: PhoneForwarded, 
+    className: 'bg-purple/20 text-purple' 
+  },
   called: { 
     label: 'Обаден', 
     icon: PhoneIncoming, 
@@ -57,7 +71,7 @@ export const CallStatusBadge: FC<CallStatusBadgeProps> = ({
   onStatusChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.none;
   const Icon = config.icon;
 
   const handleStatusChange = (newStatus: CallStatus) => {
@@ -68,10 +82,10 @@ export const CallStatusBadge: FC<CallStatusBadgeProps> = ({
   const badge = (
     <Badge 
       variant="secondary" 
-      className={`${config.className} gap-1 ${editable ? 'cursor-pointer' : ''} whitespace-nowrap`}
+      className={`${config.className} gap-1 ${editable ? 'cursor-pointer hover:opacity-80' : ''} whitespace-nowrap text-xs`}
     >
       <Icon className="w-3 h-3 flex-shrink-0" />
-      <span className="hidden sm:inline text-xs">{config.label}</span>
+      <span className="hidden sm:inline">{config.label}</span>
     </Badge>
   );
 
@@ -84,14 +98,14 @@ export const CallStatusBadge: FC<CallStatusBadgeProps> = ({
       <DropdownMenuTrigger asChild>
         {badge}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="w-40">
+      <DropdownMenuContent align="center" className="w-44 z-50 bg-popover">
         {Object.entries(statusConfig).map(([key, value]) => {
           const StatusIcon = value.icon;
           return (
             <DropdownMenuItem
               key={key}
               onClick={() => handleStatusChange(key as CallStatus)}
-              className={status === key ? 'bg-muted' : ''}
+              className={`cursor-pointer ${status === key ? 'bg-muted' : ''}`}
             >
               <StatusIcon className="w-4 h-4 mr-2" />
               {value.label}

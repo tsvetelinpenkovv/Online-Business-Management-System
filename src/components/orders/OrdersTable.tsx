@@ -848,12 +848,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 {visibleColumns.has('callStatus') && (
                   <TableCell className="text-center">
                     <CallStatusBadge 
-                      status={(order as any).call_status || 'none'}
+                      status={order.call_status || 'none'}
                       editable
                       onStatusChange={(newStatus) => {
-                        // For now, this would need to update a call_status field
-                        // Store in comment or separate tracking
-                        console.log('Call status change:', order.id, newStatus);
+                        onUpdate({ ...order, call_status: newStatus });
                       }}
                     />
                   </TableCell>
