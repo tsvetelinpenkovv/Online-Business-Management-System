@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Order } from '@/types/order';
+import { Order, CallStatus } from '@/types/order';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 // Default statuses
 const DEFAULT_SHIPPED_STATUS = 'Изпратена';
@@ -23,6 +24,31 @@ export const useOrders = () => {
     reserveStatus: DEFAULT_RESERVE_STATUS,
   });
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Audit log helper
+  const logAuditAction = useCallback(async (
+    action: string, 
+    tableName: string, 
+    recordId: string, 
+    oldData?: Record<string, any>, 
+    newData?: Record<string, any>
+  ) => {
+    try {
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id || null,
+        user_email: user?.email || null,
+        action,
+        table_name: tableName,
+        record_id: recordId,
+        old_data: oldData || null,
+        new_data: newData || null,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+      });
+    } catch (err) {
+      console.error('Error logging audit action:', err);
+    }
+  }, [user]);
 
   // Load stock settings from database
   const loadStockSettings = useCallback(async () => {
@@ -75,12 +101,20 @@ export const useOrders = () => {
 
   const deleteOrder = async (id: number) => {
     try {
+      // Get order data before deleting for audit log
+      const orderToDelete = orders.find(o => o.id === id);
+
       const { error } = await supabase
         .from('orders')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+
+      // Log deletion to audit
+      if (orderToDelete) {
+        await logAuditAction('delete', 'orders', id.toString(), orderToDelete, null);
+      }
 
       setOrders(orders.filter(order => order.id !== id));
       toast({
@@ -98,12 +132,20 @@ export const useOrders = () => {
 
   const deleteOrders = async (ids: number[]) => {
     try {
+      // Get orders to delete for audit log
+      const ordersToDelete = orders.filter(o => ids.includes(o.id));
+
       const { error } = await supabase
         .from('orders')
         .delete()
         .in('id', ids);
 
       if (error) throw error;
+
+      // Log bulk deletion to audit
+      for (const order of ordersToDelete) {
+        await logAuditAction('delete', 'orders', order.id.toString(), order, null);
+      }
 
       setOrders(orders.filter(order => !ids.includes(order.id)));
       toast({
@@ -382,6 +424,7 @@ export const useOrders = () => {
           courier_tracking_url: order.courier_tracking_url,
           courier_id: order.courier_id,
           status: order.status,
+          call_status: order.call_status,
           comment: order.comment,
           source: order.source,
         })
@@ -457,6 +500,22 @@ export const useOrders = () => {
             description: 'Наличността беше възстановена',
           });
         }
+      }
+
+      // Log status change to audit if status changed
+      if (oldOrder && oldOrder.status !== order.status) {
+        await logAuditAction(
+          'status_change', 
+          'orders', 
+          order.id.toString(), 
+          { status: oldOrder.status }, 
+          { status: order.status }
+        );
+      }
+
+      // Log update to audit
+      if (oldOrder) {
+        await logAuditAction('update', 'orders', order.id.toString(), oldOrder, order);
       }
 
       setOrders(orders.map(o => o.id === order.id ? order : o));
