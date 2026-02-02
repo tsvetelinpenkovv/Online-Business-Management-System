@@ -28,11 +28,14 @@ import { ForecastTab } from '@/components/inventory/ForecastTab';
 import { PriceHistoryTab } from '@/components/inventory/PriceHistoryTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
+import { WarehouseSettings } from '@/components/inventory/WarehouseSettings';
+import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const inventory = useInventory();
+  const { warehouses, multiWarehouseEnabled } = useWarehouses();
   const { logoUrl } = useCompanyLogo();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -340,6 +343,18 @@ export default function Inventory() {
                     </Badge>
                   )}
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="warehouses" 
+                  className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm overflow-visible"
+                >
+                  <Warehouse className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Складове</span>
+                  {multiWarehouseEnabled && warehouses.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1 text-[10px]">
+                      {warehouses.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -378,6 +393,10 @@ export default function Inventory() {
 
           <TabsContent value="forecast" className="mt-4 sm:mt-6">
             <ForecastTab inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="warehouses" className="mt-4 sm:mt-6">
+            <WarehouseSettings />
           </TabsContent>
         </Tabs>
       </main>
