@@ -85,10 +85,20 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     }
   };
 
-  const updateProduct = (index: number, field: keyof ProductItem, value: string | number) => {
-    const newProducts = [...products];
-    newProducts[index] = { ...newProducts[index], [field]: value };
-    setProducts(newProducts);
+  const updateProduct = (index: number, updates: Partial<ProductItem>) => {
+    setProducts(prev => {
+      const newProducts = [...prev];
+      newProducts[index] = { ...newProducts[index], ...updates };
+      return newProducts;
+    });
+  };
+
+  const updateProductField = (index: number, field: keyof ProductItem, value: string | number) => {
+    setProducts(prev => {
+      const newProducts = [...prev];
+      newProducts[index] = { ...newProducts[index], [field]: value };
+      return newProducts;
+    });
   };
 
   const calculateTotalPrice = () => {
@@ -270,11 +280,14 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                   <Label className="text-xs text-muted-foreground">Продукт</Label>
                   <ProductAutocomplete
                     value={product.product_name}
-                    onChange={(val) => updateProduct(index, 'product_name', val)}
+                    onChange={(val) => updateProductField(index, 'product_name', val)}
                     onSelect={(p) => {
-                      updateProduct(index, 'product_name', p.name);
-                      updateProduct(index, 'catalog_number', p.sku);
-                      if (p.sale_price) updateProduct(index, 'price', p.sale_price);
+                      // Update all product fields at once to prevent state issues
+                      updateProduct(index, {
+                        product_name: p.name,
+                        catalog_number: p.sku,
+                        price: p.sale_price || product.price,
+                      });
                     }}
                     placeholder="Търси продукт..."
                     requiredQuantity={product.quantity}
@@ -285,7 +298,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                   <Label className="text-xs text-muted-foreground">Каталожен №</Label>
                   <Input
                     value={product.catalog_number}
-                    onChange={(e) => updateProduct(index, 'catalog_number', e.target.value)}
+                    onChange={(e) => updateProductField(index, 'catalog_number', e.target.value)}
                     placeholder="SKU"
                   />
                 </div>
@@ -295,7 +308,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                     type="number"
                     min="1"
                     value={product.quantity}
-                    onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value) || 1)}
+                    onChange={(e) => updateProductField(index, 'quantity', parseInt(e.target.value) || 1)}
                   />
                 </div>
                 <div className="col-span-3 sm:col-span-3 space-y-1">
@@ -305,7 +318,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                     min="0"
                     step="0.01"
                     value={product.price}
-                    onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => updateProductField(index, 'price', parseFloat(e.target.value) || 0)}
                     className="text-success"
                   />
                 </div>

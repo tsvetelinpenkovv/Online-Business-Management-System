@@ -657,20 +657,6 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                         </TableCell>
                         <TableCell className="text-right text-warning font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right text-success font-medium">{product.sale_price.toFixed(2)} €</TableCell>
-                        <TableCell className="text-right">
-                          {(product as any).reserved_stock > 0 ? (
-                            <Badge 
-                              variant="secondary" 
-                              className="pointer-events-none bg-destructive/20 text-destructive"
-                            >
-                              {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right text-warning font-medium">{product.purchase_price.toFixed(2)} €</TableCell>
-                        <TableCell className="text-right text-success font-medium">{product.sale_price.toFixed(2)} €</TableCell>
                         <TableCell className="text-right text-info font-medium">{margin(product)}%</TableCell>
                         <TableCell>{getStockStatus(product)}</TableCell>
                         <TableCell>

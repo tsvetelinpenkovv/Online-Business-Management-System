@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Order, CallStatus } from '@/types/order';
+import { Order } from '@/types/order';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -424,7 +424,6 @@ export const useOrders = () => {
           courier_tracking_url: order.courier_tracking_url,
           courier_id: order.courier_id,
           status: order.status,
-          call_status: order.call_status,
           comment: order.comment,
           source: order.source,
         })
