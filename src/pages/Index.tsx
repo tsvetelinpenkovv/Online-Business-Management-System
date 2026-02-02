@@ -173,11 +173,33 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [autoRefreshInterval, refetch]);
 
+  // Helper function to normalize phone number for search comparison
+  const normalizePhoneForSearch = (phone: string): string => {
+    // Remove all non-digit characters except +
+    const cleaned = phone.replace(/[^\d+]/g, '');
+    // Convert +359 to 0 for comparison, or vice versa
+    if (cleaned.startsWith('+359')) {
+      return '0' + cleaned.slice(4);
+    }
+    if (cleaned.startsWith('00359')) {
+      return '0' + cleaned.slice(5);
+    }
+    if (cleaned.startsWith('359')) {
+      return '0' + cleaned.slice(3);
+    }
+    return cleaned;
+  };
+
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
+      // Normalize search term for phone comparison
+      const normalizedSearch = normalizePhoneForSearch(debouncedSearchTerm);
+      const normalizedPhone = normalizePhoneForSearch(order.phone);
+      
       const matchesSearch = debouncedSearchTerm === '' || 
         order.customer_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         order.phone.includes(debouncedSearchTerm) ||
+        normalizedPhone.includes(normalizedSearch) ||
         order.id.toString().includes(debouncedSearchTerm) ||
         order.code.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         (order.catalog_number && order.catalog_number.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));

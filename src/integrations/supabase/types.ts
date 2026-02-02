@@ -689,7 +689,6 @@ export type Database = {
       }
       orders: {
         Row: {
-          call_status: string | null
           catalog_number: string | null
           code: string
           comment: string | null
@@ -711,7 +710,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          call_status?: string | null
           catalog_number?: string | null
           code: string
           comment?: string | null
@@ -733,7 +731,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          call_status?: string | null
           catalog_number?: string | null
           code?: string
           comment?: string | null
@@ -1355,7 +1352,7 @@ export type Database = {
         | "adjustment"
         | "return"
         | "inventory"
-      movement_type: "in" | "out" | "adjustment" | "return"
+      movement_type: "in" | "out" | "adjustment" | "return" | "transfer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1497,7 +1494,7 @@ export const Constants = {
         "return",
         "inventory",
       ],
-      movement_type: ["in", "out", "adjustment", "return"],
+      movement_type: ["in", "out", "adjustment", "return", "transfer"],
     },
   },
 } as const
