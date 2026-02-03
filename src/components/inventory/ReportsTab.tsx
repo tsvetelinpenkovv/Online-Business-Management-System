@@ -24,13 +24,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
   Package, TrendingUp, Warehouse, Download, FileSpreadsheet,
-  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History
+  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History, FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { MOVEMENT_TYPE_LABELS } from '@/types/inventory';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  exportStockReportPDF, 
+  exportStockReportExcel, 
+  exportMovementsReportPDF, 
+  exportMovementsReportExcel 
+} from '@/lib/exportUtils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type StockSortKey = 'sku' | 'name' | 'category' | 'current_stock' | 'min_stock_level' | 'purchase_price' | 'value';
 type MovementReportSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'total_price';
@@ -219,10 +231,30 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={() => exportToCSV('stock')}>
-              <Download className="w-4 h-4 mr-2" />
-              Експорт CSV
-            </Button>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Експорт
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => exportToCSV('stock')}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    CSV формат
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportStockReportExcel(filteredProducts)}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Excel формат
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportStockReportPDF(filteredProducts)}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    PDF формат
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Stock Report - Mobile Cards */}
@@ -233,7 +265,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1">
                           <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                             {product.sku}
                           </span>
@@ -417,10 +449,28 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                 />
               </div>
             </div>
-            <Button variant="outline" onClick={() => exportToCSV('movements')} className="w-full sm:w-auto sm:self-end">
-              <Download className="w-4 h-4 mr-2" />
-              Експорт CSV
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full sm:w-auto sm:self-end">
+                  <Download className="w-4 h-4 mr-2" />
+                  Експорт
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => exportToCSV('movements')}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  CSV формат
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportMovementsReportExcel(filteredMovements, dateFrom, dateTo)}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Excel формат
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportMovementsReportPDF(filteredMovements, dateFrom, dateTo)}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  PDF формат
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Movement Summary Cards */}
