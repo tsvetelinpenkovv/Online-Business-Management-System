@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro
+  FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings
 } from 'lucide-react';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
@@ -29,6 +29,8 @@ import { PriceHistoryTab } from '@/components/inventory/PriceHistoryTab';
 import { BarcodeScannerDialog } from '@/components/inventory/BarcodeScannerDialog';
 import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
 import { WarehouseSettings } from '@/components/inventory/WarehouseSettings';
+import { WarehouseDashboard } from '@/components/inventory/WarehouseDashboard';
+import { StockDeductionSettings } from '@/components/inventory/StockDeductionSettings';
 import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
@@ -344,6 +346,13 @@ export default function Inventory() {
                   )}
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="warehouse-dashboard" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Warehouse className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Дашборд складове</span>
+                </TabsTrigger>
+                <TabsTrigger 
                   value="warehouses" 
                   className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm overflow-visible"
                 >
@@ -354,6 +363,13 @@ export default function Inventory() {
                       {warehouses.length}
                     </Badge>
                   )}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="stock-settings" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Настройки</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -395,8 +411,16 @@ export default function Inventory() {
             <ForecastTab inventory={inventory} />
           </TabsContent>
 
+          <TabsContent value="warehouse-dashboard" className="mt-4 sm:mt-6">
+            <WarehouseDashboard />
+          </TabsContent>
+
           <TabsContent value="warehouses" className="mt-4 sm:mt-6">
             <WarehouseSettings />
+          </TabsContent>
+
+          <TabsContent value="stock-settings" className="mt-4 sm:mt-6">
+            <StockDeductionSettings />
           </TabsContent>
         </Tabs>
       </main>
