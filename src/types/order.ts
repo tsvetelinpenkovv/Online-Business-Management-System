@@ -15,9 +15,6 @@ export type OrderStatus =
   | 'Отказана' 
   | 'Анулирана';
 
-// Call status for phone communication tracking
-export type CallStatus = 'none' | 'no_answer' | 'busy' | 'wrong_number' | 'callback' | 'called' | 'confirmed';
-
 // E-commerce platforms that can be sources
 export type EcommercePlatformSource = 'woocommerce' | 'prestashop' | 'opencart' | 'magento' | 'shopify';
 
@@ -40,7 +37,6 @@ export interface Order {
   courier_tracking_url: string | null;
   courier_id: string | null;
   status: OrderStatus;
-  call_status?: CallStatus;
   comment: string | null;
   source: OrderSource;
   user_id: string | null;

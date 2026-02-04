@@ -1,9 +1,9 @@
-import { FC, useState, useMemo, useEffect } from 'react';
+import { FC, useState, useMemo, useEffect, Fragment } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
   Pencil, Trash2, Printer, Globe, Search, ExternalLink, Settings2, FileText, FileBox, Copy, Check, ArrowUpDown,
-  Send, Loader2, Boxes, PhoneOff, PhoneCall
+  Send, Loader2, Boxes, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
@@ -16,7 +16,7 @@ import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { MobileOrderCard } from './MobileOrderCard';
 import { InvoiceDialog } from './InvoiceDialog';
 import { MessageStatusIcon } from './MessageStatusIcon';
-import { CallStatusBadge, CallStatus } from './CallStatusBadge';
+import { OrderExpandableRow } from './OrderExpandableRow';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -141,7 +141,7 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
 };
 
 // Default visible columns (all)
-const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'callStatus', 'comment']);
+const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'comment']);
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
@@ -158,10 +158,62 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
   const [sendingMessage, setSendingMessage] = useState<number | null>(null);
   const [stockInfo, setStockInfo] = useState<ProductStockInfo>({});
+  const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [sortKey, setSortKey] = useState<OrderSortKey>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  // Toggle order expansion
+  const toggleOrderExpansion = (orderId: number) => {
+    setExpandedOrders(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
+
+  // Handle stock reservation for supplier order
+  const handleReserveStockFromSupplier = async (sku: string, quantity: number, supplierId: string): Promise<boolean> => {
+    try {
+      // Find product by SKU
+      const { data: product, error: productError } = await supabase
+        .from('inventory_products')
+        .select('id, reserved_stock, name')
+        .eq('sku', sku)
+        .maybeSingle();
+      
+      if (productError || !product) {
+        toast({
+          title: 'Грешка',
+          description: `Продукт с артикул ${sku} не е намерен`,
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      // Add to reserved stock (pending supplier delivery)
+      const { error: updateError } = await supabase
+        .from('inventory_products')
+        .update({ 
+          reserved_stock: (product.reserved_stock || 0) + quantity 
+        })
+        .eq('id', product.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error reserving stock:', error);
+      return false;
+    }
+  };
   
   // Fetch messages for orders
   const orderIds = useMemo(() => orders.map(o => o.id), [orders]);
@@ -476,6 +528,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
         <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="bg-muted/50 border-l-0">
+              <TableHead className="w-[30px] pl-1 pr-0" title="Разшири поръчката">
+                <ChevronDown className="w-4 h-4 text-muted-foreground mx-auto" />
+              </TableHead>
               <TableHead className="w-[40px] pl-2 pr-0">
                 <Checkbox
                   checked={isAllSelected}
@@ -570,14 +625,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   Статус
                 </SortableHead>
               )}
-              {visibleColumns.has('callStatus') && (
-                <TableHead className="w-[80px] text-center" title="Статус на обаждане">
-                  <div className="flex items-center justify-center gap-1.5">
-                    <PhoneCall className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <span className="hidden xl:inline">Обаждане</span>
-                  </div>
-                </TableHead>
-              )}
               {visibleColumns.has('comment') && (
                 <TableHead className="w-[160px]">
                   <div className="flex items-center gap-1.5">
@@ -593,14 +640,30 @@ export const OrdersTable: FC<OrdersTableProps> = ({
           </TableHeader>
           <TableBody>
             {sortedOrders.map((order) => (
-              <TableRow key={order.id} className={getRowColorByStatus()}>
-                <TableCell className={`${getRowStripClass(order.status)} pl-2 pr-0`}>
-                  <Checkbox
-                    checked={selectedOrders.includes(order.id)}
-                    onCheckedChange={(checked) => handleSelectOne(order.id, checked as boolean)}
-                    aria-label={`Избери поръчка ${order.id}`}
-                  />
-                </TableCell>
+              <Fragment key={order.id}>
+                <TableRow className={`${getRowColorByStatus()} ${expandedOrders.has(order.id) ? 'bg-muted/50' : ''}`}>
+                  <TableCell className="pl-1 pr-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => toggleOrderExpansion(order.id)}
+                      title={expandedOrders.has(order.id) ? 'Скрий детайли' : 'Покажи детайли'}
+                    >
+                      {expandedOrders.has(order.id) ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </TableCell>
+                  <TableCell className={`${getRowStripClass(order.status)} pl-2 pr-0`}>
+                    <Checkbox
+                      checked={selectedOrders.includes(order.id)}
+                      onCheckedChange={(checked) => handleSelectOne(order.id, checked as boolean)}
+                      aria-label={`Избери поръчка ${order.id}`}
+                    />
+                  </TableCell>
                 {visibleColumns.has('id') && (
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
                     № {order.id}
@@ -845,17 +908,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     />
                   </TableCell>
                 )}
-                {visibleColumns.has('callStatus') && (
-                  <TableCell className="text-center">
-                    <CallStatusBadge 
-                      status={order.call_status || 'none'}
-                      editable
-                      onStatusChange={(newStatus) => {
-                        onUpdate({ ...order, call_status: newStatus });
-                      }}
-                    />
-                  </TableCell>
-                )}
                 {visibleColumns.has('comment') && (
                   <TableCell>
                     {order.comment ? (
@@ -959,6 +1011,19 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   </div>
                 </TableCell>
               </TableRow>
+              {/* Expandable Row */}
+              {expandedOrders.has(order.id) && (
+                <TableRow className="bg-muted/20 hover:bg-muted/30">
+                  <TableCell colSpan={20} className="p-0">
+                    <OrderExpandableRow
+                      order={order}
+                      isExpanded={expandedOrders.has(order.id)}
+                      onReserveStock={handleReserveStockFromSupplier}
+                    />
+                  </TableCell>
+                </TableRow>
+              )}
+              </Fragment>
             ))}
           </TableBody>
         </Table>
