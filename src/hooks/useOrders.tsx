@@ -9,6 +9,10 @@ const DEFAULT_SHIPPED_STATUS = 'Изпратена';
 const DEFAULT_CANCELLED_STATUS = 'Отказана';
 const DEFAULT_RESERVE_STATUS = 'В обработка';
 
+ // Track processed orders to avoid double-processing
+ const processedShipments = new Set<number>();
+ const processedCancellations = new Set<number>();
+
 interface StockSettings {
   deductionStatus: string;
   restoreStatus: string;
@@ -52,6 +56,7 @@ export const useOrders = () => {
 
   // Load stock settings from database
   const loadStockSettings = useCallback(async () => {
+    try {
     const { data } = await supabase
       .from('api_settings')
       .select('setting_key, setting_value')
@@ -75,6 +80,9 @@ export const useOrders = () => {
         }
       });
       setStockSettings(settings);
+    }
+    } catch (err) {
+      console.error('Error loading stock settings:', err);
     }
   }, []);
 
