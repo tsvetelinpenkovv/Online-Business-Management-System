@@ -33,6 +33,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Warehouse as WarehouseIcon, Plus, Pencil, Trash2, MapPin, Phone, Star } from 'lucide-react';
+ import { ArrowLeftRight } from 'lucide-react';
+ import { StockTransferDialog } from './StockTransferDialog';
 
 export const WarehouseSettings: FC = () => {
   const { 
@@ -57,6 +59,7 @@ export const WarehouseSettings: FC = () => {
     is_default: false,
     is_active: true,
   });
+   const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const openCreateDialog = () => {
     setEditWarehouse(null);
@@ -161,6 +164,10 @@ export const WarehouseSettings: FC = () => {
               <Plus className="w-4 h-4 mr-2" />
               Добави склад
             </Button>
+             <Button variant="outline" onClick={() => setIsTransferOpen(true)}>
+               <ArrowLeftRight className="w-4 h-4 mr-2" />
+               Трансфер
+             </Button>
           </CardHeader>
           <CardContent>
             {warehouses.length === 0 ? (
@@ -351,6 +358,12 @@ export const WarehouseSettings: FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+       {/* Stock Transfer Dialog */}
+       <StockTransferDialog
+         open={isTransferOpen}
+         onOpenChange={setIsTransferOpen}
+       />
     </div>
   );
 };
