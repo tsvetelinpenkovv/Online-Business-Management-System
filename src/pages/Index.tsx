@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useOrders } from '@/hooks/useOrders';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +43,7 @@ type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
+  const { isAdmin, canView } = usePermissions();
   const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   const { logoUrl } = useCompanyLogo();
   const { toast } = useToast();
@@ -694,9 +696,11 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
-            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')}>
-              <Settings className="w-4 h-4" />
-            </Button>
+            {(isAdmin || canView('settings')) && (
+              <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')}>
+                <Settings className="w-4 h-4" />
+              </Button>
+            )}
             <Button variant="ghost" size="icon" onClick={handleSignOut} title={getText('orders_logout_button_label')}>
               <LogOut className="w-4 h-4" />
             </Button>
@@ -784,10 +788,12 @@ const Index = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className="cursor-pointer">
-                  <Settings className="w-4 h-4 mr-2" />
-                  {getText('orders_settings_button_label')}
-                </DropdownMenuItem>
+                {(isAdmin || canView('settings')) && (
+                  <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    {getText('orders_settings_button_label')}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 {/* Column visibility - using Collapsible instead of SubMenu for better mobile touch support */}
                 <div className="px-2 py-1.5">
