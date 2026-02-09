@@ -63,35 +63,6 @@ const cleanProductName = (name: string): string => {
     .join(', ');
 };
 
-// Inline comment editor for orders without comments
-const InlineCommentEditor: FC<{ orderId: number; onSave: (comment: string) => void }> = ({ orderId, onSave }) => {
-  const [value, setValue] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    if (!value.trim()) return;
-    setSaving(true);
-    onSave(value.trim());
-    setSaving(false);
-  };
-
-  return (
-    <div className="flex items-center gap-1">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && value.trim()) handleSave();
-        }}
-        placeholder="Добави..."
-        className="w-full min-w-[80px] max-w-[140px] h-7 px-2 text-xs bg-muted/30 border border-transparent focus:border-input rounded-md outline-none placeholder:text-muted-foreground/50"
-        disabled={saving}
-      />
-    </div>
-  );
-};
-
 import { type ColumnKey } from './ColumnVisibilityToggle';
 
 // Stock info type
@@ -170,7 +141,7 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
 };
 
 // Default visible columns (all)
-const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'delivery', 'tracking', 'status', 'comment']);
+const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'comment']);
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
@@ -554,7 +525,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   return (
     <>
       <div className="rounded-lg border bg-card">
-        <Table className="w-full table-fixed text-[13px]">
+        <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="bg-muted/50 border-l-0">
               <TableHead className="w-[30px] pl-1 pr-0" title="Разшири поръчката">
@@ -569,17 +540,17 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 />
               </TableHead>
               {visibleColumns.has('id') && (
-                <SortableHead columnKey="id" className="w-[60px]">
+                <SortableHead columnKey="id" className="w-[80px]">
                   ID
                 </SortableHead>
               )}
               {visibleColumns.has('source') && (
-                <TableHead className="w-[40px] text-center" title="Източник">
+                <TableHead className="w-[50px] text-center" title="Източник">
                   <Globe className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
               {visibleColumns.has('date') && (
-                <SortableHead columnKey="created_at" className="w-[75px]">
+                <SortableHead columnKey="created_at" className="w-[90px]">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Дата
@@ -587,7 +558,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </SortableHead>
               )}
               {visibleColumns.has('customer') && (
-                <SortableHead columnKey="customer_name" className="w-[90px]">
+                <SortableHead columnKey="customer_name" className="w-[100px]">
                   <div className="flex items-center gap-1.5">
                     <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Клиент
@@ -595,12 +566,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </SortableHead>
               )}
               {nekorektenEnabled && visibleColumns.has('correct') && (
-                <TableHead className="w-[35px] text-center" title="Коректност на клиента">
-                  <UserCheck className="w-3.5 h-3.5 text-muted-foreground mx-auto flex-shrink-0" />
+                <TableHead className="w-[50px] text-center" title="Коректност на клиента">
+                  <UserCheck className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
               {visibleColumns.has('phone') && (
-                <SortableHead columnKey="phone" className="w-[130px]">
+                <SortableHead columnKey="phone" className="w-[160px]">
                   <div className="flex items-center gap-1.5">
                     <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Телефон
@@ -608,30 +579,35 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </SortableHead>
               )}
               {visibleColumns.has('price') && (
-                <SortableHead columnKey="total_price" className="w-[70px]" align="center">
+                <SortableHead columnKey="total_price" className="w-[80px]" align="center">
                   <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Цена
                 </SortableHead>
               )}
               {visibleColumns.has('product') && (
-                <SortableHead columnKey="product_name" className="w-[110px]" align="center">
+                <SortableHead columnKey="product_name" className="w-[125px]" align="center">
                   <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Продукт
                 </SortableHead>
               )}
               {visibleColumns.has('catalog') && (
-                <SortableHead columnKey="catalog_number" className="w-[85px]" align="center">
+                <SortableHead columnKey="catalog_number" className="w-[100px]" align="center">
                   <Barcode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Кат.№
                 </SortableHead>
               )}
               {visibleColumns.has('quantity') && (
-                <TableHead className="w-[70px] text-center" title="Количество / Наличност">
+                <TableHead className="w-[50px] text-center" title="Количество">
                   <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
+              {visibleColumns.has('stock') && (
+                <TableHead className="w-[60px] text-center" title="Наличност в склада">
+                  <Boxes className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                </TableHead>
+              )}
               {visibleColumns.has('delivery') && (
-                <TableHead className="w-[100px]">
+                <TableHead className="w-[120px]">
                   <div className="flex items-center gap-1.5">
                     <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Доставка
@@ -639,25 +615,25 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableHead>
               )}
               {visibleColumns.has('tracking') && (
-                <TableHead className="w-[55px] text-center" title="Товарителница">
+                <TableHead className="w-[70px] text-center" title="Товарителница">
                   <ExternalLink className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
                 </TableHead>
               )}
               {visibleColumns.has('status') && (
-                <SortableHead columnKey="status" className="w-[120px]">
+                <SortableHead columnKey="status" className="w-[140px]">
                   <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   Статус
                 </SortableHead>
               )}
               {visibleColumns.has('comment') && (
-                <TableHead className="w-[140px]">
+                <TableHead className="w-[160px]">
                   <div className="flex items-center gap-1.5">
                     <MessageCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Коментар
                   </div>
                 </TableHead>
               )}
-              <TableHead className="w-[45px] text-center">
+              <TableHead className="w-[50px] text-center">
                 <Settings2 className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
               </TableHead>
             </TableRow>
@@ -850,24 +826,31 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 )}
                 {visibleColumns.has('quantity') && (
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-0.5">
-                      <QuantityPopover 
-                        productName={order.product_name}
-                        quantity={order.quantity}
-                        catalogNumber={order.catalog_number}
-                      />
-                      {order.catalog_number && stockInfo[order.catalog_number] !== undefined && (
-                        <span className={`text-xs font-medium ${
+                    <QuantityPopover 
+                      productName={order.product_name}
+                      quantity={order.quantity}
+                      catalogNumber={order.catalog_number}
+                    />
+                  </TableCell>
+                )}
+                {visibleColumns.has('stock') && (
+                  <TableCell className="text-center">
+                    {order.catalog_number && stockInfo[order.catalog_number] !== undefined ? (
+                      <Badge 
+                        variant="secondary" 
+                        className={`${
                           stockInfo[order.catalog_number] <= 0 
-                            ? 'text-destructive' 
+                            ? 'bg-destructive/20 text-destructive' 
                             : stockInfo[order.catalog_number] <= 5 
-                              ? 'text-warning' 
-                              : 'text-success'
-                        }`}>
-                          /{stockInfo[order.catalog_number]}
-                        </span>
-                      )}
-                    </div>
+                              ? 'bg-warning/20 text-warning' 
+                              : 'bg-success/20 text-success'
+                        }`}
+                      >
+                        {stockInfo[order.catalog_number]}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
                 )}
                 {visibleColumns.has('delivery') && (
@@ -942,12 +925,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                           {order.comment}
                         </span>
                       </InfoPopover>
-                    ) : (
-                      <InlineCommentEditor 
-                        orderId={order.id}
-                        onSave={(comment) => onUpdate({ ...order, comment })}
-                      />
-                    )}
+                    ) : null}
                   </TableCell>
                 )}
                 <TableCell>

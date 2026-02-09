@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { usePermissions } from '@/hooks/usePermissions';
 import { useInventory } from '@/hooks/useInventory';
 
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
@@ -37,7 +36,6 @@ import { useWarehouses } from '@/hooks/useWarehouses';
 export default function Inventory() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, canView } = usePermissions();
   const inventory = useInventory();
   const { warehouses, multiWarehouseEnabled } = useWarehouses();
   const { logoUrl } = useCompanyLogo();
@@ -112,10 +110,6 @@ export default function Inventory() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate(buildPath('/auth'));
-    }
-    // Redirect non-admin users without inventory permission
-    if (!authLoading && user && !isAdmin && !canView('inventory')) {
-      navigate(buildPath('/'));
     }
   }, [user, authLoading, navigate]);
 
