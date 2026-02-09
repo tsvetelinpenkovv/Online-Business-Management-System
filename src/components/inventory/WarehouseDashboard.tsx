@@ -220,12 +220,12 @@ export const WarehouseDashboard: FC = () => {
                     data={valueDistributionData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={isMobile ? 40 : 60}
+                    outerRadius={isMobile ? 65 : 80}
                     paddingAngle={5}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    labelLine={false}
+                    label={isMobile ? false : ({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    labelLine={!isMobile}
                   >
                     {valueDistributionData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -239,6 +239,7 @@ export const WarehouseDashboard: FC = () => {
                     }}
                     formatter={(value: number) => [`${value.toLocaleString()} €`, 'Стойност']}
                   />
+                  {isMobile && <Legend verticalAlign="bottom" height={36} />}
                 </PieChart>
               </ResponsiveContainer>
             </div>
