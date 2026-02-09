@@ -237,57 +237,57 @@
  
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
-       <DialogContent className="max-w-2xl">
-         <DialogHeader>
-           <DialogTitle className="flex items-center gap-2">
-             <Warehouse className="w-5 h-5" />
-             Трансфер на стоки между складове
-           </DialogTitle>
-           <DialogDescription>
-             Преместете продукти от един склад в друг
-           </DialogDescription>
-         </DialogHeader>
- 
-         <div className="space-y-6">
-           {/* Warehouse selection */}
-           <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-end">
-             <div className="space-y-2">
-               <Label>От склад *</Label>
-               <Select value={fromWarehouse} onValueChange={setFromWarehouse}>
-                 <SelectTrigger>
-                   <SelectValue placeholder="Изберете склад" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {activeWarehouses.map((w) => (
-                     <SelectItem key={w.id} value={w.id} disabled={w.id === toWarehouse}>
-                       {w.name} ({w.code})
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
- 
-             <ArrowRight className="w-6 h-6 text-muted-foreground mb-2" />
- 
-             <div className="space-y-2">
-               <Label>Към склад *</Label>
-               <Select value={toWarehouse} onValueChange={setToWarehouse}>
-                 <SelectTrigger>
-                   <SelectValue placeholder="Изберете склад" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {activeWarehouses.map((w) => (
-                     <SelectItem key={w.id} value={w.id} disabled={w.id === fromWarehouse}>
-                       {w.name} ({w.code})
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
-           </div>
- 
-           {/* Add product */}
-           <div className="grid grid-cols-[1fr,100px,auto] gap-4 items-end">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Warehouse className="w-5 h-5" />
+            Трансфер на стоки между складове
+          </DialogTitle>
+          <DialogDescription>
+            Преместете продукти от един склад в друг
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Warehouse selection */}
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] gap-3 sm:gap-4 items-end">
+            <div className="space-y-2">
+              <Label>От склад *</Label>
+              <Select value={fromWarehouse} onValueChange={setFromWarehouse}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Изберете склад" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeWarehouses.map((w) => (
+                    <SelectItem key={w.id} value={w.id} disabled={w.id === toWarehouse}>
+                      {w.name} ({w.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <ArrowRight className="w-6 h-6 text-muted-foreground mb-2 hidden sm:block" />
+
+            <div className="space-y-2">
+              <Label>Към склад *</Label>
+              <Select value={toWarehouse} onValueChange={setToWarehouse}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Изберете склад" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeWarehouses.map((w) => (
+                    <SelectItem key={w.id} value={w.id} disabled={w.id === fromWarehouse}>
+                      {w.name} ({w.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Add product */}
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr,100px,auto] gap-3 sm:gap-4 items-end">
              <div className="space-y-2">
                <Label>Продукт</Label>
                <Select value={selectedProduct} onValueChange={setSelectedProduct}>

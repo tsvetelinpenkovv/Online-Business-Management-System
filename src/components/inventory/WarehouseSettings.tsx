@@ -155,19 +155,21 @@ export const WarehouseSettings: FC = () => {
       {/* Warehouses list - only show if enabled */}
       {multiWarehouseEnabled && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <CardTitle>Складове</CardTitle>
               <CardDescription>Управление на физическите локации</CardDescription>
             </div>
-            <Button onClick={openCreateDialog}>
-              <Plus className="w-4 h-4 mr-2" />
-              Добави склад
-            </Button>
-             <Button variant="outline" onClick={() => setIsTransferOpen(true)}>
-               <ArrowLeftRight className="w-4 h-4 mr-2" />
-               Трансфер
-             </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button onClick={openCreateDialog} size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                Добави склад
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setIsTransferOpen(true)}>
+                <ArrowLeftRight className="w-4 h-4 mr-2" />
+                Трансфер
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {warehouses.length === 0 ? (
@@ -177,78 +179,86 @@ export const WarehouseSettings: FC = () => {
                 <p className="text-sm">Добавете първия си склад</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Име</TableHead>
-                    <TableHead>Код</TableHead>
-                    <TableHead>Град</TableHead>
-                    <TableHead>Телефон</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead className="text-right">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {warehouses.map((warehouse) => (
-                    <TableRow key={warehouse.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{warehouse.name}</span>
-                          {warehouse.is_default && (
-                            <Badge variant="secondary" className="gap-1">
-                              <Star className="w-3 h-3" />
-                              Основен
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
-                          {warehouse.code}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        {warehouse.city && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <MapPin className="w-3 h-3 text-muted-foreground" />
-                            {warehouse.city}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {warehouse.phone && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Phone className="w-3 h-3 text-muted-foreground" />
-                            {warehouse.phone}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={warehouse.is_active ? 'default' : 'secondary'}>
-                          {warehouse.is_active ? 'Активен' : 'Неактивен'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(warehouse)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteId(warehouse.id)}
-                          disabled={warehouse.is_default}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Име</TableHead>
+                      <TableHead className="hidden sm:table-cell">Код</TableHead>
+                      <TableHead className="hidden md:table-cell">Град</TableHead>
+                      <TableHead className="hidden md:table-cell">Телефон</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {warehouses.map((warehouse) => (
+                      <TableRow key={warehouse.id}>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{warehouse.name}</span>
+                              {warehouse.is_default && (
+                                <Badge variant="secondary" className="gap-1">
+                                  <Star className="w-3 h-3" />
+                                  Основен
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground sm:hidden">
+                              <code className="bg-muted px-1 py-0.5 rounded">{warehouse.code}</code>
+                              {warehouse.city && <span className="ml-2">{warehouse.city}</span>}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
+                            {warehouse.code}
+                          </code>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {warehouse.city && (
+                            <div className="flex items-center gap-1 text-sm">
+                              <MapPin className="w-3 h-3 text-muted-foreground" />
+                              {warehouse.city}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {warehouse.phone && (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Phone className="w-3 h-3 text-muted-foreground" />
+                              {warehouse.phone}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={warehouse.is_active ? 'default' : 'secondary'}>
+                            {warehouse.is_active ? 'Активен' : 'Неактивен'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(warehouse)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteId(warehouse.id)}
+                            disabled={warehouse.is_default}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
