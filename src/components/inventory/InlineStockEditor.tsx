@@ -125,7 +125,7 @@ export const InlineStockEditor: FC<InlineStockEditorProps> = ({
     <Badge 
       variant="secondary" 
       className={cn(
-        "cursor-pointer transition-colors",
+        "cursor-pointer",
         getBadgeClass(),
         className
       )}
