@@ -861,9 +861,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       {order.catalog_number && stockInfo[order.catalog_number] !== undefined && (
                         <>
                           <span className="text-muted-foreground text-[10px]">/</span>
-                          <Badge 
-                            variant="secondary" 
-                            className={`pointer-events-none text-xs px-1.5 py-0 ${
+                          <span 
+                            className={`inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full text-xs font-semibold pointer-events-none ${
                               stockInfo[order.catalog_number] <= 0 
                                 ? 'bg-destructive/20 text-destructive' 
                                 : stockInfo[order.catalog_number] <= 5 
@@ -872,7 +871,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                             }`}
                           >
                             {stockInfo[order.catalog_number]}
-                          </Badge>
+                          </span>
                         </>
                       )}
                     </div>
