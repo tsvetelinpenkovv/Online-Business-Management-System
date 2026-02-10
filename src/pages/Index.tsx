@@ -14,6 +14,7 @@ import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
 import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro } from 'lucide-react';
+import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
@@ -703,6 +704,7 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
+            <QuickCacheClear />
             <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/crm'))} title="CRM - Клиенти">
               <Users className="w-4 h-4" />
             </Button>

@@ -16,6 +16,7 @@ import {
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
   FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings
 } from 'lucide-react';
+import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
 import { ProductsTab } from '@/components/inventory/ProductsTab';
@@ -257,6 +258,7 @@ export default function Inventory() {
                 Обнови
               </Button>
               <ThemeToggle />
+              <QuickCacheClear />
             </div>
           </div>
         </div>
