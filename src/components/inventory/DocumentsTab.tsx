@@ -206,20 +206,22 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
             className="pl-10"
           />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => openCreateDialog('receiving')} size="sm" className="bg-success hover:bg-success/90 flex-1 sm:flex-none">
-            <ArrowDownToLine className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Приход</span>
-          </Button>
-          <Button onClick={() => openCreateDialog('dispatch')} size="sm" variant="destructive" className="flex-1 sm:flex-none">
-            <ArrowUpFromLine className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Разход</span>
-          </Button>
-          <Button onClick={() => openCreateDialog('adjustment')} size="sm" variant="outline" className="flex-1 sm:flex-none">
-            <RefreshCw className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Корекция</span>
-          </Button>
-        </div>
+        {canCreate('inventory') && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => openCreateDialog('receiving')} size="sm" className="bg-success hover:bg-success/90 flex-1 sm:flex-none">
+              <ArrowDownToLine className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Приход</span>
+            </Button>
+            <Button onClick={() => openCreateDialog('dispatch')} size="sm" variant="destructive" className="flex-1 sm:flex-none">
+              <ArrowUpFromLine className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Разход</span>
+            </Button>
+            <Button onClick={() => openCreateDialog('adjustment')} size="sm" variant="outline" className="flex-1 sm:flex-none">
+              <RefreshCw className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Корекция</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Documents - Mobile Cards */}
