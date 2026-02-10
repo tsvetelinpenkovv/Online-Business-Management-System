@@ -74,7 +74,7 @@ export const InlineStockEditor: FC<InlineStockEditorProps> = ({
       return 'bg-destructive/20 text-destructive';
     }
     if (currentStock <= minStockLevel) {
-      return 'bg-purple/20 text-purple';
+      return 'bg-warning/20 text-warning';
     }
     return 'bg-purple/20 text-purple';
   };
@@ -125,7 +125,7 @@ export const InlineStockEditor: FC<InlineStockEditorProps> = ({
     <Badge 
       variant="secondary" 
       className={cn(
-        "cursor-pointer transition-colors",
+        "cursor-pointer",
         getBadgeClass(),
         className
       )}
