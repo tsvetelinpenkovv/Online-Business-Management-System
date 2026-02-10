@@ -17,10 +17,10 @@
     <title>Система за управление</title>
     <meta name="description" content="" />
     
-    <!-- Disable caching for sensitive content -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <!-- No cache for HTML shell - ensures latest app version loads -->
+    <!-- Static assets (JS/CSS) are cached via CDN/server headers with content hashes -->
+    <meta http-equiv="Cache-Control" content="no-cache" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
   </head>
 
   <body>
