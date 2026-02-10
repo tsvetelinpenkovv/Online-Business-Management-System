@@ -150,7 +150,7 @@ const Settings = () => {
         window.removeEventListener('resize', checkScrollButtons);
       }
     };
-  }, [isMobile]);
+  }, [isMobile, isAdmin]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -593,34 +593,34 @@ const Settings = () => {
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl space-y-4 sm:space-y-6">
         <Tabs defaultValue={initialTab} className="w-full">
           <div className="relative mb-4 sm:mb-6">
-            {/* Mobile scroll gradients */}
-            {isMobile && canScrollLeft && (
-              <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent" />
+            {/* Scroll gradients */}
+            {canScrollLeft && (
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent z-10" />
             )}
-            {isMobile && canScrollRight && (
-              <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent" />
+            {canScrollRight && (
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent z-10" />
             )}
 
-            {/* Mobile scroll buttons */}
-            {isMobile && canScrollLeft && (
+            {/* Scroll buttons */}
+            {canScrollLeft && (
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 onClick={() => scrollTabs('left')}
-                className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm"
+                className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm z-20"
                 aria-label="Превърти табовете наляво"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             )}
-            {isMobile && canScrollRight && (
+            {canScrollRight && (
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 onClick={() => scrollTabs('right')}
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border shadow-sm z-20"
                 aria-label="Превърти табовете надясно"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -633,27 +633,27 @@ const Settings = () => {
               onScroll={checkScrollButtons}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <TabsList className="inline-flex w-max lg:w-full lg:justify-between gap-1 p-1">
-                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-1 lg:flex-1 lg:justify-center">API</TabsTrigger>
-                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-2 lg:flex-1 lg:justify-center">Платформи</TabsTrigger>
-                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-3 lg:flex-1 lg:justify-center">Източници</TabsTrigger>
-                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-4 lg:flex-1 lg:justify-center">Лого</TabsTrigger>
-                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-5 lg:flex-1 lg:justify-center">Куриери</TabsTrigger>
-                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-6 lg:flex-1 lg:justify-center">Статуси</TabsTrigger>
-                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-7 lg:flex-1 lg:justify-center">Фирма</TabsTrigger>
-                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8 lg:flex-1 lg:justify-center">Потребители</TabsTrigger>}
-                {isAdmin && <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1"><Shield className="w-4 h-4 mr-1" />Роли</TabsTrigger>}
-                {isAdmin && <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center gap-1 text-destructive"><RotateCcw className="w-4 h-4 mr-1" />Изчисти</TabsTrigger>}
-                <TabsTrigger value="notifications" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-11 lg:flex-1 lg:justify-center gap-1" title="Известия">
+              <TabsList className="inline-flex w-max gap-1 p-1">
+                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">API</TabsTrigger>
+                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Платформи</TabsTrigger>
+                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Източници</TabsTrigger>
+                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Лого</TabsTrigger>
+                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Куриери</TabsTrigger>
+                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Статуси</TabsTrigger>
+                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Фирма</TabsTrigger>
+                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Потребители</TabsTrigger>}
+                {isAdmin && <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1"><Shield className="w-4 h-4 mr-1" />Роли</TabsTrigger>}
+                {isAdmin && <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1 text-destructive"><RotateCcw className="w-4 h-4 mr-1" />Изчисти</TabsTrigger>}
+                <TabsTrigger value="notifications" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Известия">
                   <Bell className="w-4 h-4" />
                   <span className="hidden lg:inline">Известия</span>
                 </TabsTrigger>
-                <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1" title="Редактор на интерфейса">
+                <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Редактор на интерфейса">
                   <Type className="w-4 h-4" />
                   <span className="hidden lg:inline">Интерфейс</span>
                 </TabsTrigger>
-                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center gap-1" title="Документация">
-                  <BookOpen className="w-4 h-4 text-rose-500" />
+                <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
+                  <BookOpen className="w-4 h-4 text-destructive" />
                   <span className="hidden lg:inline">Документация</span>
                 </TabsTrigger>
               </TabsList>
