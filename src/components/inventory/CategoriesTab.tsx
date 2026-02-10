@@ -184,10 +184,12 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
             className="pl-10"
           />
         </div>
-        <Button onClick={openCreateDialog}>
-          <Plus className="w-4 h-4 mr-2" />
-          Нова категория
-        </Button>
+        {canCreate('inventory') && (
+          <Button onClick={openCreateDialog}>
+            <Plus className="w-4 h-4 mr-2" />
+            Нова категория
+          </Button>
+        )}
       </div>
 
       {/* Categories - Mobile Cards */}
@@ -221,17 +223,21 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(category)}>
-                          <Pencil className="w-4 h-4 mr-2" />
-                          Редактирай
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setDeleteId(category.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Изтрий
-                        </DropdownMenuItem>
+                        {canEdit('inventory') && (
+                          <DropdownMenuItem onClick={() => openEditDialog(category)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Редактирай
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete('inventory') && (
+                          <DropdownMenuItem 
+                            onClick={() => setDeleteId(category.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Изтрий
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -302,17 +308,21 @@ export const CategoriesTab: FC<CategoriesTabProps> = ({ inventory }) => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditDialog(category)}>
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Редактирай
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => setDeleteId(category.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Изтрий
-                              </DropdownMenuItem>
+                              {canEdit('inventory') && (
+                                <DropdownMenuItem onClick={() => openEditDialog(category)}>
+                                  <Pencil className="w-4 h-4 mr-2" />
+                                  Редактирай
+                                </DropdownMenuItem>
+                              )}
+                              {canDelete('inventory') && (
+                                <DropdownMenuItem 
+                                  onClick={() => setDeleteId(category.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Изтрий
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

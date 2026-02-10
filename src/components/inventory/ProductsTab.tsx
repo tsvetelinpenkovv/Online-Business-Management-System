@@ -378,10 +378,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
             className="pl-10"
           />
         </div>
-        <Button onClick={openCreateDialog}>
-          <Plus className="w-4 h-4 mr-2" />
-          Нов артикул
-        </Button>
+        {canCreate('inventory') && (
+          <Button onClick={openCreateDialog}>
+            <Plus className="w-4 h-4 mr-2" />
+            Нов артикул
+          </Button>
+        )}
       </div>
 
       {/* Products - Mobile Cards */}
@@ -468,17 +470,21 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                             Освободи резервация
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => openEditDialog(product)}>
-                          <Pencil className="w-4 h-4 mr-2" />
-                          Редактирай
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setDeleteId(product.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Изтрий
-                        </DropdownMenuItem>
+                        {canEdit('inventory') && (
+                          <DropdownMenuItem onClick={() => openEditDialog(product)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Редактирай
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete('inventory') && (
+                          <DropdownMenuItem 
+                            onClick={() => setDeleteId(product.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Изтрий
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -681,17 +687,21 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                                   Освободи резервация
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem onClick={() => openEditDialog(product)}>
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Редактирай
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => setDeleteId(product.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Изтрий
-                              </DropdownMenuItem>
+                              {canEdit('inventory') && (
+                                <DropdownMenuItem onClick={() => openEditDialog(product)}>
+                                  <Pencil className="w-4 h-4 mr-2" />
+                                  Редактирай
+                                </DropdownMenuItem>
+                              )}
+                              {canDelete('inventory') && (
+                                <DropdownMenuItem 
+                                  onClick={() => setDeleteId(product.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Изтрий
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
