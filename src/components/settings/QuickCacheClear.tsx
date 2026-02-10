@@ -35,8 +35,8 @@ export const QuickCacheClear = ({ size = 'icon' }: { size?: 'icon' | 'sm' }) => 
       sessionStorage.clear();
 
       setState('done');
-      toast({ title: '✓ Кешът е изчистен', description: 'Всички данни ще бъдат презаредени.' });
-      setTimeout(() => setState('idle'), 2000);
+      toast({ title: '✓ Кешът е изчистен', description: 'Страницата ще се презареди...' });
+      setTimeout(() => window.location.reload(), 1000);
     } catch {
       setState('idle');
       toast({ title: 'Грешка', description: 'Неуспешно изчистване', variant: 'destructive' });
