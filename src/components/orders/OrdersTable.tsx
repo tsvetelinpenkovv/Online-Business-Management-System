@@ -861,15 +861,18 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                       {order.catalog_number && stockInfo[order.catalog_number] !== undefined && (
                         <>
                           <span className="text-muted-foreground text-[10px]">/</span>
-                          <span className={`text-xs font-semibold ${
-                            stockInfo[order.catalog_number] <= 0 
-                              ? 'text-destructive' 
-                              : stockInfo[order.catalog_number] <= 5 
-                                ? 'text-warning' 
-                                : 'text-success'
-                          }`}>
+                          <Badge 
+                            variant="secondary" 
+                            className={`pointer-events-none text-xs px-1.5 py-0 ${
+                              stockInfo[order.catalog_number] <= 0 
+                                ? 'bg-destructive/20 text-destructive' 
+                                : stockInfo[order.catalog_number] <= 5 
+                                  ? 'bg-warning/20 text-warning' 
+                                  : 'bg-success/20 text-success'
+                            }`}
+                          >
                             {stockInfo[order.catalog_number]}
-                          </span>
+                          </Badge>
                         </>
                       )}
                     </div>

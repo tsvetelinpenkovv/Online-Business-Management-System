@@ -127,11 +127,12 @@
   /* Prevent layout shift from scrollbar appearing/disappearing */
   html {
     overflow-y: scroll;
+    scrollbar-gutter: stable;
   }
 
-  /* Prevent Radix dialogs from removing scrollbar and causing layout shift */
-  body[data-scroll-locked] {
-    overflow: scroll !important;
+  /* Prevent Radix dialogs/dropdowns from removing scrollbar and causing layout shift */
+  body {
+    overflow: inherit !important;
     margin-right: 0 !important;
     padding-right: 0 !important;
   }
