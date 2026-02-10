@@ -43,25 +43,42 @@ export const QuickCacheClear = ({ size = 'icon' }: { size?: 'icon' | 'sm' }) => 
     }
   };
 
+  if (size === 'sm') {
+    return (
+      <button
+        onClick={handleClear}
+        disabled={state === 'clearing'}
+        className="flex w-full items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+      >
+        {state === 'clearing' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : state === 'done' ? (
+          <Check className="w-4 h-4 text-green-500" />
+        ) : (
+          <Zap className="w-4 h-4" />
+        )}
+        Изчисти кеш
+      </button>
+    );
+  }
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
           variant="outline"
-          size={size}
+          size="icon"
           onClick={handleClear}
           disabled={state === 'clearing'}
           title="Изчисти кеша"
-          className={size === 'sm' ? 'hidden sm:flex' : ''}
         >
           {state === 'clearing' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : state === 'done' ? (
-            <Check className="w-4 h-4 text-success" />
+            <Check className="w-4 h-4 text-green-500" />
           ) : (
             <Zap className="w-4 h-4" />
           )}
-          {size === 'sm' && <span className="ml-2">Изчисти кеш</span>}
         </Button>
       </TooltipTrigger>
       <TooltipContent>Изчисти целия кеш</TooltipContent>

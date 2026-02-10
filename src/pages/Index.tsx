@@ -809,6 +809,11 @@ const Index = () => {
                   <Euro className="w-4 h-4 mr-2" />
                   Финанси
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="p-0">
+                  <QuickCacheClear size="sm" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className={`cursor-pointer ${!canView('settings') ? 'hidden' : ''}`}>
                   <Settings className="w-4 h-4 mr-2" />
                   {getText('orders_settings_button_label')}
