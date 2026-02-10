@@ -348,6 +348,63 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_notes: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          credit_note_number: number
+          id: string
+          invoice_id: string | null
+          issue_date: string
+          order_id: number | null
+          reason: string | null
+          total_amount: number
+          vat_amount: number | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          credit_note_number: number
+          id?: string
+          invoice_id?: string | null
+          issue_date?: string
+          order_id?: number | null
+          reason?: string | null
+          total_amount: number
+          vat_amount?: number | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          credit_note_number?: number
+          id?: string
+          invoice_id?: string | null
+          issue_date?: string
+          order_id?: number | null
+          reason?: string | null
+          total_amount?: number
+          vat_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_notes: {
         Row: {
           created_at: string
@@ -460,6 +517,39 @@ export type Database = {
           is_enabled?: boolean
           logo_url?: string | null
           name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expense_date: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expense_date?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expense_date?: string
+          id?: string
           updated_at?: string
         }
         Relationships: []
@@ -783,6 +873,10 @@ export type Database = {
           delivery_address: string | null
           id: number
           is_correct: boolean | null
+          paid_amount: number
+          payment_date: string | null
+          payment_method: string | null
+          payment_status: string
           phone: string
           product_name: string
           quantity: number
@@ -804,6 +898,10 @@ export type Database = {
           delivery_address?: string | null
           id?: number
           is_correct?: boolean | null
+          paid_amount?: number
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_status?: string
           phone: string
           product_name: string
           quantity?: number
@@ -825,6 +923,10 @@ export type Database = {
           delivery_address?: string | null
           id?: number
           is_correct?: boolean | null
+          paid_amount?: number
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_status?: string
           phone?: string
           product_name?: string
           quantity?: number
