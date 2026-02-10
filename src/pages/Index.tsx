@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrders } from '@/hooks/useOrders';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
@@ -42,6 +43,7 @@ type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
+  const { canView } = usePermissions();
   const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   const { logoUrl } = useCompanyLogo();
   const { toast } = useToast();
@@ -694,7 +696,7 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
-            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')}>
+            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')} className={!canView('settings') ? 'hidden' : ''}>
               <Settings className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" onClick={handleSignOut} title={getText('orders_logout_button_label')}>
@@ -784,7 +786,7 @@ const Index = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className={`cursor-pointer ${!canView('settings') ? 'hidden' : ''}`}>
                   <Settings className="w-4 h-4 mr-2" />
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
@@ -887,7 +889,7 @@ const Index = () => {
                 nekorektenEnabled={nekorektenEnabled}
               />
             </div>
-            <div className="overflow-x-auto">
+            <div className="w-full">
               <OrdersTable
                 orders={paginatedOrders}
                 onDelete={deleteOrder}
