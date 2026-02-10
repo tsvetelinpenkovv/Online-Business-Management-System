@@ -79,6 +79,9 @@ interface OrdersTableProps {
   onSelectionChange: (ids: number[]) => void;
   nekorektenEnabled?: boolean;
   visibleColumns?: Set<ColumnKey>;
+  canEditOrders?: boolean;
+  canDeleteOrders?: boolean;
+  canCreateInvoices?: boolean;
 }
 
 // Invoice icon button component - checks if order has invoice and tracks if it was viewed
@@ -177,7 +180,10 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   selectedOrders,
   onSelectionChange,
   nekorektenEnabled = true,
-  visibleColumns = defaultVisibleColumns
+  visibleColumns = defaultVisibleColumns,
+  canEditOrders = true,
+  canDeleteOrders = true,
+  canCreateInvoices = true,
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
@@ -927,8 +933,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   <TableCell>
                     <StatusBadge 
                       status={order.status} 
-                      editable 
-                      onStatusChange={(newStatus) => onUpdate({ ...order, status: newStatus as any })}
+                      editable={canEditOrders}
+                      onStatusChange={canEditOrders ? (newStatus) => onUpdate({ ...order, status: newStatus as any }) : undefined}
                     />
                   </TableCell>
                 )}
@@ -968,14 +974,18 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         </Button>
                       </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setEditOrder(order)}>
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Редактирай
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setInvoiceOrder(order)}>
-                        <FileText className="w-4 h-4 mr-2" />
-                        Фактура
-                      </DropdownMenuItem>
+                      {canEditOrders && (
+                        <DropdownMenuItem onClick={() => setEditOrder(order)}>
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Редактирай
+                        </DropdownMenuItem>
+                      )}
+                      {canCreateInvoices && (
+                        <DropdownMenuItem onClick={() => setInvoiceOrder(order)}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Фактура
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => handlePrint(order)}>
                         <Printer className="w-4 h-4 mr-2" />
                         Печат на поръчка
@@ -1021,13 +1031,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         <Search className="w-4 h-4 mr-2" />
                         Проверка в Nekorekten
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => setDeleteId(order.id)}
-                        className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Изтрій
-                      </DropdownMenuItem>
+                      {canDeleteOrders && (
+                        <DropdownMenuItem 
+                          onClick={() => setDeleteId(order.id)}
+                          className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Изтрій
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                     {getOrderMessage(order.id) && (

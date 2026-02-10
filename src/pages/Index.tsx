@@ -45,7 +45,7 @@ type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { canView } = usePermissions();
+  const { canView, canCreate, canEdit, canDelete } = usePermissions();
   const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
   // Realtime notifications for new orders
   useRealtimeOrders({
@@ -440,24 +440,26 @@ const Index = () => {
           {/* Mobile bulk actions */}
           {selectedOrders.length > 0 && (
             <div className="flex items-center gap-1 sm:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="px-2">
-                    <Tags className="w-3 h-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
-                  {ORDER_STATUSES.map((status) => (
-                    <DropdownMenuItem
-                      key={status}
-                      onClick={() => handleBulkStatusChange(status)}
-                      className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
-                    >
-                      <StatusBadge status={status} />
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {canEdit('orders') && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="px-2">
+                      <Tags className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
+                    {ORDER_STATUSES.map((status) => (
+                      <DropdownMenuItem
+                        key={status}
+                        onClick={() => handleBulkStatusChange(status)}
+                        className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
+                      >
+                        <StatusBadge status={status} />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="px-2">
@@ -484,14 +486,16 @@ const Index = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button 
-                onClick={() => setShowBulkDeleteDialog(true)} 
-                variant="outline" 
-                size="sm"
-                className="px-2 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
+              {canDelete('orders') && (
+                <Button 
+                  onClick={() => setShowBulkDeleteDialog(true)} 
+                  variant="outline" 
+                  size="sm"
+                  className="px-2 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              )}
             </div>
           )}
 
@@ -499,26 +503,28 @@ const Index = () => {
           <div className="hidden md:flex lg:hidden items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <Tags className="w-4 h-4" />
-                      <span className="hidden lg:inline">{getText('orders_change_status_label')}</span>
-                      <span className="lg:hidden">({selectedOrders.length})</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
-                    {ORDER_STATUSES.map((status) => (
-                      <DropdownMenuItem
-                        key={status}
-                        onClick={() => handleBulkStatusChange(status)}
-                        className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
-                      >
-                        <StatusBadge status={status} />
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {canEdit('orders') && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Tags className="w-4 h-4" />
+                        <span className="hidden lg:inline">{getText('orders_change_status_label')}</span>
+                        <span className="lg:hidden">({selectedOrders.length})</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
+                      {ORDER_STATUSES.map((status) => (
+                        <DropdownMenuItem
+                          key={status}
+                          onClick={() => handleBulkStatusChange(status)}
+                          className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
+                        >
+                          <StatusBadge status={status} />
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1">
@@ -540,14 +546,16 @@ const Index = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button 
-                  onClick={() => setShowBulkDeleteDialog(true)} 
-                  variant="outline" 
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                {canDelete('orders') && (
+                  <Button 
+                    onClick={() => setShowBulkDeleteDialog(true)} 
+                    variant="outline" 
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -556,25 +564,27 @@ const Index = () => {
           <div className="hidden lg:flex items-center gap-2">
             {selectedOrders.length > 0 && (
               <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2">
-                      <Tags className="w-4 h-4" />
-                      {getText('orders_change_status_label')} ({selectedOrders.length})
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
-                    {ORDER_STATUSES.map((status) => (
-                      <DropdownMenuItem
-                        key={status}
-                        onClick={() => handleBulkStatusChange(status)}
-                        className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
-                      >
-                        <StatusBadge status={status} />
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {canEdit('orders') && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <Tags className="w-4 h-4" />
+                        {getText('orders_change_status_label')} ({selectedOrders.length})
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto p-1">
+                      {ORDER_STATUSES.map((status) => (
+                        <DropdownMenuItem
+                          key={status}
+                          onClick={() => handleBulkStatusChange(status)}
+                          className="p-1.5 rounded-md cursor-pointer hover:bg-muted/50"
+                        >
+                          <StatusBadge status={status} />
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-2">
@@ -597,24 +607,28 @@ const Index = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
-                <Button 
-                  onClick={() => setShowBulkDeleteDialog(true)} 
-                  variant="outline" 
-                  className="gap-2 text-destructive border-destructive/30 hover:bg-destructive hover:text-white hover:border-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Изтрий ({selectedOrders.length})
-                </Button>
+                {canDelete('orders') && (
+                  <Button 
+                    onClick={() => setShowBulkDeleteDialog(true)} 
+                    variant="outline" 
+                    className="gap-2 text-destructive border-destructive/30 hover:bg-destructive hover:text-white hover:border-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Изтрий ({selectedOrders.length})
+                  </Button>
+                )}
               </>
             )}
           </div>
 
           {/* Tablet and Desktop common actions */}
           <div className="hidden md:flex items-center gap-2">
-            <Button onClick={() => setShowAddOrderDialog(true)} className="hidden lg:flex gap-2">
-              <Plus className="w-4 h-4" />
-              {getText('orders_add_button_label')}
-            </Button>
+            {canCreate('orders') && (
+              <Button onClick={() => setShowAddOrderDialog(true)} className="hidden lg:flex gap-2">
+                <Plus className="w-4 h-4" />
+                {getText('orders_add_button_label')}
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
@@ -926,6 +940,9 @@ const Index = () => {
                 onSelectionChange={setSelectedOrders}
                 nekorektenEnabled={nekorektenEnabled}
                 visibleColumns={visibleColumns}
+                canEditOrders={canEdit('orders')}
+                canDeleteOrders={canDelete('orders')}
+                canCreateInvoices={canCreate('invoices')}
               />
             </div>
             
@@ -1055,14 +1072,16 @@ const Index = () => {
       />
 
       {/* Mobile/Tablet FAB for new order */}
-      <Button 
-        onClick={() => setShowAddOrderDialog(true)} 
-        size="icon" 
-        className="lg:hidden fixed bottom-6 right-4 h-12 w-12 rounded-full shadow-lg z-20"
-        title={getText('orders_add_button_label')}
-      >
-        <Plus className="w-5 h-5" />
-      </Button>
+      {canCreate('orders') && (
+        <Button 
+          onClick={() => setShowAddOrderDialog(true)} 
+          size="icon" 
+          className="lg:hidden fixed bottom-6 right-4 h-12 w-12 rounded-full shadow-lg z-20"
+          title={getText('orders_add_button_label')}
+        >
+          <Plus className="w-5 h-5" />
+        </Button>
+      )}
     </div>
   );
 };

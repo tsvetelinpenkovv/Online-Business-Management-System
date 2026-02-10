@@ -1,5 +1,6 @@
 import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Supplier } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,7 @@ interface SuppliersTabProps {
 
 export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);

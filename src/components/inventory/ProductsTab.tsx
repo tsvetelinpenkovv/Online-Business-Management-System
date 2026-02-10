@@ -1,5 +1,6 @@
 import { FC, useState, useMemo, useEffect, useCallback } from 'react';
 import { useInventory } from '@/hooks/useInventory';
+import { usePermissions } from '@/hooks/usePermissions';
 import { InventoryProduct } from '@/types/inventory';
 import { supabase } from '@/integrations/supabase/client';
 import { useStockSync } from '@/hooks/useStockSync';
@@ -84,6 +85,7 @@ interface BundleComponent {
 
 export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = true }) => {
   const isMobile = useIsMobile();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const { syncProductStock } = useStockSync();
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [search, setSearch] = useState('');

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useFinance, EXPENSE_CATEGORIES, type OrderFinance } from '@/hooks/useFinance';
 import { buildPath } from '@/components/SecretPathGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,7 @@ const PaymentStatusBadge = ({ status }: { status: string }) => {
 const Finance = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { canEdit, canCreate, canDelete } = usePermissions();
   const { orders, expenses, loading, updatePaymentStatus, addExpense, deleteExpense, getSummary } = useFinance();
 
   const [dateFrom, setDateFrom] = useState(() => {
@@ -259,7 +261,9 @@ const Finance = () => {
                       <TableCell className="text-sm text-muted-foreground">{order.payment_method || '—'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{format(new Date(order.created_at), 'dd.MM.yyyy')}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => openPaymentEdit(order)}>Редактирай</Button>
+                        {canEdit('invoices') && (
+                          <Button variant="ghost" size="sm" onClick={() => openPaymentEdit(order)}>Редактирай</Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -271,42 +275,43 @@ const Finance = () => {
           <TabsContent value="expenses" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Разходи за периода</h3>
-              <Dialog open={addExpenseOpen} onOpenChange={setAddExpenseOpen}>
-                <DialogTrigger asChild>
-                  <Button><Plus className="w-4 h-4 mr-1" />Добави разход</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>Нов разход</DialogTitle></DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Сума (лв)</Label>
-                      <Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder="0.00" />
+              {canCreate('invoices') && (
+                <Dialog open={addExpenseOpen} onOpenChange={setAddExpenseOpen}>
+                  <DialogTrigger asChild>
+                    <Button><Plus className="w-4 h-4 mr-1" />Добави разход</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Нов разход</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Сума (лв)</Label>
+                        <Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder="0.00" />
+                      </div>
+                      <div>
+                        <Label>Категория</Label>
+                        <Select value={expenseCategory} onValueChange={setExpenseCategory}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {EXPENSE_CATEGORIES.map(c => (
+                              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Дата</Label>
+                        <Input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} />
+                      </div>
+                      <div>
+                        <Label>Описание</Label>
+                        <Textarea value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} placeholder="Опционално описание..." />
+                      </div>
+                      <Button onClick={handleAddExpense} className="w-full">Добави</Button>
                     </div>
-                    <div>
-                      <Label>Категория</Label>
-                      <Select value={expenseCategory} onValueChange={setExpenseCategory}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {EXPENSE_CATEGORIES.map(c => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Дата</Label>
-                      <Input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} />
-                    </div>
-                    <div>
-                      <Label>Описание</Label>
-                      <Textarea value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} placeholder="Опционално описание..." />
-                    </div>
-                    <Button onClick={handleAddExpense} className="w-full">Добави</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
-
             <Card>
               <Table>
                 <TableHeader>
@@ -328,9 +333,11 @@ const Finance = () => {
                       <TableCell className="text-muted-foreground">{expense.description || '—'}</TableCell>
                       <TableCell className="text-right font-medium text-red-600">{Number(expense.amount).toFixed(2)} лв</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => deleteExpense(expense.id)} className="text-destructive h-8 w-8">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {canDelete('invoices') && (
+                          <Button variant="ghost" size="icon" onClick={() => deleteExpense(expense.id)} className="text-destructive h-8 w-8">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
