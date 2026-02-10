@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell } from 'lucide-react';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,6 +29,7 @@ import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
 import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
 import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
+import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -643,6 +644,10 @@ const Settings = () => {
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-8 lg:flex-1 lg:justify-center">Потребители</TabsTrigger>}
                 {isAdmin && <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1"><Shield className="w-4 h-4 mr-1" />Роли</TabsTrigger>}
                 {isAdmin && <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-10 lg:flex-1 lg:justify-center gap-1 text-destructive"><RotateCcw className="w-4 h-4 mr-1" />Изчисти</TabsTrigger>}
+                <TabsTrigger value="notifications" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-11 lg:flex-1 lg:justify-center gap-1" title="Известия">
+                  <Bell className="w-4 h-4" />
+                  <span className="hidden lg:inline">Известия</span>
+                </TabsTrigger>
                 <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 lg:order-9 lg:flex-1 lg:justify-center gap-1" title="Редактор на интерфейса">
                   <Type className="w-4 h-4" />
                   <span className="hidden lg:inline">Интерфейс</span>
@@ -657,6 +662,10 @@ const Settings = () => {
 
           <TabsContent value="platforms" className="space-y-6">
             <PlatformApiSettings />
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <NotificationSoundSettings />
           </TabsContent>
 
           <TabsContent value="sources" className="space-y-6 mt-4">
