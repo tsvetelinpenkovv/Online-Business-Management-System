@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import { Order, ORDER_STATUSES, OrderStatus, OrderSource } from '@/types/order';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +55,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(0);
+  const [autoFillApplied, setAutoFillApplied] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -74,6 +75,29 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
       fetchLastOrderId();
     }
   }, [open]);
+
+  // Auto-fill from CRM when phone changes
+  const checkAutoFill = useCallback(async (phone: string) => {
+    if (phone.length < 7 || autoFillApplied) return;
+    try {
+      const { data } = await supabase
+        .from('customers')
+        .select('name, email, address, city')
+        .eq('phone', phone)
+        .maybeSingle();
+      if (data) {
+        const nameParts = data.name?.split(' ') || [];
+        setFormData(prev => ({
+          ...prev,
+          first_name: prev.first_name || nameParts[0] || '',
+          last_name: prev.last_name || nameParts.slice(1).join(' ') || '',
+          customer_email: prev.customer_email || data.email || '',
+          delivery_address: prev.delivery_address || [data.address, data.city].filter(Boolean).join(', ') || '',
+        }));
+        setAutoFillApplied(true);
+      }
+    } catch (e) { /* ignore */ }
+  }, [autoFillApplied]);
 
   const addProduct = () => {
     setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
@@ -153,6 +177,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           source: 'phone',
         });
         setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+        setAutoFillApplied(false);
         onOpenChange(false);
       }
     } finally {
@@ -248,7 +273,10 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
             <Input
               id="phone"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                checkAutoFill(e.target.value);
+              }}
               placeholder="+359..."
               required
             />
