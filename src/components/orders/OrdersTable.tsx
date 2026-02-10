@@ -52,6 +52,7 @@ import {
 import { format } from 'date-fns';
 import { EditOrderDialog } from './EditOrderDialog';
 import { CreateShipmentDialog } from './CreateShipmentDialog';
+import { Input } from '@/components/ui/input';
 
 type OrderSortKey = 'id' | 'created_at' | 'customer_name' | 'phone' | 'total_price' | 'product_name' | 'catalog_number' | 'quantity' | 'status';
 
@@ -142,6 +143,32 @@ const InvoiceIconButton: FC<{ orderId: number; onClick: () => void }> = ({ order
 
 // Default visible columns (all)
 const defaultVisibleColumns = new Set<ColumnKey>(['id', 'source', 'date', 'customer', 'correct', 'phone', 'price', 'product', 'catalog', 'quantity', 'stock', 'delivery', 'tracking', 'status', 'comment']);
+
+// Inline comment input for orders without comments
+const InlineCommentInput: FC<{ orderId: number; onSave: (comment: string) => void }> = ({ orderId, onSave }) => {
+  const [value, setValue] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    const trimmed = value.trim();
+    if (!trimmed || saving) return;
+    setSaving(true);
+    onSave(trimmed);
+    setSaving(false);
+  };
+
+  return (
+    <Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={handleSave}
+      onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+      placeholder="Коментар..."
+      className="h-7 text-xs min-w-[100px] max-w-[150px] bg-muted/30 border-dashed"
+      disabled={saving}
+    />
+  );
+};
 
 export const OrdersTable: FC<OrdersTableProps> = ({ 
   orders, 
@@ -524,8 +551,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   // Desktop view - table layout
   return (
     <>
-      <div className="rounded-lg border bg-card">
-        <Table className="w-full table-fixed">
+      <div className="rounded-lg border bg-card overflow-hidden">
+        <Table className="w-full table-fixed text-[13px]">
           <TableHeader>
             <TableRow className="bg-muted/50 border-l-0">
               <TableHead className="w-[30px] pl-1 pr-0" title="Разшири поръчката">
@@ -571,7 +598,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </TableHead>
               )}
               {visibleColumns.has('phone') && (
-                <SortableHead columnKey="phone" className="w-[160px]">
+                <SortableHead columnKey="phone" className="w-[130px]">
                   <div className="flex items-center gap-1.5">
                     <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Телефон
@@ -597,17 +624,16 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 </SortableHead>
               )}
               {visibleColumns.has('quantity') && (
-                <TableHead className="w-[50px] text-center" title="Количество">
-                  <Layers className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
-                </TableHead>
-              )}
-              {visibleColumns.has('stock') && (
-                <TableHead className="w-[60px] text-center" title="Наличност в склада">
-                  <Boxes className="w-4 h-4 text-muted-foreground mx-auto flex-shrink-0" />
+                <TableHead className="w-[70px] text-center" title="Кол. / Наличност">
+                  <div className="flex items-center justify-center gap-0.5">
+                    <Layers className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                    <span className="text-[10px]">/</span>
+                    <Boxes className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  </div>
                 </TableHead>
               )}
               {visibleColumns.has('delivery') && (
-                <TableHead className="w-[120px]">
+                <TableHead className="w-[100px]">
                   <div className="flex items-center gap-1.5">
                     <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     Доставка
@@ -826,31 +852,27 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 )}
                 {visibleColumns.has('quantity') && (
                   <TableCell className="text-center">
-                    <QuantityPopover 
-                      productName={order.product_name}
-                      quantity={order.quantity}
-                      catalogNumber={order.catalog_number}
-                    />
-                  </TableCell>
-                )}
-                {visibleColumns.has('stock') && (
-                  <TableCell className="text-center">
-                    {order.catalog_number && stockInfo[order.catalog_number] !== undefined ? (
-                      <Badge 
-                        variant="secondary" 
-                        className={`${
-                          stockInfo[order.catalog_number] <= 0 
-                            ? 'bg-destructive/20 text-destructive' 
-                            : stockInfo[order.catalog_number] <= 5 
-                              ? 'bg-warning/20 text-warning' 
-                              : 'bg-success/20 text-success'
-                        }`}
-                      >
-                        {stockInfo[order.catalog_number]}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
+                    <div className="flex items-center justify-center gap-1">
+                      <QuantityPopover 
+                        productName={order.product_name}
+                        quantity={order.quantity}
+                        catalogNumber={order.catalog_number}
+                      />
+                      {order.catalog_number && stockInfo[order.catalog_number] !== undefined && (
+                        <>
+                          <span className="text-muted-foreground text-[10px]">/</span>
+                          <span className={`text-xs font-semibold ${
+                            stockInfo[order.catalog_number] <= 0 
+                              ? 'text-destructive' 
+                              : stockInfo[order.catalog_number] <= 5 
+                                ? 'text-warning' 
+                                : 'text-success'
+                          }`}>
+                            {stockInfo[order.catalog_number]}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 )}
                 {visibleColumns.has('delivery') && (
@@ -925,7 +947,12 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                           {order.comment}
                         </span>
                       </InfoPopover>
-                    ) : null}
+                    ) : (
+                      <InlineCommentInput
+                        orderId={order.id}
+                        onSave={(comment) => onUpdate({ ...order, comment })}
+                      />
+                    )}
                   </TableCell>
                 )}
                 <TableCell>

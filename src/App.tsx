@@ -8,15 +8,35 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { InterfaceTextsProvider } from "@/hooks/useInterfaceTexts";
 import { SecretPathGuard } from "@/components/SecretPathGuard";
 import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Settings from "./pages/Settings";
-import Inventory from "./pages/Inventory";
-import Messages from "./pages/Messages";
-import Nekorekten from "./pages/Nekorekten";
-import NotFound from "./pages/NotFound";
+import { lazy, Suspense } from "react";
+import { Loader2, Package } from "lucide-react";
 
-const queryClient = new QueryClient();
+// Lazy load pages for code splitting
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Nekorekten = lazy(() => import("./pages/Nekorekten"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
+    <Package className="w-12 h-12 text-primary animate-pulse" />
+    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+  </div>
+);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000, // 2 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,26 +49,28 @@ const App = () => (
             <SessionTimeoutWarning />
             <BrowserRouter>
               <SecretPathGuard>
-                <Routes>
-                  {/* Routes without secret path prefix */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/inventory" element={<Inventory />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/nekorekten" element={<Nekorekten />} />
-                  
-                  {/* Routes with secret path prefix - using wildcard to capture any prefix */}
-                  <Route path="/:secretPath/" element={<Index />} />
-                  <Route path="/:secretPath/auth" element={<Auth />} />
-                  <Route path="/:secretPath/settings" element={<Settings />} />
-                  <Route path="/:secretPath/inventory" element={<Inventory />} />
-                  <Route path="/:secretPath/messages" element={<Messages />} />
-                  <Route path="/:secretPath/nekorekten" element={<Nekorekten />} />
-                  
-                  {/* Catch-all for 404 */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Routes without secret path prefix */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/inventory" element={<Inventory />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/nekorekten" element={<Nekorekten />} />
+                    
+                    {/* Routes with secret path prefix - using wildcard to capture any prefix */}
+                    <Route path="/:secretPath/" element={<Index />} />
+                    <Route path="/:secretPath/auth" element={<Auth />} />
+                    <Route path="/:secretPath/settings" element={<Settings />} />
+                    <Route path="/:secretPath/inventory" element={<Inventory />} />
+                    <Route path="/:secretPath/messages" element={<Messages />} />
+                    <Route path="/:secretPath/nekorekten" element={<Nekorekten />} />
+                    
+                    {/* Catch-all for 404 */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </SecretPathGuard>
             </BrowserRouter>
           </TooltipProvider>

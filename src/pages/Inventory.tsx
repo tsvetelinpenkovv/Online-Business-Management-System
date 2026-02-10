@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
-
+import { usePermissions } from '@/hooks/usePermissions';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +36,7 @@ import { useWarehouses } from '@/hooks/useWarehouses';
 export default function Inventory() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { canView, loading: permLoading } = usePermissions();
   const inventory = useInventory();
   const { warehouses, multiWarehouseEnabled } = useWarehouses();
   const { logoUrl } = useCompanyLogo();
@@ -111,7 +112,16 @@ export default function Inventory() {
     if (!authLoading && !user) {
       navigate(buildPath('/auth'));
     }
-  }, [user, authLoading, navigate]);
+    // Redirect if no inventory view permission
+    if (!authLoading && !permLoading && user && !canView('inventory')) {
+      navigate(buildPath('/'));
+      toast({
+        title: 'Нямате достъп',
+        description: 'Нямате права за достъп до складовата програма.',
+        variant: 'destructive',
+      });
+    }
+  }, [user, authLoading, navigate, canView, permLoading]);
 
   // Calculate critical stock counts
   const criticalStockInfo = useMemo(() => {

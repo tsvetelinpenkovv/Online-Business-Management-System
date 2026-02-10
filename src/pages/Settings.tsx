@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useFavicon } from '@/hooks/useFavicon';
@@ -70,6 +71,7 @@ interface CompanySettings {
 
 const Settings = () => {
   const { user, loading: authLoading } = useAuth();
+  const { canView, loading: permLoading } = usePermissions();
   const { logoUrl, uploadLogo, deleteLogo, loading: logoLoading } = useCompanyLogo();
   const { faviconUrl, uploadFavicon, deleteFavicon, loading: faviconLoading } = useFavicon();
   const { backgroundUrl, uploadBackground, deleteBackground, loading: backgroundLoading } = useLoginBackground();
@@ -153,7 +155,15 @@ const Settings = () => {
     if (!authLoading && !user) {
       navigate(buildPath('/auth'));
     }
-  }, [user, authLoading, navigate]);
+    if (!authLoading && !permLoading && user && !canView('settings')) {
+      navigate(buildPath('/'));
+      toast({
+        title: 'Нямате достъп',
+        description: 'Нямате права за достъп до настройките.',
+        variant: 'destructive',
+      });
+    }
+  }, [user, authLoading, navigate, canView, permLoading]);
 
   useEffect(() => {
     const fetchSettings = async () => {
