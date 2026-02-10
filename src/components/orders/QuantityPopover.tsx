@@ -107,7 +107,7 @@ export const QuantityPopover: FC<QuantityPopoverProps> = ({
 
   const badge = (
     <span 
-      className={`inline-flex items-center justify-center min-w-[24px] h-6 w-6 rounded-full text-xs font-semibold cursor-pointer ${getBadgeClasses()}`}
+      className={`inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full text-xs font-semibold cursor-pointer ${getBadgeClasses()}`}
       title={hasMultipleProducts ? `${products.length} различни продукта` : `Количество: ${quantity} бр.`}
     >
       {hasMultipleProducts ? `${products.length}×` : quantity}
