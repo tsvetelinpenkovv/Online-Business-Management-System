@@ -19,6 +19,7 @@ const Inventory = lazy(() => import("./pages/Inventory"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Nekorekten = lazy(() => import("./pages/Nekorekten"));
 const CRM = lazy(() => import("./pages/CRM"));
+const Finance = lazy(() => import("./pages/Finance"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = () => (
@@ -60,6 +61,7 @@ const App = () => (
                     <Route path="/messages" element={<Messages />} />
                     <Route path="/nekorekten" element={<Nekorekten />} />
                     <Route path="/crm" element={<CRM />} />
+                    <Route path="/finance" element={<Finance />} />
                     
                     {/* Routes with secret path prefix - using wildcard to capture any prefix */}
                     <Route path="/:secretPath/" element={<Index />} />
@@ -69,6 +71,7 @@ const App = () => (
                     <Route path="/:secretPath/messages" element={<Messages />} />
                     <Route path="/:secretPath/nekorekten" element={<Nekorekten />} />
                     <Route path="/:secretPath/crm" element={<CRM />} />
+                    <Route path="/:secretPath/finance" element={<Finance />} />
                     
                     {/* Catch-all for 404 */}
                     <Route path="*" element={<NotFound />} />
