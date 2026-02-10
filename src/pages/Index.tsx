@@ -7,6 +7,7 @@ import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, COLUMNS_CONFIG, type ColumnKey } from '@/components/orders/ColumnVisibilityToggle';
 import { OrderFilters } from '@/components/orders/OrderFilters';
@@ -45,6 +46,12 @@ const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { canView } = usePermissions();
   const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
+  // Realtime notifications for new orders
+  useRealtimeOrders({
+    onNewOrder: refetch,
+    onOrderUpdated: refetch,
+    onOrderDeleted: refetch,
+  });
   const { logoUrl } = useCompanyLogo();
   const { toast } = useToast();
   const { getText } = useInterfaceTexts();
