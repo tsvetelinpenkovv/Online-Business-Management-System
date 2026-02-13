@@ -121,6 +121,22 @@ export const useStores = () => {
 
   const getEnabledStores = () => stores.filter(s => s.is_enabled);
 
+  const reorderStores = async (reordered: Store[]) => {
+    try {
+      setStores(reordered);
+      for (let i = 0; i < reordered.length; i++) {
+        await supabase
+          .from('stores')
+          .update({ sort_order: i } as any)
+          .eq('id', reordered[i].id);
+      }
+      return { success: true };
+    } catch (error: any) {
+      await fetchStores();
+      return { success: false, error: error.message };
+    }
+  };
+
   return {
     stores,
     multiStoreEnabled,
@@ -131,5 +147,6 @@ export const useStores = () => {
     updateStore,
     deleteStore,
     getEnabledStores,
+    reorderStores,
   };
 };

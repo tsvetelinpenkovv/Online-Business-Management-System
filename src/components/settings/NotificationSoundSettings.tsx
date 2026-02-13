@@ -187,7 +187,7 @@ export const NotificationSoundSettings: FC = () => {
 };
 
 export const OverduePaymentSettings: FC = () => {
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -199,7 +199,7 @@ export const OverduePaymentSettings: FC = () => {
         .select('setting_value')
         .eq('setting_key', 'overdue_payments_enabled')
         .maybeSingle();
-      setEnabled(data?.setting_value !== 'false');
+      setEnabled(data?.setting_value === 'true');
       setLoading(false);
     };
     fetch();
