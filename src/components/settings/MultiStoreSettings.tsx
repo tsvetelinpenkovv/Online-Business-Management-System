@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Globe, Plus, Trash2, Save, Loader2, Store as StoreIcon, Eye, EyeOff, TestTube, RefreshCw, Check, AlertCircle, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Globe, Plus, Trash2, Save, Loader2, Store as StoreIcon, Eye, EyeOff, TestTube, RefreshCw, Check, AlertCircle, GripVertical, ArrowUp, ArrowDown, BookOpen, Warehouse } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getFlagByCountryCode } from '@/components/orders/StoreFilterTabs';
 
@@ -42,6 +42,7 @@ export const MultiStoreSettings = () => {
     country_code: '',
   });
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [showDocs, setShowDocs] = useState(false);
 
   const handleToggleMultiStore = async (enabled: boolean) => {
     const result = await toggleMultiStore(enabled);
@@ -145,15 +146,46 @@ export const MultiStoreSettings = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
-            Мулти-магазин режим
-          </CardTitle>
-          <CardDescription>
-            Свържете множество WooCommerce магазини от различни държави към една система
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Мулти-магазин режим
+              </CardTitle>
+              <CardDescription>
+                Свържете множество WooCommerce магазини от различни държави към една система
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setShowDocs(!showDocs)}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Документация</span>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {showDocs && (
+            <div className="p-4 rounded-lg border bg-muted/30 space-y-3 text-sm">
+              <h4 className="font-semibold flex items-center gap-2"><BookOpen className="w-4 h-4" /> Как работи мулти-магазинът?</h4>
+              <ul className="space-y-1.5 list-disc pl-5 text-muted-foreground">
+                <li>Всички магазини четат наличности от <strong>един общ склад</strong>.</li>
+                <li>При промяна на наличност, тя се синхронизира към всички свързани WooCommerce сайтове.</li>
+                <li>Поръчки от всеки магазин автоматично приспадат от общия склад.</li>
+                <li>В страницата с поръчки се появяват табове за всеки магазин с флаг и брой поръчки.</li>
+                <li>Можете да подреждате магазините с drag & drop.</li>
+                <li>Можете да изключите изпращането на наличности към конкретен магазин.</li>
+                <li>Всеки магазин може да има собствен webhook URL.</li>
+              </ul>
+              <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+                <Warehouse className="w-3.5 h-3.5" />
+                Пълната документация е в Настройки → Документация
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-base">Активирай мулти-магазин</Label>

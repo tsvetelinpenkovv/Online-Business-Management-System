@@ -873,25 +873,23 @@ const Index = () => {
           </div>
         ) : (
           <div className="w-full space-y-4">
-            {/* Column visibility toggle - hidden on mobile */}
-            {filteredOrders.length > 0 && (
-              <div className="hidden md:flex justify-end">
-                <ColumnVisibilityToggle
-                  visibleColumns={visibleColumns}
-                  onToggle={(column) => {
-                    const newColumns = new Set(visibleColumns);
-                    if (newColumns.has(column)) {
-                      newColumns.delete(column);
-                    } else {
-                      newColumns.add(column);
-                    }
-                    setVisibleColumns(newColumns);
-                    saveVisibleColumns(newColumns);
-                  }}
-                  nekorektenEnabled={nekorektenEnabled}
-                />
-              </div>
-            )}
+            {/* Column visibility toggle - hidden on mobile, shown always when there are orders or store tabs */}
+            <div className="hidden md:flex justify-end">
+              <ColumnVisibilityToggle
+                visibleColumns={visibleColumns}
+                onToggle={(column) => {
+                  const newColumns = new Set(visibleColumns);
+                  if (newColumns.has(column)) {
+                    newColumns.delete(column);
+                  } else {
+                    newColumns.add(column);
+                  }
+                  setVisibleColumns(newColumns);
+                  saveVisibleColumns(newColumns);
+                }}
+                nekorektenEnabled={nekorektenEnabled}
+              />
+            </div>
             <div className="w-full">
               {multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0 && (
                 <StoreFilterTabs

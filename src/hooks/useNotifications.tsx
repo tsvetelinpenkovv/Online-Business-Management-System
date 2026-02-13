@@ -26,8 +26,12 @@ export const useNotifications = () => {
   const [dismissedTypes, setDismissedTypes] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(DISMISSED_TYPES_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch { return new Set(); }
+      if (saved) return new Set(JSON.parse(saved));
+      // Default: overdue_payment is dismissed by default
+      const defaults = new Set(['overdue_payment']);
+      localStorage.setItem(DISMISSED_TYPES_KEY, JSON.stringify([...defaults]));
+      return defaults;
+    } catch { return new Set(['overdue_payment']); }
   });
 
   const saveNotifications = useCallback((items: AppNotification[]) => {
