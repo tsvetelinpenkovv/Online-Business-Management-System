@@ -871,30 +871,27 @@ const Index = () => {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>{getText('orders_no_orders_text')}</p>
-          </div>
         ) : (
           <div className="w-full space-y-4">
             {/* Column visibility toggle - hidden on mobile */}
-            <div className="hidden md:flex justify-end">
-              <ColumnVisibilityToggle
-                visibleColumns={visibleColumns}
-                onToggle={(column) => {
-                  const newColumns = new Set(visibleColumns);
-                  if (newColumns.has(column)) {
-                    newColumns.delete(column);
-                  } else {
-                    newColumns.add(column);
-                  }
-                  setVisibleColumns(newColumns);
-                  saveVisibleColumns(newColumns);
-                }}
-                nekorektenEnabled={nekorektenEnabled}
-              />
-            </div>
+            {filteredOrders.length > 0 && (
+              <div className="hidden md:flex justify-end">
+                <ColumnVisibilityToggle
+                  visibleColumns={visibleColumns}
+                  onToggle={(column) => {
+                    const newColumns = new Set(visibleColumns);
+                    if (newColumns.has(column)) {
+                      newColumns.delete(column);
+                    } else {
+                      newColumns.add(column);
+                    }
+                    setVisibleColumns(newColumns);
+                    saveVisibleColumns(newColumns);
+                  }}
+                  nekorektenEnabled={nekorektenEnabled}
+                />
+              </div>
+            )}
             <div className="w-full">
               {multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0 && (
                 <StoreFilterTabs
@@ -917,6 +914,8 @@ const Index = () => {
                 canDeleteOrders={canDelete('orders')}
                 canCreateInvoices={canCreate('invoices')}
                 noTopRadius={multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0}
+                selectedStoreId={selectedStoreId}
+                stores={stores}
               />
             </div>
             

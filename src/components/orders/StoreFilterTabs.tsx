@@ -89,7 +89,7 @@ const CzechFlag: FC<{ className?: string }> = ({ className = "w-5 h-3.5" }) => (
   </svg>
 );
 
-const getFlagByCountryCode = (code: string): FC<{ className?: string }> | null => {
+export const getFlagByCountryCode = (code: string): FC<{ className?: string }> | null => {
   switch (code) {
     case 'BG': return BulgarianFlag;
     case 'GR': return GreekFlag;
