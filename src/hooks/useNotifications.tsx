@@ -12,6 +12,7 @@ export interface AppNotification {
 }
 
 const NOTIFICATION_KEY = 'app_notifications';
+const DISMISSED_TYPES_KEY = 'dismissed_notification_types';
 const CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 export const useNotifications = () => {
@@ -22,14 +23,23 @@ export const useNotifications = () => {
     } catch { return []; }
   });
 
+  const [dismissedTypes, setDismissedTypes] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(DISMISSED_TYPES_KEY);
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
+
   const saveNotifications = useCallback((items: AppNotification[]) => {
-    // Keep last 50
     const trimmed = items.slice(0, 50);
     setNotifications(trimmed);
     localStorage.setItem(NOTIFICATION_KEY, JSON.stringify(trimmed));
   }, []);
 
   const addNotification = useCallback((notif: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => {
+    // Skip if this type is dismissed
+    if (dismissedTypes.has(notif.type)) return;
+
     const newNotif: AppNotification = {
       ...notif,
       id: crypto.randomUUID(),
@@ -37,7 +47,6 @@ export const useNotifications = () => {
       read: false,
     };
     setNotifications(prev => {
-      // Don't duplicate same type+message within 1 hour
       const exists = prev.some(n => 
         n.type === newNotif.type && n.message === newNotif.message &&
         Date.now() - new Date(n.createdAt).getTime() < 3600000
@@ -47,7 +56,7 @@ export const useNotifications = () => {
       localStorage.setItem(NOTIFICATION_KEY, JSON.stringify(updated));
       return updated;
     });
-  }, []);
+  }, [dismissedTypes]);
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(prev => {
@@ -68,6 +77,30 @@ export const useNotifications = () => {
   const clearAll = useCallback(() => {
     setNotifications([]);
     localStorage.removeItem(NOTIFICATION_KEY);
+  }, []);
+
+  const dismissType = useCallback((type: AppNotification['type']) => {
+    setDismissedTypes(prev => {
+      const updated = new Set(prev);
+      updated.add(type);
+      localStorage.setItem(DISMISSED_TYPES_KEY, JSON.stringify([...updated]));
+      return updated;
+    });
+    // Also remove existing notifications of this type
+    setNotifications(prev => {
+      const updated = prev.filter(n => n.type !== type);
+      localStorage.setItem(NOTIFICATION_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const restoreType = useCallback((type: AppNotification['type']) => {
+    setDismissedTypes(prev => {
+      const updated = new Set(prev);
+      updated.delete(type);
+      localStorage.setItem(DISMISSED_TYPES_KEY, JSON.stringify([...updated]));
+      return updated;
+    });
   }, []);
 
   const checkNotifications = useCallback(async () => {
@@ -159,6 +192,7 @@ export const useNotifications = () => {
   return {
     notifications, unreadCount,
     markAsRead, markAllRead, clearAll,
+    dismissType, restoreType, dismissedTypes,
     checkNotifications,
   };
 };
