@@ -1,4 +1,4 @@
-import { useState, FC } from 'react';
+import { useState, FC, forwardRef } from 'react';
 import { useStores, Store } from '@/hooks/useStores';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,10 +38,11 @@ const COUNTRY_DOT_COLORS: Record<string, string> = {
   'CZ': 'bg-indigo-400',
 };
 
-const CountryDot: FC<{ code: string; className?: string }> = ({ code, className = "w-3 h-3" }) => {
+const CountryDot = forwardRef<HTMLSpanElement, { code: string; className?: string }>(({ code, className = "w-3 h-3" }, ref) => {
   const color = COUNTRY_DOT_COLORS[code] || 'bg-muted-foreground';
-  return <span className={`${className} rounded-full flex-shrink-0 ${color}`} />;
-};
+  return <span ref={ref} className={`${className} rounded-full flex-shrink-0 ${color}`} />;
+});
+CountryDot.displayName = 'CountryDot';
 
 export const MultiStoreSettings = () => {
   const { stores, multiStoreEnabled, loading, toggleMultiStore, createStore, updateStore, deleteStore, reorderStores } = useStores();
