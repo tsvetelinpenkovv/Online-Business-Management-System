@@ -5,6 +5,8 @@ export interface DailyRevenue {
   date: string;
   revenue: number;
   orders: number;
+  prevRevenue?: number;
+  prevOrders?: number;
 }
 
 export interface ProductABC {
@@ -65,7 +67,7 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
           .order('created_at', { ascending: true }),
         supabase
           .from('orders')
-          .select('id, total_price, status')
+          .select('id, created_at, customer_name, phone, total_price, product_name, quantity, status, payment_status, source')
           .gte('created_at', prevFromStr)
           .lte('created_at', prevToStr + 'T23:59:59'),
         supabase
@@ -122,6 +124,7 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
   }, [orders, prevOrders, dateFrom, dateTo]);
 
   const dailyRevenue = useMemo((): DailyRevenue[] => {
+    // Current period
     const map = new Map<string, { revenue: number; orders: number }>();
     orders.forEach(o => {
       const date = o.created_at.split('T')[0];
@@ -130,10 +133,39 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
       existing.orders += 1;
       map.set(date, existing);
     });
-    return Array.from(map.entries())
-      .map(([date, data]) => ({ date, ...data }))
+
+    // Previous period - map by day offset
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
+    const periodMs = to.getTime() - from.getTime();
+    const prevMap = new Map<number, { revenue: number; orders: number }>();
+    prevOrders.forEach(o => {
+      if (!o.created_at) return;
+      const prevDate = new Date(o.created_at);
+      const prevFrom = new Date(from.getTime() - periodMs - 86400000);
+      const dayOffset = Math.floor((prevDate.getTime() - prevFrom.getTime()) / 86400000);
+      const existing = prevMap.get(dayOffset) || { revenue: 0, orders: 0 };
+      existing.revenue += Number(o.total_price);
+      existing.orders += 1;
+      prevMap.set(dayOffset, existing);
+    });
+
+    const sorted = Array.from(map.entries())
+      .map(([date, data]) => {
+        const currentDate = new Date(date);
+        const dayOffset = Math.floor((currentDate.getTime() - from.getTime()) / 86400000);
+        const prev = prevMap.get(dayOffset);
+        return {
+          date,
+          ...data,
+          prevRevenue: prev?.revenue || 0,
+          prevOrders: prev?.orders || 0,
+        };
+      })
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [orders]);
+
+    return sorted;
+  }, [orders, prevOrders, dateFrom, dateTo]);
 
   const abcAnalysis = useMemo((): ProductABC[] => {
     const productMap = new Map<string, { revenue: number; quantity: number }>();

@@ -7,12 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import {
   ArrowLeft, TrendingUp, TrendingDown, ShoppingCart, DollarSign,
-  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText,
+  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -61,16 +62,83 @@ const Analytics = () => {
   });
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
 
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, loading, refetch, orders: rawOrders } = useAnalytics(dateFrom, dateTo);
 
+  // Get unique sources and statuses for filter dropdowns
+  const uniqueSources = useMemo(() => {
+    const sources = new Set<string>();
+    rawOrders.forEach(o => { if (o.source) sources.add(o.source); });
+    return Array.from(sources).sort();
+  }, [rawOrders]);
+
+  const uniqueStatuses = useMemo(() => {
+    const statuses = new Set<string>();
+    rawOrders.forEach(o => { if (o.status) statuses.add(o.status); });
+    return Array.from(statuses).sort();
+  }, [rawOrders]);
+
+  // Filtered orders for display
+  const filteredOrders = useMemo(() => {
+    return rawOrders.filter(o => {
+      if (sourceFilter !== 'all' && o.source !== sourceFilter) return false;
+      if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+      return true;
+    });
+  }, [rawOrders, sourceFilter, statusFilter]);
+
+  // Recalculate KPIs based on filters
+  const filteredKpi = useMemo(() => {
+    if (sourceFilter === 'all' && statusFilter === 'all') return kpi;
+    const totalRevenue = filteredOrders.reduce((s, o) => s + Number(o.total_price), 0);
+    const totalOrders = filteredOrders.length;
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
+    const daysRaw = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24) + 1;
+    const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 1;
+    const deliveredCount = filteredOrders.filter(o => o.status === 'Доставена' || o.status === 'Завършена').length;
+    const returnedCount = filteredOrders.filter(o => o.status === 'Върната').length;
+    return {
+      ...kpi,
+      totalRevenue, totalOrders, avgOrderValue,
+      ordersPerDay: totalOrders / days,
+      conversionRate: totalOrders > 0 ? (deliveredCount / totalOrders) * 100 : 0,
+      returnRate: totalOrders > 0 ? (returnedCount / totalOrders) * 100 : 0,
+      deliveredCount, returnedCount,
+    };
+  }, [kpi, filteredOrders, sourceFilter, statusFilter, dateFrom, dateTo]);
+
+  // Filtered daily revenue
+  const filteredDailyRevenue = useMemo(() => {
+    if (sourceFilter === 'all' && statusFilter === 'all') return dailyRevenue;
+    const map = new Map<string, { revenue: number; orders: number }>();
+    filteredOrders.forEach(o => {
+      const date = o.created_at.split('T')[0];
+      const existing = map.get(date) || { revenue: 0, orders: 0 };
+      existing.revenue += Number(o.total_price);
+      existing.orders += 1;
+      map.set(date, existing);
+    });
+    return Array.from(map.entries())
+      .map(([date, data]) => ({ date, ...data, prevRevenue: 0, prevOrders: 0 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [dailyRevenue, filteredOrders, sourceFilter, statusFilter]);
+
+  const hasFilters = sourceFilter !== 'all' || statusFilter !== 'all';
+
   const handleExportExcel = () => {
-    if (rawOrders.length === 0) return;
-    exportOrdersExcel(rawOrders, `аналитика_${dateFrom}_${dateTo}.xlsx`);
+    const data = hasFilters ? filteredOrders : rawOrders;
+    if (data.length === 0) return;
+    exportOrdersExcel(data, `аналитика_${dateFrom}_${dateTo}.xlsx`);
   };
 
   const handleExportPDF = () => {
-    if (rawOrders.length === 0) return;
-    exportOrdersPDF(rawOrders, undefined, dateFrom, dateTo);
+    const data = hasFilters ? filteredOrders : rawOrders;
+    if (data.length === 0) return;
+    exportOrdersPDF(data, undefined, dateFrom, dateTo);
   };
 
   if (authLoading || loading) {
@@ -85,7 +153,9 @@ const Analytics = () => {
 
   const revenueChartConfig = {
     revenue: { label: 'Приходи', color: 'hsl(221, 83%, 53%)' },
+    prevRevenue: { label: 'Предходен период', color: 'hsl(221, 83%, 53%)' },
     orders: { label: 'Поръчки', color: 'hsl(142, 76%, 36%)' },
+    prevOrders: { label: 'Предходен период', color: 'hsl(142, 76%, 36%)' },
   };
 
   return (
@@ -130,49 +200,92 @@ const Analytics = () => {
       </header>
 
       <main className="max-w-7xl mx-auto p-4 space-y-6">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select value={sourceFilter} onValueChange={setSourceFilter}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Източник" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Всички източници</SelectItem>
+              {uniqueSources.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Статус" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Всички статуси</SelectItem>
+              {uniqueStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {hasFilters && (
+            <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={() => { setSourceFilter('all'); setStatusFilter('all'); }}>
+              Изчисти филтри
+            </Button>
+          )}
+          {hasFilters && (
+            <Badge variant="secondary" className="text-xs">{filteredOrders.length} от {rawOrders.length} поръчки</Badge>
+          )}
+        </div>
+
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <KPICard title="Приходи" value={`${kpi.totalRevenue.toFixed(0)} лв`} icon={DollarSign} trend={kpi.revenueGrowth} />
-          <KPICard title="Поръчки" value={String(kpi.totalOrders)} subtitle={`${kpi.ordersPerDay.toFixed(1)} / ден`} icon={ShoppingCart} trend={kpi.ordersGrowth} />
-          <KPICard title="Ср. стойност" value={`${kpi.avgOrderValue.toFixed(2)} лв`} icon={TrendingUp} />
-          <KPICard title="Конверсия" value={`${kpi.conversionRate.toFixed(1)}%`} subtitle={`${kpi.deliveredCount} доставени`} icon={Percent} />
-          <KPICard title="Доставени" value={String(kpi.deliveredCount)} icon={Truck} color="bg-green-500" />
-          <KPICard title="Върнати" value={`${kpi.returnRate.toFixed(1)}%`} subtitle={`${kpi.returnedCount} бр.`} icon={RotateCcw} color="bg-destructive" />
+          <KPICard title="Приходи" value={`${filteredKpi.totalRevenue.toFixed(0)} лв`} icon={DollarSign} trend={filteredKpi.revenueGrowth} />
+          <KPICard title="Поръчки" value={String(filteredKpi.totalOrders)} subtitle={`${filteredKpi.ordersPerDay.toFixed(1)} / ден`} icon={ShoppingCart} trend={filteredKpi.ordersGrowth} />
+          <KPICard title="Ср. стойност" value={`${filteredKpi.avgOrderValue.toFixed(2)} лв`} icon={TrendingUp} />
+          <KPICard title="Конверсия" value={`${filteredKpi.conversionRate.toFixed(1)}%`} subtitle={`${filteredKpi.deliveredCount} доставени`} icon={Percent} />
+          <KPICard title="Доставени" value={String(filteredKpi.deliveredCount)} icon={Truck} color="bg-green-500" />
+          <KPICard title="Върнати" value={`${filteredKpi.returnRate.toFixed(1)}%`} subtitle={`${filteredKpi.returnedCount} бр.`} icon={RotateCcw} color="bg-destructive" />
         </div>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Trend */}
+          {/* Revenue Trend with comparison */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Приходи по дни</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                Приходи по дни
+                {!hasFilters && <Badge variant="outline" className="text-[10px] font-normal">+ предходен период</Badge>}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer config={revenueChartConfig} className="h-[280px] w-full">
-                <AreaChart data={dailyRevenue}>
+                <AreaChart data={filteredDailyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="date" tickFormatter={v => format(new Date(v), 'dd.MM')} className="text-xs" />
                   <YAxis className="text-xs" />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(221, 83%, 53%)" fill="hsl(221, 83%, 53%)" fillOpacity={0.1} strokeWidth={2} />
+                  {!hasFilters && (
+                    <Area type="monotone" dataKey="prevRevenue" stroke="hsl(221, 83%, 73%)" fill="hsl(221, 83%, 73%)" fillOpacity={0.05} strokeWidth={1} strokeDasharray="4 4" name="Предходен период" />
+                  )}
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(221, 83%, 53%)" fill="hsl(221, 83%, 53%)" fillOpacity={0.1} strokeWidth={2} name="Текущ период" />
                 </AreaChart>
               </ChartContainer>
             </CardContent>
           </Card>
 
-          {/* Orders per day */}
+          {/* Orders per day with comparison */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Поръчки по дни</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                Поръчки по дни
+                {!hasFilters && <Badge variant="outline" className="text-[10px] font-normal">+ предходен период</Badge>}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer config={revenueChartConfig} className="h-[280px] w-full">
-                <BarChart data={dailyRevenue}>
+                <BarChart data={filteredDailyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="date" tickFormatter={v => format(new Date(v), 'dd.MM')} className="text-xs" />
                   <YAxis className="text-xs" />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="orders" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} />
+                  {!hasFilters && (
+                    <Bar dataKey="prevOrders" fill="hsl(142, 76%, 36%)" fillOpacity={0.2} radius={[4, 4, 0, 0]} name="Предходен период" />
+                  )}
+                  <Bar dataKey="orders" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} name="Текущ период" />
                 </BarChart>
               </ChartContainer>
             </CardContent>
