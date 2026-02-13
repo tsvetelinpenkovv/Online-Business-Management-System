@@ -64,7 +64,7 @@ export const NotificationCenter = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="outline" size="icon" className="relative">
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-destructive text-destructive-foreground">
