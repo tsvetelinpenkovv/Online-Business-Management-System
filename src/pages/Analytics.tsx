@@ -12,10 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import {
   ArrowLeft, TrendingUp, TrendingDown, ShoppingCart, DollarSign,
-  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw,
+  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText,
 } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { format } from 'date-fns';
+import { exportOrdersExcel, exportOrdersPDF } from '@/lib/exportUtils';
 
 const COLORS = [
   'hsl(221, 83%, 53%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)',
@@ -57,7 +61,17 @@ const Analytics = () => {
   });
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
 
-  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, loading, refetch } = useAnalytics(dateFrom, dateTo);
+  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, loading, refetch, orders: rawOrders } = useAnalytics(dateFrom, dateTo);
+
+  const handleExportExcel = () => {
+    if (rawOrders.length === 0) return;
+    exportOrdersExcel(rawOrders, `аналитика_${dateFrom}_${dateTo}.xlsx`);
+  };
+
+  const handleExportPDF = () => {
+    if (rawOrders.length === 0) return;
+    exportOrdersPDF(rawOrders, undefined, dateFrom, dateTo);
+  };
 
   if (authLoading || loading) {
     return (
@@ -77,25 +91,40 @@ const Analytics = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card px-4 py-3 sticky top-0 z-10">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between max-w-7xl mx-auto gap-2">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(buildPath('/'))}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-bold flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" /> Аналитика
               </h1>
-              <p className="text-sm text-muted-foreground">KPI, трендове и ABC анализ</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">KPI, трендове и ABC анализ</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36" />
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[130px] sm:w-36" />
             <span className="text-muted-foreground">—</span>
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36" />
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[130px] sm:w-36" />
             <Button variant="outline" size="icon" onClick={refetch}>
               <RefreshCw className="w-4 h-4" />
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Download className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportExcel} className="cursor-pointer">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Експорт Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer">
+                  <FileText className="w-4 h-4 mr-2" /> Експорт PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

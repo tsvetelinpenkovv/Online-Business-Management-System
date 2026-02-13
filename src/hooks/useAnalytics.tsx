@@ -39,6 +39,7 @@ export interface KPIData {
 
 export const useAnalytics = (dateFrom: string, dateTo: string) => {
   const [orders, setOrders] = useState<any[]>([]);
+  const [prevOrders, setPrevOrders] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,13 +47,27 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ordersRes, customersRes, productsRes] = await Promise.all([
+      // Calculate previous period
+      const from = new Date(dateFrom);
+      const to = new Date(dateTo);
+      const periodMs = to.getTime() - from.getTime();
+      const prevFrom = new Date(from.getTime() - periodMs - 86400000);
+      const prevTo = new Date(from.getTime() - 86400000);
+      const prevFromStr = prevFrom.toISOString().split('T')[0];
+      const prevToStr = prevTo.toISOString().split('T')[0];
+
+      const [ordersRes, prevOrdersRes, customersRes, productsRes] = await Promise.all([
         supabase
           .from('orders')
           .select('id, created_at, customer_name, phone, total_price, product_name, quantity, status, payment_status, source')
           .gte('created_at', dateFrom)
           .lte('created_at', dateTo + 'T23:59:59')
           .order('created_at', { ascending: true }),
+        supabase
+          .from('orders')
+          .select('id, total_price, status')
+          .gte('created_at', prevFromStr)
+          .lte('created_at', prevToStr + 'T23:59:59'),
         supabase
           .from('customers')
           .select('name, phone, total_orders, total_spent, last_order_date')
@@ -65,6 +80,7 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
       ]);
 
       setOrders(ordersRes.data || []);
+      setPrevOrders(prevOrdersRes.data || []);
       setCustomers(customersRes.data || []);
       setProducts(productsRes.data || []);
     } catch (err) {
@@ -93,15 +109,17 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
     const returnRate = totalOrders > 0 ? (returnedCount / totalOrders) * 100 : 0;
 
     // Calculate growth vs previous period
-    const periodLength = to.getTime() - from.getTime();
-    const prevFrom = new Date(from.getTime() - periodLength);
-    // Simplified: no prev period data fetched, show 0
+    const prevRevenue = prevOrders.reduce((s, o) => s + Number(o.total_price), 0);
+    const prevTotal = prevOrders.length;
+    const revenueGrowth = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+    const ordersGrowth = prevTotal > 0 ? ((totalOrders - prevTotal) / prevTotal) * 100 : 0;
+
     return {
       totalRevenue, totalOrders, avgOrderValue, ordersPerDay,
       conversionRate, returnRate, deliveredCount, returnedCount,
-      revenueGrowth: 0, ordersGrowth: 0,
+      revenueGrowth, ordersGrowth,
     };
-  }, [orders, dateFrom, dateTo]);
+  }, [orders, prevOrders, dateFrom, dateTo]);
 
   const dailyRevenue = useMemo((): DailyRevenue[] => {
     const map = new Map<string, { revenue: number; orders: number }>();
@@ -187,6 +205,6 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
   return {
     kpi, dailyRevenue, abcAnalysis, topCustomers,
     sourceDistribution, statusDistribution,
-    loading, refetch: fetchData,
+    orders, loading, refetch: fetchData,
   };
 };
