@@ -83,7 +83,8 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
     
     const from = new Date(dateFrom);
     const to = new Date(dateTo);
-    const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    const daysRaw = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24) + 1;
+    const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 1;
     const ordersPerDay = totalOrders / days;
 
     const deliveredCount = orders.filter(o => o.status === 'Доставена' || o.status === 'Завършена').length;
