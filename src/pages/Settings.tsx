@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags } from 'lucide-react';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -636,28 +636,69 @@ const Settings = () => {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               <TabsList className="inline-flex w-max gap-1 p-1">
-                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">API</TabsTrigger>
-                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Платформи</TabsTrigger>
-                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Източници</TabsTrigger>
-                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Лого</TabsTrigger>
-                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Куриери</TabsTrigger>
-                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Статуси</TabsTrigger>
-                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Фирма</TabsTrigger>
-                {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Потребители</TabsTrigger>}
-                {isAdmin && <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1"><Shield className="w-4 h-4 mr-1" />Роли</TabsTrigger>}
-                {isAdmin && <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1 text-destructive"><RotateCcw className="w-4 h-4 mr-1" />Изчисти</TabsTrigger>}
-                {isAdmin && <TabsTrigger value="stores" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1"><Globe className="w-4 h-4 mr-1" />Магазини</TabsTrigger>}
+                <TabsTrigger value="api" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <Key className="w-4 h-4" />
+                  <span>API</span>
+                </TabsTrigger>
+                <TabsTrigger value="platforms" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Платформи</span>
+                </TabsTrigger>
+                <TabsTrigger value="sources" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <Database className="w-4 h-4" />
+                  <span>Източници</span>
+                </TabsTrigger>
+                <TabsTrigger value="branding" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <ImageIcon className="w-4 h-4" />
+                  <span>Лого</span>
+                </TabsTrigger>
+                <TabsTrigger value="couriers" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <Truck className="w-4 h-4" />
+                  <span>Куриери</span>
+                </TabsTrigger>
+                <TabsTrigger value="statuses" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <Tags className="w-4 h-4" />
+                  <span>Статуси</span>
+                </TabsTrigger>
+                <TabsTrigger value="company" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                  <Building2 className="w-4 h-4" />
+                  <span>Фирма</span>
+                </TabsTrigger>
+                {isAdmin && (
+                  <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                    <Users className="w-4 h-4" />
+                    <span>Потребители</span>
+                  </TabsTrigger>
+                )}
+                {isAdmin && (
+                  <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                    <Shield className="w-4 h-4" />
+                    <span>Роли</span>
+                  </TabsTrigger>
+                )}
+                {isAdmin && (
+                  <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1 text-destructive">
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Изчисти</span>
+                  </TabsTrigger>
+                )}
+                {isAdmin && (
+                  <TabsTrigger value="stores" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                    <Globe className="w-4 h-4" />
+                    <span>Магазини</span>
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="notifications" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Известия">
                   <Bell className="w-4 h-4" />
-                  <span className="hidden lg:inline">Известия</span>
+                  <span>Известия</span>
                 </TabsTrigger>
                 <TabsTrigger value="interface" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Редактор на интерфейса">
                   <Type className="w-4 h-4" />
-                  <span className="hidden lg:inline">Интерфейс</span>
+                  <span>Интерфейс</span>
                 </TabsTrigger>
                 <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-destructive" />
-                  <span className="hidden lg:inline">Документация</span>
+                  <span>Документация</span>
                 </TabsTrigger>
               </TabsList>
             </div>
