@@ -718,15 +718,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                     {(() => {
                         const storeId = (order as any).store_id;
                         const store = storeId ? stores.find(s => s.id === storeId) : null;
-                        if (!store) return null;
+                        const countryCode = store?.country_code || 'BG';
                         const dotColors: Record<string, string> = {
                           'BG': 'bg-green-500',
                           'GR': 'bg-sky-400',
                           'RO': 'bg-amber-500',
                           'HU': 'bg-red-500',
                         };
-                        const color = dotColors[store.country_code] || 'bg-muted-foreground';
-                        return <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${color}`} title={store.name} />;
+                        const color = dotColors[countryCode] || 'bg-muted-foreground';
+                        return <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${color}`} title={store?.name || 'България'} />;
                       })()}
                       <span>№ {order.id}</span>
                     </div>
