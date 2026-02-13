@@ -74,6 +74,7 @@ export const NotificationSoundSettings: FC = () => {
   const saveSettings = (updated: NotificationSettings) => {
     setSettings(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('notification-settings-changed'));
   };
 
   const handleTestSound = () => {

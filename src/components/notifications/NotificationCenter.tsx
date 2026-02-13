@@ -92,10 +92,10 @@ export const NotificationCenter = ({ className }: { className?: string }) => {
     };
     checkSettings();
     window.addEventListener('storage', checkSettings);
-    const interval = setInterval(checkSettings, 2000);
+    window.addEventListener('notification-settings-changed', checkSettings);
     return () => {
       window.removeEventListener('storage', checkSettings);
-      clearInterval(interval);
+      window.removeEventListener('notification-settings-changed', checkSettings);
     };
   }, []);
 
