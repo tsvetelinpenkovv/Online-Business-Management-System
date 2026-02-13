@@ -440,7 +440,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             <div class="info"><span class="label">Продукт:</span> ${cleanProductName(order.product_name)}</div>
             <div class="info"><span class="label">Каталожен номер:</span> ${order.catalog_number || '-'}</div>
             <div class="info"><span class="label">Количество:</span> ${order.quantity}</div>
-            <div class="info"><span class="label">Цена:</span> ${order.total_price.toFixed(2)} €</div>
+            <div class="info"><span class="label">Цена:</span> ${order.total_price.toFixed(2)} ${(order as any).currency_symbol || '€'}</div>
             <div class="info"><span class="label">Доставка:</span> ${order.delivery_address || '-'}</div>
             <div class="info"><span class="label">Статус:</span> ${order.status}</div>
             <div class="info"><span class="label">Коментар:</span> ${order.comment || '-'}</div>
@@ -761,9 +761,9 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   </TableCell>
                 )}
                 {visibleColumns.has('price') && (
-                  <TableCell className="text-center" title={`Обща сума: ${order.total_price.toFixed(2)} €`}>
+                  <TableCell className="text-center" title={`Обща сума: ${order.total_price.toFixed(2)} ${(order as any).currency_symbol || '€'}`}>
                     <div className="flex flex-col items-center leading-tight">
-                      <span className="text-sm font-medium text-success whitespace-nowrap">{order.total_price.toFixed(2)} €</span>
+                      <span className="text-sm font-medium text-success whitespace-nowrap">{order.total_price.toFixed(2)} {(order as any).currency_symbol || '€'}</span>
                       <span className="text-[10px] text-muted-foreground">с ДДС</span>
                     </div>
                   </TableCell>
@@ -821,7 +821,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                             </p>
                             <p className="flex items-center gap-2">
                               <Euro className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                              <span><strong>Цена:</strong> <span className="text-success font-medium">{order.total_price.toFixed(2)} €</span> <span className="text-[11px] text-muted-foreground">с ДДС</span></span>
+                              <span><strong>Цена:</strong> <span className="text-success font-medium">{order.total_price.toFixed(2)} {(order as any).currency_symbol || '€'}</span> <span className="text-[11px] text-muted-foreground">с ДДС</span></span>
                             </p>
                           </div>
                         }

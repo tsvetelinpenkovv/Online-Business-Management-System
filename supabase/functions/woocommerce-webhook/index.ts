@@ -11,6 +11,7 @@ interface WooCommerceOrder {
   status: string;
   date_created: string;
   total: string;
+  currency: string;
   billing: {
     first_name: string;
     last_name: string;
@@ -52,7 +53,6 @@ interface WooCommerceOrder {
   _wc_order_attribution_referrer?: string;
 }
 
-// Verify WooCommerce webhook signature
 async function verifyWooCommerceSignature(bodyText: string, signature: string, secret: string): Promise<boolean> {
   try {
     const encoder = new TextEncoder();
@@ -72,36 +72,24 @@ async function verifyWooCommerceSignature(bodyText: string, signature: string, s
   }
 }
 
-// Detect marketing source from UTM data
 function detectMarketingSource(order: WooCommerceOrder): string | null {
   const metaData = order.meta_data || [];
   
   const utmSourceKeys = [
-    '_wc_order_attribution_utm_source',
-    'utm_source',
-    '_utm_source',
-    'wc_order_attribution_utm_source',
-    'referer_source',
-    '_referer_source'
+    '_wc_order_attribution_utm_source', 'utm_source', '_utm_source',
+    'wc_order_attribution_utm_source', 'referer_source', '_referer_source'
   ];
   
   const referrerKeys = [
-    '_wc_order_attribution_referrer',
-    'referrer',
-    '_referrer',
-    'referer'
+    '_wc_order_attribution_referrer', 'referrer', '_referrer', 'referer'
   ];
   
   let utmSource = order.utm_source || order._wc_order_attribution_utm_source || '';
   let referrer = order._wc_order_attribution_referrer || '';
   
   for (const meta of metaData) {
-    if (utmSourceKeys.includes(meta.key)) {
-      utmSource = meta.value;
-    }
-    if (referrerKeys.includes(meta.key)) {
-      referrer = meta.value;
-    }
+    if (utmSourceKeys.includes(meta.key)) utmSource = meta.value;
+    if (referrerKeys.includes(meta.key)) referrer = meta.value;
   }
   
   const source = (utmSource || referrer).toLowerCase();
@@ -109,11 +97,9 @@ function detectMarketingSource(order: WooCommerceOrder): string | null {
   if (source.includes('facebook') || source.includes('fb') || source.includes('instagram') || source.includes('ig') || source.includes('meta')) {
     return 'facebook';
   }
-  
   if (source.includes('google') || source.includes('gclid') || source.includes('adwords') || source.includes('ppc') || source.includes('cpc')) {
     return 'google';
   }
-  
   return null;
 }
 
@@ -138,23 +124,47 @@ Deno.serve(async (req) => {
   try {
     console.log('WooCommerce webhook received');
     
-    // Get webhook signature and secret
+    const url = new URL(req.url);
+    const storeId = url.searchParams.get('store_id');
+    console.log('Store ID from query:', storeId);
+
     const signature = req.headers.get('x-wc-webhook-signature');
-    const webhookSecret = Deno.env.get('WC_WEBHOOK_SECRET');
-    
-    // Read body as text first for signature verification
     const bodyText = await req.text();
-    
-    // Webhook secret is mandatory - reject if not configured
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get webhook secret - either from store config or env
+    let webhookSecret = Deno.env.get('WC_WEBHOOK_SECRET');
+    let storeCurrency = 'EUR';
+    let storeCurrencySymbol = '€';
+
+    if (storeId) {
+      const { data: store } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('id', storeId)
+        .single();
+
+      if (store) {
+        if (store.wc_webhook_secret) {
+          webhookSecret = store.wc_webhook_secret;
+        }
+        storeCurrency = store.currency || 'EUR';
+        storeCurrencySymbol = store.currency_symbol || '€';
+        console.log('Store found:', store.name, 'Currency:', storeCurrency);
+      }
+    }
+
     if (!webhookSecret) {
-      console.error('WC_WEBHOOK_SECRET not configured - webhook authentication disabled');
+      console.error('Webhook secret not configured');
       return new Response(JSON.stringify({ error: 'Webhook authentication not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Verify signature
     if (!signature) {
       console.error('Missing webhook signature');
       return new Response(JSON.stringify({ error: 'Missing signature' }), {
@@ -162,7 +172,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
+
     const isValid = await verifyWooCommerceSignature(bodyText, signature, webhookSecret);
     if (!isValid) {
       console.error('Invalid webhook signature');
@@ -174,10 +184,7 @@ Deno.serve(async (req) => {
     console.log('Webhook signature verified');
 
     const topic = req.headers.get('x-wc-webhook-topic');
-    console.log('Webhook topic:', topic);
-
     if (!topic || (!topic.includes('order.created') && !topic.includes('order.updated'))) {
-      console.log('Ignoring non-order webhook:', topic);
       return new Response(JSON.stringify({ success: true, message: 'Ignored non-order webhook' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -187,18 +194,17 @@ Deno.serve(async (req) => {
     const body = JSON.parse(bodyText);
     const order = body as WooCommerceOrder;
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Use currency from WooCommerce order if available, otherwise from store config
+    const orderCurrency = order.currency || storeCurrency;
+    const currencySymbolMap: Record<string, string> = {
+      'EUR': '€', 'RON': 'RON', 'HUF': 'Ft', 'BGN': 'лв', 'PLN': 'zł', 'CZK': 'Kč', 'USD': '$', 'GBP': '£',
+    };
+    const orderCurrencySymbol = currencySymbolMap[orderCurrency] || storeCurrencySymbol;
 
     const shipping = order.shipping;
     const addressParts = [
-      shipping.address_1,
-      shipping.address_2,
-      shipping.city,
-      shipping.state,
-      shipping.postcode,
-      shipping.country,
+      shipping.address_1, shipping.address_2, shipping.city,
+      shipping.state, shipping.postcode, shipping.country,
     ].filter(Boolean);
     const deliveryAddress = addressParts.join(', ') || null;
 
@@ -209,16 +215,15 @@ Deno.serve(async (req) => {
 
     const marketingSource = detectMarketingSource(order);
     const orderSource = marketingSource || 'woocommerce';
-    console.log('Detected marketing source:', marketingSource, '-> Using source:', orderSource);
 
-    const orderCode = `WC-${order.id}`;
+    const orderCode = storeId ? `WC-${storeId.substring(0, 4)}-${order.id}` : `WC-${order.id}`;
     const { data: existingOrder } = await supabase
       .from('orders')
       .select('id')
       .eq('code', orderCode)
       .maybeSingle();
 
-    const orderData = {
+    const orderData: Record<string, any> = {
       code: orderCode,
       customer_name: customerName,
       customer_email: order.billing.email || null,
@@ -232,30 +237,23 @@ Deno.serve(async (req) => {
       source: orderSource,
       is_correct: true,
       comment: `WooCommerce Order #${order.id}${marketingSource ? ` (via ${marketingSource})` : ''}`,
+      currency: orderCurrency,
+      currency_symbol: orderCurrencySymbol,
     };
+
+    if (storeId) {
+      orderData.store_id = storeId;
+    }
 
     if (existingOrder) {
       console.log('Updating existing order:', existingOrder.id);
-      const { error } = await supabase
-        .from('orders')
-        .update(orderData)
-        .eq('id', existingOrder.id);
-
-      if (error) {
-        console.error('Error updating order:', error);
-        throw error;
-      }
+      const { error } = await supabase.from('orders').update(orderData).eq('id', existingOrder.id);
+      if (error) throw error;
       console.log('Order updated successfully');
     } else {
       console.log('Creating new order');
-      const { error } = await supabase
-        .from('orders')
-        .insert(orderData);
-
-      if (error) {
-        console.error('Error creating order:', error);
-        throw error;
-      }
+      const { error } = await supabase.from('orders').insert(orderData);
+      if (error) throw error;
       console.log('Order created successfully');
     }
 

@@ -31,6 +31,7 @@ import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
 import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
 import { CacheManagementCard } from '@/components/settings/CacheManagementCard';
 import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
+import { MultiStoreSettings } from '@/components/settings/MultiStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
 import { Switch } from '@/components/ui/switch';
@@ -645,6 +646,7 @@ const Settings = () => {
                 {isAdmin && <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3">Потребители</TabsTrigger>}
                 {isAdmin && <TabsTrigger value="roles" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1"><Shield className="w-4 h-4 mr-1" />Роли</TabsTrigger>}
                 {isAdmin && <TabsTrigger value="danger" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1 text-destructive"><RotateCcw className="w-4 h-4 mr-1" />Изчисти</TabsTrigger>}
+                {isAdmin && <TabsTrigger value="stores" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1"><Globe className="w-4 h-4 mr-1" />Магазини</TabsTrigger>}
                 <TabsTrigger value="notifications" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Известия">
                   <Bell className="w-4 h-4" />
                   <span className="hidden lg:inline">Известия</span>
@@ -664,6 +666,12 @@ const Settings = () => {
           <TabsContent value="platforms" className="space-y-6">
             <PlatformApiSettings />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="stores" className="space-y-6">
+              <MultiStoreSettings />
+            </TabsContent>
+          )}
 
           <TabsContent value="notifications" className="space-y-6">
             <NotificationSoundSettings />
