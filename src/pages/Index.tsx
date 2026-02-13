@@ -16,7 +16,7 @@ import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
 import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3 } from 'lucide-react';
-import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
@@ -215,6 +215,11 @@ const Index = () => {
   const effectiveNekorektenEnabled = nekorektenEnabled && selectedStoreBG;
   const effectiveConnectixEnabled = connectixEnabled && selectedStoreBG;
 
+  // Determine BG store for fallback assignment
+  const bgStoreId = useMemo(() => {
+    return stores.find(s => s.country_code === 'BG')?.id || null;
+  }, [stores]);
+
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
       // Normalize search term for phone comparison
@@ -236,24 +241,25 @@ const Index = () => {
       const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
       const matchesDateTo = !dateTo || orderDate <= dateTo;
 
-      // Store filter
-      const matchesStore = !selectedStoreId || (order as any).store_id === selectedStoreId;
+      // Store filter - orders without store_id belong to Bulgaria
+      const orderStoreId = (order as any).store_id || bgStoreId;
+      const matchesStore = !selectedStoreId || orderStoreId === selectedStoreId;
 
       return matchesSearch && matchesStatus && matchesSource && matchesDateFrom && matchesDateTo && matchesStore;
     });
-  }, [orders, debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo, selectedStoreId]);
+  }, [orders, debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo, selectedStoreId, bgStoreId]);
 
-  // Order count by store
+  // Order count by store - orders without store_id count as Bulgaria
   const orderCountByStore = useMemo(() => {
     const counts: Record<string, number> = {};
     orders.forEach(order => {
-      const storeId = (order as any).store_id;
+      const storeId = (order as any).store_id || bgStoreId;
       if (storeId) {
         counts[storeId] = (counts[storeId] || 0) + 1;
       }
     });
     return counts;
-  }, [orders]);
+  }, [orders, bgStoreId]);
 
   // Pagination
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
@@ -731,7 +737,7 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <NotificationCenter />
+            
             <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')} className={!canView('settings') ? 'hidden' : ''}>
               <Settings className="w-4 h-4" />
             </Button>
@@ -742,7 +748,7 @@ const Index = () => {
 
           {/* Mobile menu (show up to md breakpoint) - compact uniform buttons */}
           <div className="flex md:hidden items-center gap-1">
-            <NotificationCenter className="h-8 w-8" />
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8" title={getText('orders_refresh_label')}>
