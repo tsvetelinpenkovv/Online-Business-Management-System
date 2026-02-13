@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Plus, Trash2, Save, Loader2, Store as StoreIcon, Eye, EyeOff, TestTube, RefreshCw, Check, AlertCircle, GripVertical, ArrowUp, ArrowDown, BookOpen, Warehouse } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getFlagByCountryCode } from '@/components/orders/StoreFilterTabs';
 
 
 const COUNTRY_OPTIONS = [
@@ -245,6 +246,7 @@ export const MultiStoreSettings = () => {
                       {COUNTRY_OPTIONS.map(c => (
                         <SelectItem key={c.code} value={c.code}>
                           <div className="flex items-center gap-2">
+                            {(() => { const F = getFlagByCountryCode(c.code); return F ? <F className="w-5 h-3.5 rounded-[1px] shadow-sm flex-shrink-0" /> : null; })()}
                             <CountryDot code={c.code} />
                             <span>{c.name} ({c.currency})</span>
                           </div>
@@ -365,6 +367,7 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
             <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
+            {(() => { const F = getFlagByCountryCode(store.country_code); return F ? <F className="w-6 h-4 rounded-[1px] shadow-sm flex-shrink-0" /> : null; })()}
             <CountryDot code={store.country_code} className="w-3.5 h-3.5" />
             <StoreIcon className="w-4 h-4" />
             {store.name}
