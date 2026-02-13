@@ -205,6 +205,16 @@ const Index = () => {
     return cleaned;
   };
 
+  // Determine if selected store is Bulgaria (for Connectix/Nekorekten)
+  const selectedStoreBG = useMemo(() => {
+    if (!selectedStoreId) return true; // "All" tab - show BG features
+    const store = stores.find(s => s.id === selectedStoreId);
+    return store?.country_code === 'BG';
+  }, [selectedStoreId, stores]);
+
+  const effectiveNekorektenEnabled = nekorektenEnabled && selectedStoreBG;
+  const effectiveConnectixEnabled = connectixEnabled && selectedStoreBG;
+
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
       // Normalize search term for phone comparison
@@ -802,7 +812,7 @@ const Index = () => {
                     Колони
                   </div>
                   <div className="grid grid-cols-2 gap-1 max-h-[200px] overflow-y-auto">
-                    {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || nekorektenEnabled).map((column) => (
+                    {COLUMNS_CONFIG.filter(col => col.key !== 'correct' || effectiveNekorektenEnabled).map((column) => (
                       <button
                         key={column.key}
                         type="button"
@@ -856,8 +866,8 @@ const Index = () => {
           onClearFilters={clearFilters}
           onToggleStatistics={() => setShowStatistics(!showStatistics)}
           showStatistics={showStatistics}
-          nekorektenEnabled={nekorektenEnabled}
-          connectixEnabled={connectixEnabled}
+          nekorektenEnabled={effectiveNekorektenEnabled}
+          connectixEnabled={effectiveConnectixEnabled}
         />
 
         {/* Multi-store filter tabs - moved to be visually part of the table */}
@@ -887,7 +897,7 @@ const Index = () => {
                   setVisibleColumns(newColumns);
                   saveVisibleColumns(newColumns);
                 }}
-                nekorektenEnabled={nekorektenEnabled}
+                nekorektenEnabled={effectiveNekorektenEnabled}
               />
             </div>
             <div className="w-full">
@@ -906,7 +916,7 @@ const Index = () => {
                 onUpdate={updateOrder}
                 selectedOrders={selectedOrders}
                 onSelectionChange={setSelectedOrders}
-                nekorektenEnabled={nekorektenEnabled}
+                nekorektenEnabled={effectiveNekorektenEnabled}
                 visibleColumns={visibleColumns}
                 canEditOrders={canEdit('orders')}
                 canDeleteOrders={canDelete('orders')}

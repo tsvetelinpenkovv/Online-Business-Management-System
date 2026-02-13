@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { buildPath } from '@/components/SecretPathGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getFlagByCountryCode } from '@/components/orders/StoreFilterTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import {
   ArrowLeft, TrendingUp, TrendingDown, ShoppingCart, DollarSign,
-  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter,
+  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -65,7 +66,7 @@ const Analytics = () => {
   const [sourceFilter, setSourceFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, loading, refetch, orders: rawOrders } = useAnalytics(dateFrom, dateTo);
+  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, storeRevenue, loading, refetch, orders: rawOrders } = useAnalytics(dateFrom, dateTo);
 
   // Get unique sources and statuses for filter dropdowns
   const uniqueSources = useMemo(() => {
@@ -337,11 +338,57 @@ const Analytics = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="abc">
+        <Tabs defaultValue="stores">
           <TabsList>
+            <TabsTrigger value="stores"><Store className="w-4 h-4 mr-1" />По магазин</TabsTrigger>
             <TabsTrigger value="abc"><Package className="w-4 h-4 mr-1" />ABC Анализ</TabsTrigger>
             <TabsTrigger value="customers"><Users className="w-4 h-4 mr-1" />Топ клиенти</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="stores">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Store className="w-4 h-4" />
+                  Приходи по магазин
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {storeRevenue.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Няма данни за магазини в този период</p>
+                ) : (
+                  <div className="space-y-3">
+                    {storeRevenue.map((store, i) => {
+                      const maxRevenue = Math.max(...storeRevenue.map(s => s.revenue));
+                      const pct = maxRevenue > 0 ? (store.revenue / maxRevenue) * 100 : 0;
+                      const FlagComp = getFlagByCountryCode(store.countryCode);
+                      return (
+                        <div key={i} className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {FlagComp && <FlagComp className="w-5 h-3.5 rounded-[1px] shadow-sm" />}
+                              <span className="font-medium text-sm">{store.storeName}</span>
+                              <Badge variant="outline" className="text-xs">{store.currency}</Badge>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-bold text-sm">{store.revenue.toFixed(2)} {store.currencySymbol}</span>
+                              <span className="text-xs text-muted-foreground ml-2">({store.orders} поръчки)</span>
+                            </div>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="abc">
             <Card>

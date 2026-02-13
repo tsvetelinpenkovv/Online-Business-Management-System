@@ -44,6 +44,7 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
   const [prevOrders, setPrevOrders] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -58,10 +59,10 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
       const prevFromStr = prevFrom.toISOString().split('T')[0];
       const prevToStr = prevTo.toISOString().split('T')[0];
 
-      const [ordersRes, prevOrdersRes, customersRes, productsRes] = await Promise.all([
+      const [ordersRes, prevOrdersRes, customersRes, productsRes, storesRes] = await Promise.all([
         supabase
           .from('orders')
-          .select('id, created_at, customer_name, phone, total_price, product_name, quantity, status, payment_status, source')
+          .select('id, created_at, customer_name, phone, total_price, product_name, quantity, status, payment_status, source, store_id, currency, currency_symbol')
           .gte('created_at', dateFrom)
           .lte('created_at', dateTo + 'T23:59:59')
           .order('created_at', { ascending: true }),
@@ -79,12 +80,18 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
           .from('inventory_products')
           .select('name, sale_price, current_stock')
           .eq('is_active', true),
+        supabase
+          .from('stores')
+          .select('id, name, country_code, currency, currency_symbol, is_enabled')
+          .eq('is_enabled', true)
+          .order('sort_order', { ascending: true }),
       ]);
 
       setOrders(ordersRes.data || []);
       setPrevOrders(prevOrdersRes.data || []);
       setCustomers(customersRes.data || []);
       setProducts(productsRes.data || []);
+      setStores(storesRes.data || []);
     } catch (err) {
       console.error('Analytics fetch error:', err);
     } finally {
@@ -234,9 +241,31 @@ export const useAnalytics = (dateFrom: string, dateTo: string) => {
       .sort((a, b) => b.value - a.value);
   }, [orders]);
 
+  const storeRevenue = useMemo(() => {
+    const map = new Map<string, { storeName: string; countryCode: string; currency: string; currencySymbol: string; revenue: number; orders: number }>();
+    orders.forEach(o => {
+      const storeId = o.store_id;
+      if (!storeId) return;
+      const store = stores.find((s: any) => s.id === storeId);
+      if (!store) return;
+      const existing = map.get(storeId) || {
+        storeName: store.name,
+        countryCode: store.country_code,
+        currency: store.currency,
+        currencySymbol: store.currency_symbol,
+        revenue: 0,
+        orders: 0,
+      };
+      existing.revenue += Number(o.total_price);
+      existing.orders += 1;
+      map.set(storeId, existing);
+    });
+    return Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
+  }, [orders, stores]);
+
   return {
     kpi, dailyRevenue, abcAnalysis, topCustomers,
-    sourceDistribution, statusDistribution,
-    orders, loading, refetch: fetchData,
+    sourceDistribution, statusDistribution, storeRevenue,
+    orders, stores, loading, refetch: fetchData,
   };
 };
