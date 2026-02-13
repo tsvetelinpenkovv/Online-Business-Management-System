@@ -153,7 +153,7 @@ export const useNotifications = () => {
         addNotification({
           type: 'overdue_payment',
           title: 'Просрочено плащане',
-          message: `${o.code} — ${o.customer_name}: ${Number(o.total_price).toFixed(2)} лв`,
+          message: `${o.code} — ${o.customer_name}: ${Number(o.total_price).toFixed(2)} €`,
           link: '/finance',
         });
       });
@@ -178,7 +178,7 @@ export const useNotifications = () => {
         addNotification({
           type: 'new_order',
           title: 'Нова поръчка',
-          message: `${order.code} — ${order.customer_name}: ${Number(order.total_price).toFixed(2)} лв`,
+          message: `${order.code} — ${order.customer_name}: ${Number(order.total_price).toFixed(2)} €`,
           link: '/',
         });
       })
