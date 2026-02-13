@@ -860,16 +860,7 @@ const Index = () => {
           connectixEnabled={connectixEnabled}
         />
 
-        {/* Multi-store filter tabs */}
-        {multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0 && (
-          <StoreFilterTabs
-            stores={stores}
-            selectedStoreId={selectedStoreId}
-            onSelectStore={setSelectedStoreId}
-            orderCountByStore={orderCountByStore}
-            totalOrders={orders.length}
-          />
-        )}
+        {/* Multi-store filter tabs - moved to be visually part of the table */}
 
         {/* Statistics Dashboard */}
         {showStatistics && (
@@ -905,6 +896,15 @@ const Index = () => {
               />
             </div>
             <div className="w-full">
+              {multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0 && (
+                <StoreFilterTabs
+                  stores={stores}
+                  selectedStoreId={selectedStoreId}
+                  onSelectStore={setSelectedStoreId}
+                  orderCountByStore={orderCountByStore}
+                  totalOrders={orders.length}
+                />
+              )}
               <OrdersTable
                 orders={paginatedOrders}
                 onDelete={deleteOrder}
@@ -916,6 +916,7 @@ const Index = () => {
                 canEditOrders={canEdit('orders')}
                 canDeleteOrders={canDelete('orders')}
                 canCreateInvoices={canCreate('invoices')}
+                noTopRadius={multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0}
               />
             </div>
             

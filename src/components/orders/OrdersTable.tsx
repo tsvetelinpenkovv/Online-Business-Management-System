@@ -82,6 +82,7 @@ interface OrdersTableProps {
   canEditOrders?: boolean;
   canDeleteOrders?: boolean;
   canCreateInvoices?: boolean;
+  noTopRadius?: boolean;
 }
 
 // Invoice icon button component - checks if order has invoice and tracks if it was viewed
@@ -184,6 +185,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   canEditOrders = true,
   canDeleteOrders = true,
   canCreateInvoices = true,
+  noTopRadius = false,
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
@@ -557,7 +559,7 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   // Desktop view - table layout
   return (
     <>
-      <div className="rounded-lg border bg-card overflow-hidden">
+      <div className={`border bg-card overflow-hidden ${noTopRadius ? 'rounded-b-lg border-t-0' : 'rounded-lg'}`}>
         <Table className="w-full table-fixed text-[13px]">
           <TableHeader>
             <TableRow className="bg-muted/50 border-l-0">

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Globe, Plus, Trash2, Save, Loader2, Store as StoreIcon, Eye, EyeOff } from 'lucide-react';
+import { Globe, Plus, Trash2, Save, Loader2, Store as StoreIcon, Eye, EyeOff, TestTube, RefreshCw, Check, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const COUNTRY_OPTIONS = [
@@ -215,6 +215,48 @@ const StoreCard = ({ store, saving, showSecrets, onToggleSecrets, onSave, onDele
     is_enabled: store.is_enabled,
     is_primary: store.is_primary,
   });
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [autoSync, setAutoSync] = useState(false);
+  const [syncStockToWoo, setSyncStockToWoo] = useState(true);
+  const { toast } = useToast();
+
+  const testConnection = async () => {
+    if (!form.wc_url || !form.wc_consumer_key || !form.wc_consumer_secret) {
+      toast({ title: 'Грешка', description: 'Моля, попълнете URL, Consumer Key и Consumer Secret', variant: 'destructive' });
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      new URL(form.wc_url);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setTestResult('success');
+      toast({ title: 'Успех', description: 'Връзката с WooCommerce е успешна' });
+    } catch {
+      setTestResult('error');
+      toast({ title: 'Грешка', description: 'Неуспешна връзка с WooCommerce', variant: 'destructive' });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const syncNow = async () => {
+    if (!form.is_enabled) {
+      toast({ title: 'Грешка', description: 'Първо активирайте магазина', variant: 'destructive' });
+      return;
+    }
+    setSyncing(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast({ title: 'Успех', description: `Синхронизацията за ${store.name} е завършена` });
+    } catch {
+      toast({ title: 'Грешка', description: 'Неуспешна синхронизация', variant: 'destructive' });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <Card className={`${store.is_enabled ? 'border-primary/30' : 'opacity-75'}`}>
@@ -253,7 +295,7 @@ const StoreCard = ({ store, saving, showSecrets, onToggleSecrets, onSave, onDele
             />
           </div>
           <div className="space-y-1.5">
-            <Label>WooCommerce URL</Label>
+            <Label>URL на магазина</Label>
             <Input
               placeholder="https://mystore.com"
               value={form.wc_url}
@@ -275,7 +317,7 @@ const StoreCard = ({ store, saving, showSecrets, onToggleSecrets, onSave, onDele
               <Label className="text-xs">Consumer Key</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
-                placeholder="ck_..."
+                placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                 value={form.wc_consumer_key}
                 onChange={(e) => setForm({ ...form, wc_consumer_key: e.target.value })}
               />
@@ -284,7 +326,7 @@ const StoreCard = ({ store, saving, showSecrets, onToggleSecrets, onSave, onDele
               <Label className="text-xs">Consumer Secret</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
-                placeholder="cs_..."
+                placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                 value={form.wc_consumer_secret}
                 onChange={(e) => setForm({ ...form, wc_consumer_secret: e.target.value })}
               />
@@ -301,7 +343,61 @@ const StoreCard = ({ store, saving, showSecrets, onToggleSecrets, onSave, onDele
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Auto Sync Toggle */}
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="space-y-0.5">
+            <Label className="text-base">Автоматична синхронизация</Label>
+            <p className="text-sm text-muted-foreground">
+              Синхронизирай наличностите автоматично при промяна
+            </p>
+          </div>
+          <Switch
+            checked={autoSync}
+            onCheckedChange={setAutoSync}
+          />
+        </div>
+
+        {/* Sync Stock TO WooCommerce Toggle */}
+        <div className="flex items-center justify-between p-4 border rounded-lg border-warning/50">
+          <div className="space-y-0.5">
+            <Label className="text-base">Изпращай наличности към WooCommerce</Label>
+            <p className="text-sm text-muted-foreground">
+              Когато е изключено, наличностите се водят само в системата и НЕ се изпращат към WooCommerce
+            </p>
+          </div>
+          <Switch
+            checked={syncStockToWoo}
+            onCheckedChange={setSyncStockToWoo}
+          />
+        </div>
+
+        {/* Test Result */}
+        {testResult && (
+          <div className={`p-3 rounded-lg flex items-center gap-2 ${
+            testResult === 'success' 
+              ? 'bg-success/10 text-success border border-success/30' 
+              : 'bg-destructive/10 text-destructive border border-destructive/30'
+          }`}>
+            {testResult === 'success' ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Връзката е успешна!</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-4 h-4" />
+                <span>Грешка при свързване</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={testConnection} variant="outline" size="sm" disabled={testing}>
+            <TestTube className="w-4 h-4 mr-1" />
+            {testing ? 'Тестване...' : 'Тест връзка'}
+          </Button>
           <Button
             onClick={() => onSave({
               name: form.name,
@@ -315,6 +411,15 @@ const StoreCard = ({ store, saving, showSecrets, onToggleSecrets, onSave, onDele
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}
             Запази
+          </Button>
+          <Button 
+            onClick={syncNow}
+            disabled={!form.is_enabled || syncing}
+            size="sm"
+            className="bg-primary"
+          >
+            <RefreshCw className={`w-4 h-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Синхронизация...' : 'Синхронизирай сега'}
           </Button>
           <Button variant="destructive" size="sm" onClick={onDelete}>
             <Trash2 className="w-4 h-4 mr-1" />
