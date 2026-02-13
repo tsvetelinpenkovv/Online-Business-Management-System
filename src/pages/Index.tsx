@@ -622,8 +622,8 @@ const Index = () => {
             )}
           </div>
 
-          {/* Tablet and Desktop common actions */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Desktop actions - navigation buttons */}
+          <div className="hidden md:flex items-center gap-1.5">
             {canCreate('orders') && (
               <Button onClick={() => setShowAddOrderDialog(true)} className="hidden lg:flex gap-2">
                 <Plus className="w-4 h-4" />
@@ -632,9 +632,9 @@ const Index = () => {
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5">
                   <Download className="w-4 h-4" />
-                  {getText('orders_export_csv_label').split(' ')[0]}
+                  <span className="hidden lg:inline">{getText('orders_export_csv_label').split(' ')[0]}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -656,79 +656,52 @@ const Index = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
-                  onClick={() => {
-                    refetch();
-                    toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
-                  }} 
+                  onClick={() => { refetch(); toast({ title: 'Обновено', description: 'Данните са обновени успешно' }); }} 
                   className="cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Обнови сега
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(0);
-                    toast({ title: 'Авто-обновяване', description: 'Изключено' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Без автоматично
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(60000);
-                    toast({ title: 'Авто-обновяване', description: 'На всяка 1 минута' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 60000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  На всяка 1 минута
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(120000);
-                    toast({ title: 'Авто-обновяване', description: 'На всеки 2 минути' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 120000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  На всеки 2 минути
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(300000);
-                    toast({ title: 'Авто-обновяване', description: 'На всеки 5 минути' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 300000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  На всеки 5 минути
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(600000);
-                    toast({ title: 'Авто-обновяване', description: 'На всеки 10 минути' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 600000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  На всеки 10 минути
-                </DropdownMenuItem>
+                {([0, 60000, 120000, 300000, 600000] as AutoRefreshInterval[]).map((interval) => {
+                  const labels: Record<number, string> = { 0: 'Без автоматично', 60000: '1 минута', 120000: '2 минути', 300000: '5 минути', 600000: '10 минути' };
+                  return (
+                    <DropdownMenuItem 
+                      key={interval}
+                      onClick={() => { setAutoRefreshInterval(interval); toast({ title: 'Авто-обновяване', description: interval === 0 ? 'Изключено' : `На всеки ${labels[interval]}` }); }} 
+                      className={`cursor-pointer ${autoRefreshInterval === interval ? 'bg-muted' : ''}`}
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      {labels[interval]}
+                    </DropdownMenuItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
             <QuickCacheClear />
-            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/crm'))} title="CRM - Клиенти">
-              <Users className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/finance'))} title="Финанси">
-              <Euro className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/analytics'))} title="Аналитика">
-              <BarChart3 className="w-4 h-4" />
-            </Button>
+            {/* Navigation group */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" title="Навигация">
+                  <BarChart3 className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate(buildPath('/crm'))} className="cursor-pointer">
+                  <Users className="w-4 h-4 mr-2" />
+                  CRM - Клиенти
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(buildPath('/finance'))} className="cursor-pointer">
+                  <Euro className="w-4 h-4 mr-2" />
+                  Финанси
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(buildPath('/analytics'))} className="cursor-pointer">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Аналитика
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <NotificationCenter />
             <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')} className={!canView('settings') ? 'hidden' : ''}>
               <Settings className="w-4 h-4" />
@@ -738,8 +711,9 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Mobile menu (show up to md breakpoint) */}
+          {/* Mobile menu (show up to md breakpoint) - just 2 compact buttons */}
           <div className="flex md:hidden items-center gap-1">
+            <NotificationCenter />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8" title={getText('orders_refresh_label')}>
@@ -748,75 +722,31 @@ const Index = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
-                  onClick={() => {
-                    refetch();
-                    toast({ title: 'Обновено', description: 'Данните са обновени успешно' });
-                  }} 
+                  onClick={() => { refetch(); toast({ title: 'Обновено', description: 'Данните са обновени успешно' }); }} 
                   className="cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Обнови сега
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(0);
-                    toast({ title: 'Авто-обновяване', description: 'Изключено' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 0 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Без автоматично
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(60000);
-                    toast({ title: 'Авто-обновяване', description: 'На всяка 1 минута' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 60000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  1 мин
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(120000);
-                    toast({ title: 'Авто-обновяване', description: 'На всеки 2 минути' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 120000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  2 мин
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(300000);
-                    toast({ title: 'Авто-обновяване', description: 'На всеки 5 минути' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 300000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  5 мин
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAutoRefreshInterval(600000);
-                    toast({ title: 'Авто-обновяване', description: 'На всеки 10 минути' });
-                  }} 
-                  className={`cursor-pointer ${autoRefreshInterval === 600000 ? 'bg-muted' : ''}`}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  10 мин
-                </DropdownMenuItem>
+                {([0, 60000, 120000, 300000, 600000] as AutoRefreshInterval[]).map((interval) => {
+                  const labels: Record<number, string> = { 0: 'Без авто', 60000: '1 мин', 120000: '2 мин', 300000: '5 мин', 600000: '10 мин' };
+                  return (
+                    <DropdownMenuItem 
+                      key={interval}
+                      onClick={() => { setAutoRefreshInterval(interval); toast({ title: 'Авто-обновяване', description: interval === 0 ? 'Изключено' : labels[interval] }); }} 
+                      className={`cursor-pointer ${autoRefreshInterval === interval ? 'bg-muted' : ''}`}
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      {labels[interval]}
+                    </DropdownMenuItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
-            <NotificationCenter />
-            <div className="h-8 w-8 flex items-center justify-center">
-              <ThemeToggle />
-            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8" title="Още">
+                <Button variant="outline" size="icon" className="h-8 w-8" title="Меню">
                   <Settings className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -837,13 +767,16 @@ const Index = () => {
                 <DropdownMenuItem asChild className="p-0">
                   <QuickCacheClear size="sm" />
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="p-0 h-auto">
+                  <div className="px-2 py-1.5 w-full"><ThemeToggle /></div>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className={`cursor-pointer ${!canView('settings') ? 'hidden' : ''}`}>
                   <Settings className="w-4 h-4 mr-2" />
                   {getText('orders_settings_button_label')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {/* Column visibility - using Collapsible instead of SubMenu for better mobile touch support */}
+                {/* Column visibility */}
                 <div className="px-2 py-1.5">
                   <div className="flex items-center gap-2 text-sm font-medium mb-2">
                     <Columns3 className="w-4 h-4" />

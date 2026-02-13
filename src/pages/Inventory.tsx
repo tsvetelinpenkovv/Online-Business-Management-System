@@ -14,9 +14,13 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
-  FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings
+  FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings,
+  Percent, ClipboardList, MoreVertical
 } from 'lucide-react';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 import { InventoryDashboard } from '@/components/inventory/InventoryDashboard';
 import { ProductsTab } from '@/components/inventory/ProductsTab';
@@ -32,6 +36,8 @@ import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
 import { WarehouseSettings } from '@/components/inventory/WarehouseSettings';
 import { WarehouseDashboard } from '@/components/inventory/WarehouseDashboard';
 import { StockDeductionSettings } from '@/components/inventory/StockDeductionSettings';
+import { BulkPriceChangeDialog } from '@/components/inventory/BulkPriceChangeDialog';
+import { ScheduledRevisionDialog } from '@/components/inventory/ScheduledRevisionDialog';
 import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
@@ -45,6 +51,8 @@ export default function Inventory() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
+  const [isBulkPriceOpen, setIsBulkPriceOpen] = useState(false);
+  const [isRevisionOpen, setIsRevisionOpen] = useState(false);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
@@ -198,34 +206,38 @@ export default function Inventory() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Mobile action buttons */}
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsScannerOpen(true)}
-                className="sm:hidden"
-                title="Сканиране на баркод"
-              >
-                <ScanBarcode className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsImportExportOpen(true)}
-                className="sm:hidden"
-                title="Импорт/Експорт"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => inventory.refresh()}
-                className="sm:hidden"
-                title="Обнови"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </Button>
+              {/* Mobile: consolidated into dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="sm:hidden h-8 w-8">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem onClick={() => setIsScannerOpen(true)} className="cursor-pointer">
+                    <ScanBarcode className="w-4 h-4 mr-2" />
+                    Сканирай баркод
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsImportExportOpen(true)} className="cursor-pointer">
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Импорт/Експорт
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsBulkPriceOpen(true)} className="cursor-pointer">
+                    <Percent className="w-4 h-4 mr-2" />
+                    Масова промяна на цени
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsRevisionOpen(true)} className="cursor-pointer">
+                    <ClipboardList className="w-4 h-4 mr-2" />
+                    Инвентаризация
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => inventory.refresh()} className="cursor-pointer">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Обнови
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               {/* Desktop action buttons */}
               <Button
@@ -251,14 +263,36 @@ export default function Inventory() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setIsBulkPriceOpen(true)}
+                className="hidden sm:flex"
+                title="Масова промяна на цени"
+              >
+                <Percent className="w-4 h-4 mr-2" />
+                Цени
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsRevisionOpen(true)}
+                className="hidden sm:flex"
+                title="Инвентаризация"
+              >
+                <ClipboardList className="w-4 h-4 mr-2" />
+                Ревизия
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => inventory.refresh()}
                 className="hidden sm:flex"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Обнови
               </Button>
-              <ThemeToggle />
-              <QuickCacheClear />
+              <div className="hidden sm:flex items-center gap-1">
+                <ThemeToggle />
+                <QuickCacheClear />
+              </div>
             </div>
           </div>
         </div>
@@ -448,6 +482,20 @@ export default function Inventory() {
       <ImportExportDialog
         open={isImportExportOpen}
         onOpenChange={setIsImportExportOpen}
+        inventory={inventory}
+      />
+
+      {/* Bulk Price Change Dialog */}
+      <BulkPriceChangeDialog
+        open={isBulkPriceOpen}
+        onOpenChange={setIsBulkPriceOpen}
+        inventory={inventory}
+      />
+
+      {/* Scheduled Revision Dialog */}
+      <ScheduledRevisionDialog
+        open={isRevisionOpen}
+        onOpenChange={setIsRevisionOpen}
         inventory={inventory}
       />
 
