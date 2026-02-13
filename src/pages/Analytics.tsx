@@ -53,7 +53,7 @@ const Analytics = () => {
   const { user, loading: authLoading } = useAuth();
 
   const [dateFrom, setDateFrom] = useState(() => {
-    const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0];
+    const d = new Date(); d.setMonth(d.getMonth() - 3); return d.toISOString().split('T')[0];
   });
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
 
