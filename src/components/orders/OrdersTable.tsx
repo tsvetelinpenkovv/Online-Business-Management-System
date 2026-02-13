@@ -1,4 +1,4 @@
-import { FC, useState, useMemo, useEffect, Fragment } from 'react';
+import { FC, useState, useMemo, useEffect, Fragment, useCallback } from 'react';
 import { 
   Calendar, User, UserCheck, Phone, Euro, Package, 
   Barcode, Layers, Truck, MessageCircle, MoreHorizontal, 
@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
+import { getFlagByCountryCode } from './StoreFilterTabs';
+import { Store } from '@/hooks/useStores';
 import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
 import { QuantityPopover } from './QuantityPopover';
@@ -83,6 +85,8 @@ interface OrdersTableProps {
   canDeleteOrders?: boolean;
   canCreateInvoices?: boolean;
   noTopRadius?: boolean;
+  selectedStoreId?: string | null;
+  stores?: Store[];
 }
 
 // Invoice icon button component - checks if order has invoice and tracks if it was viewed
@@ -186,6 +190,8 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   canDeleteOrders = true,
   canCreateInvoices = true,
   noTopRadius = false,
+  selectedStoreId,
+  stores = [],
 }) => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
@@ -673,6 +679,14 @@ export const OrdersTable: FC<OrdersTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
+            {sortedOrders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={20} className="text-center py-12 text-muted-foreground">
+                  <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">Няма намерени поръчки</p>
+                </TableCell>
+              </TableRow>
+            ) : null}
             {sortedOrders.map((order) => (
               <Fragment key={order.id}>
                 <TableRow className={`${getRowColorByStatus()} ${expandedOrders.has(order.id) ? 'bg-muted/50' : ''}`}>
@@ -700,7 +714,15 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                   </TableCell>
                 {visibleColumns.has('id') && (
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
-                    № {order.id}
+                    <div className="flex items-center gap-1">
+                      {(() => {
+                        const storeId = (order as any).store_id;
+                        const store = storeId ? stores.find(s => s.id === storeId) : null;
+                        const FlagComp = store ? getFlagByCountryCode(store.country_code) : null;
+                        return FlagComp ? <FlagComp className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" /> : null;
+                      })()}
+                      <span>№ {order.id}</span>
+                    </div>
                   </TableCell>
                 )}
                 {visibleColumns.has('source') && (

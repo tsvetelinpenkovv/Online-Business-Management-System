@@ -147,7 +147,7 @@ export const useNotifications = () => {
         .eq('setting_key', 'overdue_payments_enabled')
         .maybeSingle();
 
-      const overdueEnabled = overdueConfig?.setting_value !== 'false'; // default true
+      const overdueEnabled = overdueConfig?.setting_value === 'true'; // default false (disabled)
 
       if (overdueEnabled) {
         const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
