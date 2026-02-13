@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Plus, Trash2, Save, Loader2, Store as StoreIcon, Eye, EyeOff, TestTube, RefreshCw, Check, AlertCircle, GripVertical, ArrowUp, ArrowDown, BookOpen, Warehouse } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { getFlagByCountryCode } from '@/components/orders/StoreFilterTabs';
+
 
 const COUNTRY_OPTIONS = [
   { code: 'BG', name: 'България', currency: 'EUR', symbol: '€' },
@@ -24,11 +24,22 @@ const COUNTRY_OPTIONS = [
   { code: 'CZ', name: 'Чехия', currency: 'CZK', symbol: 'Kč' },
 ];
 
-// Inline SVG flag for select items
-const CountryFlag: FC<{ code: string; className?: string }> = ({ code, className = "w-5 h-3.5" }) => {
-  const FlagComp = getFlagByCountryCode(code);
-  if (!FlagComp) return <span className="text-xs font-mono uppercase text-muted-foreground">{code}</span>;
-  return <FlagComp className={`${className} rounded-[1px] shadow-sm flex-shrink-0`} />;
+const COUNTRY_DOT_COLORS: Record<string, string> = {
+  'BG': 'bg-green-500',
+  'GR': 'bg-sky-400',
+  'RO': 'bg-amber-500',
+  'HU': 'bg-red-500',
+  'DE': 'bg-yellow-400',
+  'FR': 'bg-blue-500',
+  'IT': 'bg-emerald-500',
+  'ES': 'bg-orange-500',
+  'PL': 'bg-rose-400',
+  'CZ': 'bg-indigo-400',
+};
+
+const CountryDot: FC<{ code: string; className?: string }> = ({ code, className = "w-3 h-3" }) => {
+  const color = COUNTRY_DOT_COLORS[code] || 'bg-muted-foreground';
+  return <span className={`${className} rounded-full flex-shrink-0 ${color}`} />;
 };
 
 export const MultiStoreSettings = () => {
@@ -234,7 +245,7 @@ export const MultiStoreSettings = () => {
                       {COUNTRY_OPTIONS.map(c => (
                         <SelectItem key={c.code} value={c.code}>
                           <div className="flex items-center gap-2">
-                            <CountryFlag code={c.code} />
+                            <CountryDot code={c.code} />
                             <span>{c.name} ({c.currency})</span>
                           </div>
                         </SelectItem>
@@ -354,7 +365,7 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
             <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
-            <CountryFlag code={store.country_code} className="w-6 h-4" />
+            <CountryDot code={store.country_code} className="w-3.5 h-3.5" />
             <StoreIcon className="w-4 h-4" />
             {store.name}
             <Badge variant="outline" className="text-xs">
