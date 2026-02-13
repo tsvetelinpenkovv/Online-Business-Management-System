@@ -711,9 +711,9 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Mobile menu (show up to md breakpoint) - just 2 compact buttons */}
+          {/* Mobile menu (show up to md breakpoint) - compact uniform buttons */}
           <div className="flex md:hidden items-center gap-1">
-            <NotificationCenter />
+            <NotificationCenter className="h-8 w-8" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8" title={getText('orders_refresh_label')}>
