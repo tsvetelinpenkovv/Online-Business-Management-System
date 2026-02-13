@@ -30,7 +30,7 @@ import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics
 import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
 import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
 import { CacheManagementCard } from '@/components/settings/CacheManagementCard';
-import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
+import { NotificationSoundSettings, OverduePaymentSettings } from '@/components/settings/NotificationSoundSettings';
 import { MultiStoreSettings } from '@/components/settings/MultiStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSetting } from '@/types/order';
@@ -675,6 +675,7 @@ const Settings = () => {
 
           <TabsContent value="notifications" className="space-y-6">
             <NotificationSoundSettings />
+            <OverduePaymentSettings />
           </TabsContent>
 
           <TabsContent value="sources" className="space-y-6 mt-4">

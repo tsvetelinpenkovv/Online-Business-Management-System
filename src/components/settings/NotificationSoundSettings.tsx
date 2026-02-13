@@ -5,7 +5,9 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Bell, Volume2, Play } from 'lucide-react';
+import { Bell, Volume2, Play, CreditCard, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const NOTIFICATION_SOUNDS = [
   { id: 'chime', name: 'Звънец', frequency: [523, 659, 784], duration: 150 },
@@ -177,6 +179,73 @@ export const NotificationSoundSettings: FC = () => {
             <Button variant="outline" size="sm" onClick={requestBrowserPermission}>
               Активирай
             </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export const OverduePaymentSettings: FC = () => {
+  const [enabled, setEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('api_settings')
+        .select('setting_value')
+        .eq('setting_key', 'overdue_payments_enabled')
+        .maybeSingle();
+      setEnabled(data?.setting_value !== 'false');
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  const handleToggle = async (checked: boolean) => {
+    setEnabled(checked);
+    setSaving(true);
+    await supabase
+      .from('api_settings')
+      .upsert({
+        setting_key: 'overdue_payments_enabled',
+        setting_value: String(checked),
+      }, { onConflict: 'setting_key' });
+    setSaving(false);
+    toast({
+      title: checked ? 'Активирано' : 'Деактивирано',
+      description: checked
+        ? 'Известията за просрочени плащания са включени'
+        : 'Известията за просрочени плащания са изключени',
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="w-5 h-5" />
+          Просрочени плащания
+        </CardTitle>
+        <CardDescription>
+          Известия за поръчки с неплатен статус повече от 7 дни
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <div>
+            <Label>Активирай известия за просрочени плащания</Label>
+            <p className="text-sm text-muted-foreground">
+              Системата ще проверява периодично за неплатени поръчки
+            </p>
+          </div>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Switch checked={enabled} onCheckedChange={handleToggle} disabled={saving} />
           )}
         </div>
       </CardContent>
