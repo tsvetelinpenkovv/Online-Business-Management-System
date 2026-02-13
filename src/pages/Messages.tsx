@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,8 +55,10 @@ interface ConnectixMessage {
 const Messages = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { canView, isAdmin } = usePermissions();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const canViewMessages = isAdmin || canView('messages');
   const [messages, setMessages] = useState<ConnectixMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

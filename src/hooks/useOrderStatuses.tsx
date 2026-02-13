@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,67 +13,13 @@ export interface OrderStatusConfig {
   updated_at: string;
 }
 
-const CACHE_KEY = 'order_statuses_cache';
-const CACHE_TIMESTAMP_KEY = 'order_statuses_cache_timestamp';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-// Get cached statuses from localStorage
-const getCachedStatuses = (): OrderStatusConfig[] | null => {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-    
-    if (cached && timestamp) {
-      const age = Date.now() - parseInt(timestamp, 10);
-      if (age < CACHE_DURATION) {
-        return JSON.parse(cached);
-      }
-    }
-  } catch (error) {
-    console.error('Error reading status cache:', error);
-  }
-  return null;
-};
-
-// Save statuses to localStorage cache
-const setCachedStatuses = (statuses: OrderStatusConfig[]) => {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(statuses));
-    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-  } catch (error) {
-    console.error('Error saving status cache:', error);
-  }
-};
-
-// Clear cache
-const clearStatusCache = () => {
-  try {
-    localStorage.removeItem(CACHE_KEY);
-    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
-  } catch (error) {
-    console.error('Error clearing status cache:', error);
-  }
-};
-
 export const useOrderStatuses = () => {
-  // Initialize with cached data immediately (stale-while-revalidate pattern)
-  const [statuses, setStatuses] = useState<OrderStatusConfig[]>(() => {
-    return getCachedStatuses() || [];
-  });
-  const [loading, setLoading] = useState(() => {
-    // Only show loading if we don't have cached data
-    return getCachedStatuses() === null;
-  });
+  const [statuses, setStatuses] = useState<OrderStatusConfig[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchStatuses = useCallback(async () => {
     try {
-      // If we have cached data, don't set loading to true (stale-while-revalidate)
-      const hasCached = getCachedStatuses() !== null;
-      if (!hasCached) {
-        setLoading(true);
-      }
-
       const { data, error } = await supabase
         .from('order_statuses')
         .select('*')
@@ -81,9 +27,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      const newStatuses = data || [];
-      setStatuses(newStatuses);
-      setCachedStatuses(newStatuses);
+      setStatuses(data || []);
     } catch (error) {
       console.error('Error fetching statuses:', error);
     } finally {
@@ -91,9 +35,10 @@ export const useOrderStatuses = () => {
     }
   }, []);
 
-  useEffect(() => {
+  // Auto-fetch on first use
+  useState(() => {
     fetchStatuses();
-  }, [fetchStatuses]);
+  });
 
   const addStatus = async (name: string, color: string, icon: string) => {
     try {
@@ -112,9 +57,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      const newStatuses = [...statuses, data];
-      setStatuses(newStatuses);
-      setCachedStatuses(newStatuses);
+      setStatuses(prev => [...prev, data]);
       
       toast({
         title: 'Успех',
@@ -143,9 +86,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      const newStatuses = statuses.map(s => s.id === id ? { ...s, ...updates } : s);
-      setStatuses(newStatuses);
-      setCachedStatuses(newStatuses);
+      setStatuses(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
       
       toast({
         title: 'Успех',
@@ -169,9 +110,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      const newStatuses = statuses.filter(s => s.id !== id);
-      setStatuses(newStatuses);
-      setCachedStatuses(newStatuses);
+      setStatuses(prev => prev.filter(s => s.id !== id));
       
       toast({
         title: 'Успех',
@@ -188,7 +127,6 @@ export const useOrderStatuses = () => {
 
   const reorderStatuses = async (orderedIds: string[]) => {
     try {
-      // Update sort_order for each status
       const updates = orderedIds.map((id, index) => 
         supabase
           .from('order_statuses')
@@ -198,14 +136,12 @@ export const useOrderStatuses = () => {
 
       await Promise.all(updates);
       
-      // Update local state
       const reorderedStatuses = orderedIds
         .map(id => statuses.find(s => s.id === id))
         .filter((s): s is OrderStatusConfig => s !== undefined)
         .map((s, index) => ({ ...s, sort_order: index + 1 }));
       
       setStatuses(reorderedStatuses);
-      setCachedStatuses(reorderedStatuses);
       
       toast({
         title: 'Успех',
@@ -228,6 +164,5 @@ export const useOrderStatuses = () => {
     deleteStatus,
     reorderStatuses,
     refetch: fetchStatuses,
-    clearCache: clearStatusCache,
   };
 };

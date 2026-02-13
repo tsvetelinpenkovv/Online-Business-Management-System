@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useCustomers, Customer } from '@/hooks/useCustomers';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
+import { usePermissions } from '@/hooks/usePermissions';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,9 +29,14 @@ export default function CRM() {
   const { user, loading: authLoading } = useAuth();
   const { customers, loading, fetchCustomers, syncCustomersFromOrders, AVAILABLE_TAGS, updateCustomerTags, fetchNotes, addNote } = useCustomers();
   const { logoUrl } = useCompanyLogo();
+  const { canView, canCreate, canEdit, canDelete, isAdmin } = usePermissions();
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+  const canViewCRM = isAdmin || canView('crm');
+  const canEditCRM = isAdmin || canEdit('crm');
+  const canCreateCRM = isAdmin || canCreate('crm');
 
   useEffect(() => {
     if (!authLoading && !user) navigate(buildPath('/auth'));
@@ -84,13 +90,17 @@ export default function CRM() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <Button variant="outline" size="sm" onClick={syncCustomersFromOrders} className="hidden sm:flex">
-                <Download className="w-4 h-4 mr-2" />
-                Синхронизирай от поръчки
-              </Button>
-              <Button variant="outline" size="icon" onClick={syncCustomersFromOrders} className="sm:hidden" title="Синхронизирай">
-                <Download className="w-4 h-4" />
-              </Button>
+              {canCreateCRM && (
+                <>
+                  <Button variant="outline" size="sm" onClick={syncCustomersFromOrders} className="hidden sm:flex">
+                    <Download className="w-4 h-4 mr-2" />
+                    Синхронизирай от поръчки
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={syncCustomersFromOrders} className="sm:hidden" title="Синхронизирай">
+                    <Download className="w-4 h-4" />
+                  </Button>
+                </>
+              )}
               <Button variant="outline" size="icon" onClick={() => fetchCustomers()} title="Обнови">
                 <RefreshCw className="w-4 h-4" />
               </Button>
