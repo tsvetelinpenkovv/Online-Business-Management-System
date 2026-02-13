@@ -69,7 +69,16 @@ const NotificationItem = ({ notification, onRead }: { notification: AppNotificat
 
 export const NotificationCenter = ({ className }: { className?: string }) => {
   const { notifications, unreadCount, markAsRead, markAllRead, clearAll, dismissType, restoreType, dismissedTypes } = useNotifications();
-  const [settingsEnabled, setSettingsEnabled] = useState(true);
+  const [settingsEnabled, setSettingsEnabled] = useState(() => {
+    try {
+      const stored = localStorage.getItem('notification_settings');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.enabled !== false;
+      }
+    } catch {}
+    return true;
+  });
 
   useEffect(() => {
     const checkSettings = () => {
