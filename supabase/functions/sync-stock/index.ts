@@ -444,57 +444,91 @@ Deno.serve(async (req) => {
       .eq('is_enabled', true);
 
     if (!platforms?.length) {
-      return new Response(JSON.stringify({ success: true, message: 'No platforms enabled' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // Still check multi-store WooCommerce below
     }
 
     const results: Record<string, boolean> = {};
 
-    for (const p of platforms) {
-      if (platform && p.name !== platform) continue;
+    // 1. Sync to platform-level configs (legacy single-store)
+    if (platforms?.length) {
+      for (const p of platforms) {
+        if (platform && p.name !== platform) continue;
 
-      const { data: configData } = await supabase
-        .from('api_settings')
-        .select('setting_value')
-        .eq('setting_key', `${p.name}_config`)
-        .maybeSingle();
+        const { data: configData } = await supabase
+          .from('api_settings')
+          .select('setting_value')
+          .eq('setting_key', `${p.name}_config`)
+          .maybeSingle();
 
-      if (!configData?.setting_value) {
-        console.log(`No config found for ${p.name}`);
-        continue;
+        if (!configData?.setting_value) {
+          console.log(`No config found for ${p.name}`);
+          continue;
+        }
+
+        let config: PlatformConfig;
+        try {
+          config = JSON.parse(configData.setting_value);
+        } catch {
+          console.log(`Invalid config for ${p.name}`);
+          continue;
+        }
+
+        if (!config.store_url || !config.api_key) {
+          console.log(`Incomplete config for ${p.name}`);
+          continue;
+        }
+
+        switch (p.name) {
+          case 'woocommerce':
+            results[p.name] = await syncToWooCommerce(config, sku, product_name, new_quantity);
+            break;
+          case 'prestashop':
+            results[p.name] = await syncToPrestaShop(config, sku, product_name, new_quantity);
+            break;
+          case 'shopify':
+            results[p.name] = await syncToShopify(config, sku, product_name, new_quantity);
+            break;
+          case 'opencart':
+            results[p.name] = await syncToOpenCart(config, sku, product_name, new_quantity);
+            break;
+          case 'magento':
+            results[p.name] = await syncToMagento(config, sku, product_name, new_quantity);
+            break;
+        }
       }
+    }
 
-      let config: PlatformConfig;
-      try {
-        config = JSON.parse(configData.setting_value);
-      } catch {
-        console.log(`Invalid config for ${p.name}`);
-        continue;
-      }
+    // 2. Sync to multi-store WooCommerce instances
+    const { data: multiStoreEnabled } = await supabase
+      .from('company_settings')
+      .select('multi_store_enabled')
+      .limit(1)
+      .maybeSingle();
 
-      if (!config.store_url || !config.api_key) {
-        console.log(`Incomplete config for ${p.name}`);
-        continue;
-      }
+    if (multiStoreEnabled?.multi_store_enabled) {
+      const { data: stores } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('is_enabled', true);
 
-      switch (p.name) {
-        case 'woocommerce':
-          results[p.name] = await syncToWooCommerce(config, sku, product_name, new_quantity);
-          break;
-        case 'prestashop':
-          results[p.name] = await syncToPrestaShop(config, sku, product_name, new_quantity);
-          break;
-        case 'shopify':
-          results[p.name] = await syncToShopify(config, sku, product_name, new_quantity);
-          break;
-        case 'opencart':
-          results[p.name] = await syncToOpenCart(config, sku, product_name, new_quantity);
-          break;
-        case 'magento':
-          results[p.name] = await syncToMagento(config, sku, product_name, new_quantity);
-          break;
+      if (stores?.length) {
+        for (const store of stores) {
+          if (!store.wc_url || !store.wc_consumer_key || !store.wc_consumer_secret) {
+            console.log(`Store ${store.name} missing WooCommerce credentials, skipping`);
+            continue;
+          }
+
+          const storeConfig: PlatformConfig = {
+            store_url: store.wc_url,
+            api_key: store.wc_consumer_key,
+            api_secret: store.wc_consumer_secret,
+            is_enabled: true,
+          };
+
+          const storeKey = `store_${store.country_code}_${store.name}`;
+          results[storeKey] = await syncToWooCommerce(storeConfig, sku, product_name, new_quantity);
+          console.log(`Multi-store sync ${store.name}: ${results[storeKey]}`);
+        }
       }
     }
 

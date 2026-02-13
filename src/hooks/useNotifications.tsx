@@ -140,23 +140,33 @@ export const useNotifications = () => {
         });
       });
 
-      // 3. Overdue payments (unpaid orders older than 7 days)
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data: overdueOrders } = await supabase
-        .from('orders')
-        .select('id, code, customer_name, total_price')
-        .eq('payment_status', 'unpaid')
-        .lte('created_at', weekAgo)
-        .limit(10);
+      // 3. Overdue payments - check if enabled in admin settings
+      const { data: overdueConfig } = await supabase
+        .from('api_settings')
+        .select('setting_value')
+        .eq('setting_key', 'overdue_payments_enabled')
+        .maybeSingle();
 
-      overdueOrders?.forEach(o => {
-        addNotification({
-          type: 'overdue_payment',
-          title: 'Просрочено плащане',
-          message: `${o.code} — ${o.customer_name}: ${Number(o.total_price).toFixed(2)} €`,
-          link: '/finance',
+      const overdueEnabled = overdueConfig?.setting_value !== 'false'; // default true
+
+      if (overdueEnabled) {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        const { data: overdueOrders } = await supabase
+          .from('orders')
+          .select('id, code, customer_name, total_price')
+          .eq('payment_status', 'unpaid')
+          .lte('created_at', weekAgo)
+          .limit(10);
+
+        overdueOrders?.forEach(o => {
+          addNotification({
+            type: 'overdue_payment',
+            title: 'Просрочено плащане',
+            message: `${o.code} — ${o.customer_name}: ${Number(o.total_price).toFixed(2)} €`,
+            link: '/finance',
+          });
         });
-      });
+      }
     } catch (err) {
       console.error('Notification check error:', err);
     }
