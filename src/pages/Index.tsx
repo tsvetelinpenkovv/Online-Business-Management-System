@@ -767,8 +767,8 @@ const Index = () => {
                 <DropdownMenuItem asChild className="p-0">
                   <QuickCacheClear size="sm" />
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="p-0 h-auto">
-                  <div className="px-2 py-1.5 w-full"><ThemeToggle /></div>
+                <DropdownMenuItem asChild className="p-0">
+                  <ThemeToggle variant="menu" />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className={`cursor-pointer ${!canView('settings') ? 'hidden' : ''}`}>
