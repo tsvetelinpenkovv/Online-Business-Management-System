@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrders } from '@/hooks/useOrders';
@@ -10,6 +10,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, COLUMNS_CONFIG, type ColumnKey } from '@/components/orders/ColumnVisibilityToggle';
+import { StoreFilterTabs } from '@/components/orders/StoreFilterTabs';
+import { useStores } from '@/hooks/useStores';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
@@ -77,6 +79,8 @@ const Index = () => {
   const [nekorektenEnabled, setNekorektenEnabled] = useState(true);
   const [connectixEnabled, setConnectixEnabled] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(getDefaultVisibleColumns);
+  const { stores, multiStoreEnabled } = useStores();
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [companySettings, setCompanySettings] = useState<{
     company_name: string | null;
     registered_address: string | null;
@@ -222,9 +226,24 @@ const Index = () => {
       const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
       const matchesDateTo = !dateTo || orderDate <= dateTo;
 
-      return matchesSearch && matchesStatus && matchesSource && matchesDateFrom && matchesDateTo;
+      // Store filter
+      const matchesStore = !selectedStoreId || (order as any).store_id === selectedStoreId;
+
+      return matchesSearch && matchesStatus && matchesSource && matchesDateFrom && matchesDateTo && matchesStore;
     });
-  }, [orders, debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
+  }, [orders, debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo, selectedStoreId]);
+
+  // Order count by store
+  const orderCountByStore = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(order => {
+      const storeId = (order as any).store_id;
+      if (storeId) {
+        counts[storeId] = (counts[storeId] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [orders]);
 
   // Pagination
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
@@ -236,7 +255,7 @@ const Index = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo]);
+  }, [debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo, selectedStoreId]);
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -840,6 +859,17 @@ const Index = () => {
           nekorektenEnabled={nekorektenEnabled}
           connectixEnabled={connectixEnabled}
         />
+
+        {/* Multi-store filter tabs */}
+        {multiStoreEnabled && stores.filter(s => s.is_enabled).length > 0 && (
+          <StoreFilterTabs
+            stores={stores}
+            selectedStoreId={selectedStoreId}
+            onSelectStore={setSelectedStoreId}
+            orderCountByStore={orderCountByStore}
+            totalOrders={orders.length}
+          />
+        )}
 
         {/* Statistics Dashboard */}
         {showStatistics && (

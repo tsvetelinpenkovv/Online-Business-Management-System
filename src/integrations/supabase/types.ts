@@ -127,6 +127,7 @@ export type Database = {
           login_description: string | null
           login_title: string | null
           manager_name: string | null
+          multi_store_enabled: boolean
           next_invoice_number: number | null
           orders_page_title: string | null
           phone: string | null
@@ -156,6 +157,7 @@ export type Database = {
           login_description?: string | null
           login_title?: string | null
           manager_name?: string | null
+          multi_store_enabled?: boolean
           next_invoice_number?: number | null
           orders_page_title?: string | null
           phone?: string | null
@@ -185,6 +187,7 @@ export type Database = {
           login_description?: string | null
           login_title?: string | null
           manager_name?: string | null
+          multi_store_enabled?: boolean
           next_invoice_number?: number | null
           orders_page_title?: string | null
           phone?: string | null
@@ -868,6 +871,8 @@ export type Database = {
           courier_id: string | null
           courier_tracking_url: string | null
           created_at: string
+          currency: string
+          currency_symbol: string
           customer_email: string | null
           customer_name: string
           delivery_address: string | null
@@ -883,6 +888,7 @@ export type Database = {
           source: string | null
           status: string
           stock_deducted: boolean
+          store_id: string | null
           total_price: number
           user_id: string | null
         }
@@ -893,6 +899,8 @@ export type Database = {
           courier_id?: string | null
           courier_tracking_url?: string | null
           created_at?: string
+          currency?: string
+          currency_symbol?: string
           customer_email?: string | null
           customer_name: string
           delivery_address?: string | null
@@ -908,6 +916,7 @@ export type Database = {
           source?: string | null
           status?: string
           stock_deducted?: boolean
+          store_id?: string | null
           total_price: number
           user_id?: string | null
         }
@@ -918,6 +927,8 @@ export type Database = {
           courier_id?: string | null
           courier_tracking_url?: string | null
           created_at?: string
+          currency?: string
+          currency_symbol?: string
           customer_email?: string | null
           customer_name?: string
           delivery_address?: string | null
@@ -933,6 +944,7 @@ export type Database = {
           source?: string | null
           status?: string
           stock_deducted?: boolean
+          store_id?: string | null
           total_price?: number
           user_id?: string | null
         }
@@ -942,6 +954,13 @@ export type Database = {
             columns: ["courier_id"]
             isOneToOne: false
             referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1401,6 +1420,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stores: {
+        Row: {
+          country_code: string
+          country_name: string
+          created_at: string
+          currency: string
+          currency_symbol: string
+          flag_emoji: string
+          id: string
+          is_enabled: boolean
+          is_primary: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+          wc_consumer_key: string | null
+          wc_consumer_secret: string | null
+          wc_url: string | null
+          wc_webhook_secret: string | null
+        }
+        Insert: {
+          country_code: string
+          country_name: string
+          created_at?: string
+          currency?: string
+          currency_symbol?: string
+          flag_emoji: string
+          id?: string
+          is_enabled?: boolean
+          is_primary?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+          wc_consumer_key?: string | null
+          wc_consumer_secret?: string | null
+          wc_url?: string | null
+          wc_webhook_secret?: string | null
+        }
+        Update: {
+          country_code?: string
+          country_name?: string
+          created_at?: string
+          currency?: string
+          currency_symbol?: string
+          flag_emoji?: string
+          id?: string
+          is_enabled?: boolean
+          is_primary?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          wc_consumer_key?: string | null
+          wc_consumer_secret?: string | null
+          wc_url?: string | null
+          wc_webhook_secret?: string | null
+        }
+        Relationships: []
       }
       suppliers: {
         Row: {
