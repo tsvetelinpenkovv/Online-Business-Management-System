@@ -161,7 +161,7 @@ const Finance = () => {
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                 <DollarSign className="w-4 h-4" />Общо приходи
               </div>
-              <p className="text-2xl font-bold">{summary.totalRevenue.toFixed(2)} лв</p>
+              <p className="text-2xl font-bold">{summary.totalRevenue.toFixed(2)} €</p>
               <p className="text-xs text-muted-foreground">{summary.orderCount} поръчки</p>
             </CardContent>
           </Card>
@@ -170,7 +170,7 @@ const Finance = () => {
               <div className="flex items-center gap-2 text-sm mb-1 text-green-600">
                 <CheckCircle2 className="w-4 h-4" />Платени
               </div>
-              <p className="text-2xl font-bold text-green-600">{summary.totalPaid.toFixed(2)} лв</p>
+              <p className="text-2xl font-bold text-green-600">{summary.totalPaid.toFixed(2)} €</p>
               <p className="text-xs text-muted-foreground">{summary.paidCount} поръчки</p>
             </CardContent>
           </Card>
@@ -179,7 +179,7 @@ const Finance = () => {
               <div className="flex items-center gap-2 text-sm mb-1 text-red-600">
                 <AlertCircle className="w-4 h-4" />Неплатени
               </div>
-              <p className="text-2xl font-bold text-red-600">{summary.totalUnpaid.toFixed(2)} лв</p>
+              <p className="text-2xl font-bold text-red-600">{summary.totalUnpaid.toFixed(2)} €</p>
               <p className="text-xs text-muted-foreground">{summary.unpaidCount} поръчки</p>
             </CardContent>
           </Card>
@@ -188,7 +188,7 @@ const Finance = () => {
               <div className="flex items-center gap-2 text-sm mb-1 text-yellow-600">
                 <Clock className="w-4 h-4" />Частично
               </div>
-              <p className="text-2xl font-bold text-yellow-600">{summary.totalPartial.toFixed(2)} лв</p>
+              <p className="text-2xl font-bold text-yellow-600">{summary.totalPartial.toFixed(2)} €</p>
               <p className="text-xs text-muted-foreground">{summary.partialCount} поръчки</p>
             </CardContent>
           </Card>
@@ -197,7 +197,7 @@ const Finance = () => {
               <div className="flex items-center gap-2 text-sm mb-1 text-red-500">
                 <TrendingDown className="w-4 h-4" />Разходи
               </div>
-              <p className="text-2xl font-bold text-red-500">{summary.totalExpenses.toFixed(2)} лв</p>
+              <p className="text-2xl font-bold text-red-500">{summary.totalExpenses.toFixed(2)} €</p>
             </CardContent>
           </Card>
           <Card>
@@ -206,7 +206,7 @@ const Finance = () => {
                 <TrendingUp className="w-4 h-4" />Печалба
               </div>
               <p className={`text-2xl font-bold ${summary.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {summary.profit.toFixed(2)} лв
+                {summary.profit.toFixed(2)} €
               </p>
             </CardContent>
           </Card>
@@ -255,8 +255,8 @@ const Finance = () => {
                       <TableCell className="font-mono text-xs">{order.code}</TableCell>
                       <TableCell>{order.customer_name}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{order.product_name}</TableCell>
-                      <TableCell className="text-right font-medium">{Number(order.total_price).toFixed(2)} лв</TableCell>
-                      <TableCell className="text-right">{Number(order.paid_amount).toFixed(2)} лв</TableCell>
+                      <TableCell className="text-right font-medium">{Number(order.total_price).toFixed(2)} €</TableCell>
+                      <TableCell className="text-right">{Number(order.paid_amount).toFixed(2)} €</TableCell>
                       <TableCell><PaymentStatusBadge status={order.payment_status} /></TableCell>
                       <TableCell className="text-sm text-muted-foreground">{order.payment_method || '—'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{format(new Date(order.created_at), 'dd.MM.yyyy')}</TableCell>
@@ -284,7 +284,7 @@ const Finance = () => {
                     <DialogHeader><DialogTitle>Нов разход</DialogTitle></DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label>Сума (лв)</Label>
+                        <Label>Сума (€)</Label>
                         <Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder="0.00" />
                       </div>
                       <div>
@@ -331,7 +331,7 @@ const Finance = () => {
                       <TableCell>{format(new Date(expense.expense_date), 'dd.MM.yyyy')}</TableCell>
                       <TableCell><Badge variant="outline">{EXPENSE_CATEGORIES.find(c => c.value === expense.category)?.label || expense.category}</Badge></TableCell>
                       <TableCell className="text-muted-foreground">{expense.description || '—'}</TableCell>
-                      <TableCell className="text-right font-medium text-red-600">{Number(expense.amount).toFixed(2)} лв</TableCell>
+                      <TableCell className="text-right font-medium text-red-600">{Number(expense.amount).toFixed(2)} €</TableCell>
                       <TableCell>
                         {canDelete('invoices') && (
                           <Button variant="ghost" size="icon" onClick={() => deleteExpense(expense.id)} className="text-destructive h-8 w-8">
@@ -357,7 +357,7 @@ const Finance = () => {
           <div className="space-y-4">
             <div>
               <Label>Обща сума</Label>
-              <p className="text-lg font-bold">{editingOrder ? Number(editingOrder.total_price).toFixed(2) : 0} лв</p>
+              <p className="text-lg font-bold">{editingOrder ? Number(editingOrder.total_price).toFixed(2) : 0} €</p>
             </div>
             <div>
               <Label>Статус на плащане</Label>
@@ -371,7 +371,7 @@ const Finance = () => {
               </Select>
             </div>
             <div>
-              <Label>Платена сума (лв)</Label>
+              <Label>Платена сума (€)</Label>
               <Input
                 type="number"
                 value={editPaidAmount}

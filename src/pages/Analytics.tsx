@@ -233,9 +233,9 @@ const Analytics = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <KPICard title="Приходи" value={`${filteredKpi.totalRevenue.toFixed(0)} лв`} icon={DollarSign} trend={filteredKpi.revenueGrowth} />
+          <KPICard title="Приходи" value={`${filteredKpi.totalRevenue.toFixed(0)} €`} icon={DollarSign} trend={filteredKpi.revenueGrowth} />
           <KPICard title="Поръчки" value={String(filteredKpi.totalOrders)} subtitle={`${filteredKpi.ordersPerDay.toFixed(1)} / ден`} icon={ShoppingCart} trend={filteredKpi.ordersGrowth} />
-          <KPICard title="Ср. стойност" value={`${filteredKpi.avgOrderValue.toFixed(2)} лв`} icon={TrendingUp} />
+          <KPICard title="Ср. стойност" value={`${filteredKpi.avgOrderValue.toFixed(2)} €`} icon={TrendingUp} />
           <KPICard title="Конверсия" value={`${filteredKpi.conversionRate.toFixed(1)}%`} subtitle={`${filteredKpi.deliveredCount} доставени`} icon={Percent} />
           <KPICard title="Доставени" value={String(filteredKpi.deliveredCount)} icon={Truck} color="bg-green-500" />
           <KPICard title="Върнати" value={`${filteredKpi.returnRate.toFixed(1)}%`} subtitle={`${filteredKpi.returnedCount} бр.`} icon={RotateCcw} color="bg-destructive" />
@@ -374,7 +374,7 @@ const Analytics = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="max-w-[300px] truncate">{item.name}</TableCell>
-                        <TableCell className="text-right font-medium">{item.revenue.toFixed(2)} лв</TableCell>
+                        <TableCell className="text-right font-medium">{item.revenue.toFixed(2)} €</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
                         <TableCell className="text-right">{item.percentage.toFixed(1)}%</TableCell>
                         <TableCell className="text-right text-muted-foreground">{item.cumulative.toFixed(1)}%</TableCell>
@@ -412,7 +412,7 @@ const Analytics = () => {
                         <TableCell className="font-medium">{c.name}</TableCell>
                         <TableCell className="text-muted-foreground">{c.phone}</TableCell>
                         <TableCell className="text-right">{c.totalOrders}</TableCell>
-                        <TableCell className="text-right font-medium">{c.totalSpent.toFixed(2)} лв</TableCell>
+                        <TableCell className="text-right font-medium">{c.totalSpent.toFixed(2)} €</TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {c.lastOrder ? format(new Date(c.lastOrder), 'dd.MM.yyyy') : '—'}
                         </TableCell>
