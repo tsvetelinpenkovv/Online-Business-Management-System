@@ -1046,6 +1046,8 @@ const Index = () => {
         open={showAddOrderDialog} 
         onOpenChange={setShowAddOrderDialog}
         onCreateOrder={createOrder}
+        selectedStoreId={selectedStoreId}
+        stores={stores}
       />
 
       <BulkShipmentDialog

@@ -24,6 +24,8 @@ import { StatusBadge } from './StatusBadge';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
+import { getFlagByCountryCode } from './StoreFilterTabs';
+import { Store } from '@/hooks/useStores';
 
 interface ProductItem {
   product_name: string;
@@ -35,10 +37,12 @@ interface ProductItem {
 interface AddOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateOrder: (order: Omit<Order, 'id' | 'created_at' | 'user_id'>) => Promise<Order | null>;
+  onCreateOrder: (order: Omit<Order, 'id' | 'created_at' | 'user_id'> & { store_id?: string | null }) => Promise<Order | null>;
+  selectedStoreId?: string | null;
+  stores?: Store[];
 }
 
-export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, onCreateOrder }) => {
+export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, onCreateOrder, selectedStoreId, stores = [] }) => {
   const { platforms } = useEcommercePlatforms();
   const [formData, setFormData] = useState({
     first_name: '',
@@ -56,6 +60,11 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(0);
   const [autoFillApplied, setAutoFillApplied] = useState(false);
+  const enabledStores = stores.filter(s => s.is_enabled);
+  const [manualStoreId, setManualStoreId] = useState<string | null>(null);
+
+  // Determine effective store_id: if a specific tab is selected use it, otherwise use manual selection
+  const effectiveStoreId = selectedStoreId || manualStoreId;
 
   useEffect(() => {
     if (open) {
@@ -147,6 +156,8 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
       const catalogNumber = products.map(p => p.catalog_number).filter(c => c).join(', ');
       const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
       
+      const selectedStore = stores.find(s => s.id === effectiveStoreId);
+      
       const order = await onCreateOrder({
         code: newCode,
         customer_name: customerName,
@@ -163,6 +174,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         is_correct: null,
         courier_tracking_url: null,
         courier_id: null,
+        store_id: effectiveStoreId || null,
       });
 
       if (order) {
@@ -178,6 +190,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         });
         setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
         setAutoFillApplied(false);
+        setManualStoreId(null);
         onOpenChange(false);
       }
     } finally {
@@ -249,6 +262,37 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
               </SelectContent>
             </Select>
           </div>
+          {/* Store selector - only show when on "All" tab and multi-store is enabled */}
+          {!selectedStoreId && enabledStores.length > 0 && (
+            <div className="space-y-2">
+              <Label>Магазин</Label>
+              <Select
+                value={manualStoreId || ''}
+                onValueChange={(val) => setManualStoreId(val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Избери магазин..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {enabledStores.map((store) => {
+                    const FlagComponent = getFlagByCountryCode(store.country_code);
+                    return (
+                      <SelectItem key={store.id} value={store.id}>
+                        <div className="flex items-center gap-2">
+                          {FlagComponent ? (
+                            <FlagComponent className="w-5 h-3.5 flex-shrink-0 rounded-[1px]" />
+                          ) : (
+                            <span>{store.flag_emoji}</span>
+                          )}
+                          <span>{store.name} ({store.country_name})</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="first_name">Име *</Label>
             <Input
@@ -340,7 +384,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                   />
                 </div>
                 <div className="col-span-3 sm:col-span-3 space-y-1">
-                  <Label className="text-xs text-muted-foreground">Цена (€) <span className="text-[10px] opacity-70">с ДДС</span></Label>
+                  <Label className="text-xs text-muted-foreground">Цена ({stores.find(s => s.id === effectiveStoreId)?.currency_symbol || '€'}) <span className="text-[10px] opacity-70">с ДДС</span></Label>
                   <Input
                     type="number"
                     min="0"
