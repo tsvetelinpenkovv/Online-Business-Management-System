@@ -13,7 +13,8 @@ import { ColumnVisibilityToggle, getDefaultVisibleColumns, saveVisibleColumns, C
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3 } from 'lucide-react';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
@@ -725,6 +726,10 @@ const Index = () => {
             <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/finance'))} title="Финанси">
               <Euro className="w-4 h-4" />
             </Button>
+            <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/analytics'))} title="Аналитика">
+              <BarChart3 className="w-4 h-4" />
+            </Button>
+            <NotificationCenter />
             <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')} className={!canView('settings') ? 'hidden' : ''}>
               <Settings className="w-4 h-4" />
             </Button>
@@ -805,6 +810,7 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <NotificationCenter />
             <div className="h-8 w-8 flex items-center justify-center">
               <ThemeToggle />
             </div>
@@ -822,6 +828,10 @@ const Index = () => {
                 <DropdownMenuItem onClick={() => navigate(buildPath('/finance'))} className="cursor-pointer">
                   <Euro className="w-4 h-4 mr-2" />
                   Финанси
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(buildPath('/analytics'))} className="cursor-pointer">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Аналитика
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="p-0">
