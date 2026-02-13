@@ -645,7 +645,7 @@ export const useOrders = () => {
     }
   };
 
-  const createOrder = async (orderData: Omit<Order, 'id' | 'created_at' | 'user_id'>) => {
+  const createOrder = async (orderData: Omit<Order, 'id' | 'created_at' | 'user_id'> & { store_id?: string | null }) => {
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -666,6 +666,7 @@ export const useOrders = () => {
           source: orderData.source || 'phone',
           is_correct: orderData.is_correct,
           stock_deducted: false,
+          store_id: orderData.store_id || null,
         })
         .select()
         .single();
