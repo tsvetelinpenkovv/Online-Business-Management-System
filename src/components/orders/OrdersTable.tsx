@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Order } from '@/types/order';
 import { SourceIcon } from '@/components/icons/SourceIcon';
-import { getFlagByCountryCode } from './StoreFilterTabs';
+
 import { Store } from '@/hooks/useStores';
 import { CourierLogo } from './CourierLogo';
 import { StatusBadge } from './StatusBadge';
@@ -715,11 +715,18 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                 {visibleColumns.has('id') && (
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={`Поръчка номер ${order.id}`}>
                     <div className="flex items-center gap-1">
-                      {(() => {
+                    {(() => {
                         const storeId = (order as any).store_id;
                         const store = storeId ? stores.find(s => s.id === storeId) : null;
-                        const FlagComp = store ? getFlagByCountryCode(store.country_code) : null;
-                        return FlagComp ? <FlagComp className="w-4 h-3 flex-shrink-0 rounded-[1px] shadow-sm" /> : null;
+                        if (!store) return null;
+                        const dotColors: Record<string, string> = {
+                          'BG': 'bg-green-500',
+                          'GR': 'bg-sky-400',
+                          'RO': 'bg-amber-500',
+                          'HU': 'bg-red-500',
+                        };
+                        const color = dotColors[store.country_code] || 'bg-muted-foreground';
+                        return <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${color}`} title={store.name} />;
                       })()}
                       <span>№ {order.id}</span>
                     </div>
