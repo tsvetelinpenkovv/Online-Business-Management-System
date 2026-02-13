@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Bell, Package, AlertTriangle, CreditCard, Truck, Check, Trash2, BellOff, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -68,6 +69,28 @@ const NotificationItem = ({ notification, onRead }: { notification: AppNotificat
 
 export const NotificationCenter = ({ className }: { className?: string }) => {
   const { notifications, unreadCount, markAsRead, markAllRead, clearAll, dismissType, restoreType, dismissedTypes } = useNotifications();
+  const [settingsEnabled, setSettingsEnabled] = useState(true);
+
+  useEffect(() => {
+    const checkSettings = () => {
+      try {
+        const stored = localStorage.getItem('notification_settings');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setSettingsEnabled(parsed.enabled !== false);
+        }
+      } catch {}
+    };
+    checkSettings();
+    window.addEventListener('storage', checkSettings);
+    const interval = setInterval(checkSettings, 2000);
+    return () => {
+      window.removeEventListener('storage', checkSettings);
+      clearInterval(interval);
+    };
+  }, []);
+
+  if (!settingsEnabled) return null;
 
   const allTypes: AppNotification['type'][] = ['low_stock', 'new_order', 'failed_delivery', 'overdue_payment'];
 
