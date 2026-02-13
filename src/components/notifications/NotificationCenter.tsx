@@ -1,4 +1,4 @@
-import { Bell, Package, AlertTriangle, CreditCard, Truck, Check, Trash2 } from 'lucide-react';
+import { Bell, Package, AlertTriangle, CreditCard, Truck, Check, Trash2, BellOff, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { buildPath } from '@/components/SecretPathGuard';
 import { formatDistanceToNow } from 'date-fns';
 import { bg } from 'date-fns/locale';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const iconMap = {
   low_stock: AlertTriangle,
@@ -21,6 +22,13 @@ const colorMap = {
   new_order: 'text-primary',
   failed_delivery: 'text-destructive',
   overdue_payment: 'text-destructive',
+};
+
+const typeLabels: Record<AppNotification['type'], string> = {
+  low_stock: 'Ниска наличност',
+  new_order: 'Нови поръчки',
+  failed_delivery: 'Неуспешни доставки',
+  overdue_payment: 'Просрочени плащания',
 };
 
 const NotificationItem = ({ notification, onRead }: { notification: AppNotification; onRead: () => void }) => {
@@ -59,7 +67,9 @@ const NotificationItem = ({ notification, onRead }: { notification: AppNotificat
 };
 
 export const NotificationCenter = ({ className }: { className?: string }) => {
-  const { notifications, unreadCount, markAsRead, markAllRead, clearAll } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllRead, clearAll, dismissType, restoreType, dismissedTypes } = useNotifications();
+
+  const allTypes: AppNotification['type'][] = ['low_stock', 'new_order', 'failed_delivery', 'overdue_payment'];
 
   return (
     <Popover>
@@ -89,6 +99,36 @@ export const NotificationCenter = ({ className }: { className?: string }) => {
             )}
           </div>
         </div>
+
+        {/* Dismissed types management */}
+        <div className="px-3 py-2 border-b space-y-1">
+          <p className="text-xs font-medium text-muted-foreground mb-1">Заглуши по тип (спира генерирането):</p>
+          <div className="flex flex-wrap gap-1">
+            {allTypes.map(type => {
+              const Icon = iconMap[type];
+              const isDismissed = dismissedTypes.has(type);
+              return (
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={isDismissed ? 'default' : 'outline'}
+                      size="sm"
+                      className="h-6 text-[10px] px-2 gap-1"
+                      onClick={() => isDismissed ? restoreType(type) : dismissType(type)}
+                    >
+                      <Icon className="w-3 h-3" />
+                      {isDismissed ? <BellOff className="w-3 h-3" /> : <BellRing className="w-3 h-3" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isDismissed ? `Възстанови: ${typeLabels[type]}` : `Заглуши: ${typeLabels[type]}`}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </div>
+
         <ScrollArea className="max-h-[400px]">
           {notifications.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
