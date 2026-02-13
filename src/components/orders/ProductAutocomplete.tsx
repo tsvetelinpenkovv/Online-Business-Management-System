@@ -89,9 +89,12 @@ export const ProductAutocomplete = forwardRef<HTMLDivElement, ProductAutocomplet
     onChange(product.name);
     setSelectedProduct(product);
     onSelect?.(product);
-    setShowSuggestions(false);
-    setSelectedIndex(-1);
-    setUserInteracted(false); // Reset after selection
+    // Use setTimeout to let state updates settle before closing
+    setTimeout(() => {
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+      setUserInteracted(false);
+    }, 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -167,7 +170,10 @@ export const ProductAutocomplete = forwardRef<HTMLDivElement, ProductAutocomplet
               <button
                 key={product.id}
                 type="button"
-                onClick={() => handleSelect(product)}
+                onMouseDown={(e) => {
+                  e.preventDefault(); // Prevent blur/outside click from closing dropdown
+                  handleSelect(product);
+                }}
                 className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
                   index === selectedIndex 
                     ? 'bg-accent text-accent-foreground' 
