@@ -22,6 +22,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
+import { Checkbox } from '@/components/ui/checkbox';
 import { printOrderReceipts } from '@/components/orders/OrderReceipt';
 import { AddOrderDialog } from '@/components/orders/AddOrderDialog';
 import { BulkShipmentDialog } from '@/components/orders/BulkShipmentDialog';
@@ -914,6 +915,20 @@ const Index = () => {
                   onSelectStore={setSelectedStoreId}
                   orderCountByStore={orderCountByStore}
                   totalOrders={orders.length}
+                  trailingContent={
+                    <Checkbox
+                      checked={paginatedOrders.length > 0 && selectedOrders.length === paginatedOrders.length}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedOrders(paginatedOrders.map(o => o.id));
+                        } else {
+                          setSelectedOrders([]);
+                        }
+                      }}
+                      aria-label="Избери всички"
+                      className={selectedOrders.length > 0 && selectedOrders.length < paginatedOrders.length ? 'opacity-50' : ''}
+                    />
+                  }
                 />
               )}
               <OrdersTable

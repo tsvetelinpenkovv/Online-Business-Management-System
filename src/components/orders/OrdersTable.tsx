@@ -484,18 +484,6 @@ export const OrdersTable: FC<OrdersTableProps> = ({
     return (
       <>
         <div className="space-y-3">
-          {/* Select all on mobile */}
-          <div className="flex items-center gap-2 p-2 bg-card rounded-lg border">
-            <Checkbox
-              checked={isAllSelected}
-              onCheckedChange={handleSelectAll}
-              aria-label="Избери всички"
-              className={isSomeSelected ? 'opacity-50' : ''}
-            />
-            <span className="text-sm text-muted-foreground">
-              {isAllSelected ? 'Премахни избора' : 'Избери всички'}
-            </span>
-          </div>
 
           {orders.map((order) => {
             const message = getOrderMessage(order.id);
