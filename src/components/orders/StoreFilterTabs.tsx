@@ -151,77 +151,80 @@ export const StoreFilterTabs = ({
   if (enabledStores.length === 0) return null;
 
   return (
-    <div className="relative flex items-center border border-b-0 rounded-t-lg bg-card overflow-hidden">
-      {/* Left arrow */}
-      {canScrollLeft && (
-        <button
-          onClick={() => scroll('left')}
-          className="absolute left-0 z-10 h-full px-1 bg-gradient-to-r from-card via-card/90 to-transparent flex items-center"
-        >
-          <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      )}
+    <div className="border border-b-0 rounded-t-lg bg-card overflow-hidden">
+      {/* Flags row */}
+      <div className="relative flex items-center overflow-hidden">
+        {/* Left arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 z-10 h-full px-1 bg-gradient-to-r from-card via-card/90 to-transparent flex items-center"
+          >
+            <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
+        )}
 
-      {/* Scrollable tabs */}
-      <div ref={scrollRef} className="flex items-center overflow-x-auto scrollbar-hide w-full">
-        {/* All stores tab */}
-        <button
-          onClick={() => onSelectStore(null)}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
-            selectedStoreId === null
-              ? 'bg-primary text-primary-foreground'
-              : 'hover:bg-muted/50 text-muted-foreground'
-          }`}
-        >
-          <Globe className="w-3.5 h-3.5" />
-          <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
-            {totalOrders}
-          </Badge>
-        </button>
+        {/* Scrollable tabs */}
+        <div ref={scrollRef} className="flex items-center overflow-x-auto scrollbar-hide w-full">
+          {/* All stores tab */}
+          <button
+            onClick={() => onSelectStore(null)}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
+              selectedStoreId === null
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted/50 text-muted-foreground'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
+              {totalOrders}
+            </Badge>
+          </button>
 
-        {enabledStores.map((store) => {
-          const FlagComponent = getFlagByCountryCode(store.country_code);
-          const count = orderCountByStore[store.id] || 0;
+          {enabledStores.map((store) => {
+            const FlagComponent = getFlagByCountryCode(store.country_code);
+            const count = orderCountByStore[store.id] || 0;
 
-          return (
-            <button
-              key={store.id}
-              onClick={() => onSelectStore(store.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
-                selectedStoreId === store.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted/50 text-muted-foreground'
-              }`}
-            >
-              {FlagComponent ? (
-                <FlagComponent className="w-5 h-3.5 flex-shrink-0 rounded-[1px] shadow-sm" />
-              ) : (
-                <span className="text-sm">{store.flag_emoji}</span>
-              )}
-              <span className="hidden sm:inline">{store.country_name}</span>
-              <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
-                {count}
-              </Badge>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={store.id}
+                onClick={() => onSelectStore(store.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
+                  selectedStoreId === store.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted/50 text-muted-foreground'
+                }`}
+              >
+                {FlagComponent ? (
+                  <FlagComponent className="w-5 h-3.5 flex-shrink-0 rounded-[1px] shadow-sm" />
+                ) : (
+                  <span className="text-sm">{store.flag_emoji}</span>
+                )}
+                <span className="hidden sm:inline">{store.country_name}</span>
+                <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
+                  {count}
+                </Badge>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right arrow */}
+        {canScrollRight && (
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-0 z-10 h-full px-1 bg-gradient-to-l from-card via-card/90 to-transparent flex items-center"
+          >
+            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
+        )}
       </div>
 
-      {/* Trailing content (e.g. select-all checkbox) */}
+      {/* Bottom row (e.g. select-all checkbox) */}
       {trailingContent && (
-        <div className="flex items-center border-l px-2 flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-border/50">
           {trailingContent}
         </div>
-      )}
-
-      {/* Right arrow */}
-      {canScrollRight && (
-        <button
-          onClick={() => scroll('right')}
-          className="absolute right-0 z-10 h-full px-1 bg-gradient-to-l from-card via-card/90 to-transparent flex items-center"
-        >
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
       )}
     </div>
   );

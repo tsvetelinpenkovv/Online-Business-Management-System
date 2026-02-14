@@ -916,18 +916,23 @@ const Index = () => {
                   orderCountByStore={orderCountByStore}
                   totalOrders={orders.length}
                   trailingContent={
-                    <Checkbox
-                      checked={paginatedOrders.length > 0 && selectedOrders.length === paginatedOrders.length}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedOrders(paginatedOrders.map(o => o.id));
-                        } else {
-                          setSelectedOrders([]);
-                        }
-                      }}
-                      aria-label="Избери всички"
-                      className={selectedOrders.length > 0 && selectedOrders.length < paginatedOrders.length ? 'opacity-50' : ''}
-                    />
+                    <>
+                      <Checkbox
+                        checked={paginatedOrders.length > 0 && selectedOrders.length === paginatedOrders.length}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedOrders(paginatedOrders.map(o => o.id));
+                          } else {
+                            setSelectedOrders([]);
+                          }
+                        }}
+                        aria-label="Избери всички"
+                        className={selectedOrders.length > 0 && selectedOrders.length < paginatedOrders.length ? 'opacity-50' : ''}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {selectedOrders.length === paginatedOrders.length && paginatedOrders.length > 0 ? 'Премахни избора' : 'Избери всички'}
+                      </span>
+                    </>
                   }
                 />
               )}
