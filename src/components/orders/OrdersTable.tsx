@@ -483,39 +483,41 @@ export const OrdersTable: FC<OrdersTableProps> = ({
   if (isMobile) {
     return (
       <>
-        <div className="space-y-3">
-
-          {orders.map((order) => {
-            const message = getOrderMessage(order.id);
-            const messageInfo = message ? {
-              channel: message.channel as 'viber' | 'sms',
-              status: message.status as 'sent' | 'delivered' | 'read' | 'failed',
-              sentAt: message.sent_at,
-            } : null;
-            
-            return (
-              <MobileOrderCard
-                key={order.id}
-                order={order}
-                isSelected={selectedOrders.includes(order.id)}
-                onSelect={(checked) => handleSelectOne(order.id, checked)}
-                onEdit={() => setEditOrder(order)}
-                onDelete={() => setDeleteId(order.id)}
-                onPrint={() => handlePrint(order)}
-                onInvoice={() => setInvoiceOrder(order)}
-                onCreateShipment={() => setShipmentOrder(order)}
-                onStatusChange={(orderId, newStatus) => {
-                  const orderToUpdate = orders.find(o => o.id === orderId);
-                  if (orderToUpdate) {
-                    onUpdate({ ...orderToUpdate, status: newStatus as any });
-                  }
-                }}
-                messageInfo={messageInfo}
-                nekorektenEnabled={nekorektenEnabled}
-                visibleColumns={visibleColumns}
-              />
-            );
-          })}
+        <div className={`border bg-card overflow-hidden ${noTopRadius ? 'rounded-b-lg border-t-0' : 'rounded-lg'}`}>
+          <div className="divide-y divide-border">
+            {orders.map((order) => {
+              const message = getOrderMessage(order.id);
+              const messageInfo = message ? {
+                channel: message.channel as 'viber' | 'sms',
+                status: message.status as 'sent' | 'delivered' | 'read' | 'failed',
+                sentAt: message.sent_at,
+              } : null;
+              
+              return (
+                <MobileOrderCard
+                  key={order.id}
+                  order={order}
+                  isSelected={selectedOrders.includes(order.id)}
+                  onSelect={(checked) => handleSelectOne(order.id, checked)}
+                  onEdit={() => setEditOrder(order)}
+                  onDelete={() => setDeleteId(order.id)}
+                  onPrint={() => handlePrint(order)}
+                  onInvoice={() => setInvoiceOrder(order)}
+                  onCreateShipment={() => setShipmentOrder(order)}
+                  onStatusChange={(orderId, newStatus) => {
+                    const orderToUpdate = orders.find(o => o.id === orderId);
+                    if (orderToUpdate) {
+                      onUpdate({ ...orderToUpdate, status: newStatus as any });
+                    }
+                  }}
+                  messageInfo={messageInfo}
+                  nekorektenEnabled={nekorektenEnabled}
+                  visibleColumns={visibleColumns}
+                  noCardBorder
+                />
+              );
+            })}
+          </div>
         </div>
 
         <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
