@@ -125,18 +125,17 @@ export const StoreFilterTabs = ({
   if (enabledStores.length === 0) return null;
 
   return (
-    <div className="flex items-center border border-b-0 rounded-t-lg bg-card overflow-hidden">
+    <div className="flex items-center border border-b-0 rounded-t-lg bg-card overflow-x-auto scrollbar-hide">
       {/* All stores tab */}
       <button
         onClick={() => onSelectStore(null)}
-        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors ${
+        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
           selectedStoreId === null
             ? 'bg-primary text-primary-foreground'
             : 'hover:bg-muted/50 text-muted-foreground'
         }`}
       >
         <Globe className="w-3.5 h-3.5" />
-        <span>Всички</span>
         <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
           {totalOrders}
         </Badge>
@@ -151,7 +150,7 @@ export const StoreFilterTabs = ({
           <button
             key={store.id}
             onClick={() => onSelectStore(store.id)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r last:border-r-0 transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r last:border-r-0 transition-colors flex-shrink-0 ${
               selectedStoreId === store.id
                 ? 'bg-primary text-primary-foreground'
                 : 'hover:bg-muted/50 text-muted-foreground'
