@@ -14,7 +14,7 @@ import { CorrectStatusIcon } from './CorrectStatusIcon';
 import { MessageStatusIcon } from './MessageStatusIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
@@ -51,6 +51,7 @@ interface MobileOrderCardProps {
   } | null;
   nekorektenEnabled?: boolean;
   visibleColumns?: Set<ColumnKey>;
+  noCardBorder?: boolean;
 }
 
 const defaultVisibleColumns = new Set<ColumnKey>([
@@ -83,6 +84,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   messageInfo,
   nekorektenEnabled = true,
   visibleColumns,
+  noCardBorder = false,
 }) => {
   const { toast } = useToast();
   const [copiedCatalog, setCopiedCatalog] = useState(false);
@@ -155,8 +157,8 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
   };
 
   return (
-    <Card className={`${getCardBorderColor(order.status)} overflow-hidden`}>
-      <CardContent className="p-4 space-y-3">
+    <div className={`${getCardBorderColor(order.status)} ${noCardBorder ? '' : 'border rounded-lg shadow-sm'} overflow-hidden`}>
+      <div className="p-4 space-y-3">
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -404,7 +406,7 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
             <span className="text-sm text-muted-foreground">{order.comment}</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
