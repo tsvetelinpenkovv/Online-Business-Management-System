@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, useCallback, FC } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback, FC, ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Store } from '@/hooks/useStores';
@@ -111,6 +111,7 @@ interface StoreFilterTabsProps {
   onSelectStore: (storeId: string | null) => void;
   orderCountByStore: Record<string, number>;
   totalOrders: number;
+  trailingContent?: ReactNode;
 }
 
 export const StoreFilterTabs = ({
@@ -119,6 +120,7 @@ export const StoreFilterTabs = ({
   onSelectStore,
   orderCountByStore,
   totalOrders,
+  trailingContent,
 }: StoreFilterTabsProps) => {
   const enabledStores = useMemo(() => stores.filter(s => s.is_enabled), [stores]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -177,7 +179,6 @@ export const StoreFilterTabs = ({
           </Badge>
         </button>
 
-        {/* Per-store tabs */}
         {enabledStores.map((store) => {
           const FlagComponent = getFlagByCountryCode(store.country_code);
           const count = orderCountByStore[store.id] || 0;
@@ -186,7 +187,7 @@ export const StoreFilterTabs = ({
             <button
               key={store.id}
               onClick={() => onSelectStore(store.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r last:border-r-0 transition-colors flex-shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
                 selectedStoreId === store.id
                   ? 'bg-primary text-primary-foreground'
                   : 'hover:bg-muted/50 text-muted-foreground'
@@ -205,6 +206,13 @@ export const StoreFilterTabs = ({
           );
         })}
       </div>
+
+      {/* Trailing content (e.g. select-all checkbox) */}
+      {trailingContent && (
+        <div className="flex items-center border-l px-2 flex-shrink-0">
+          {trailingContent}
+        </div>
+      )}
 
       {/* Right arrow */}
       {canScrollRight && (
