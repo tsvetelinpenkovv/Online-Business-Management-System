@@ -181,15 +181,16 @@ export const StoreFilterTabs = ({
             </Badge>
           </button>
 
-          {enabledStores.map((store) => {
+          {enabledStores.map((store, index) => {
             const FlagComponent = getFlagByCountryCode(store.country_code);
             const count = orderCountByStore[store.id] || 0;
+            const isLast = index === enabledStores.length - 1;
 
             return (
               <button
                 key={store.id}
                 onClick={() => onSelectStore(store.id)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium ${isLast ? '' : 'border-r'} transition-colors flex-shrink-0 ${
                   selectedStoreId === store.id
                     ? 'bg-primary text-primary-foreground'
                     : 'hover:bg-muted/50 text-muted-foreground'

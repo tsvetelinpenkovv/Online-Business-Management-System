@@ -121,45 +121,30 @@ export const MobileOrderCard: FC<MobileOrderCardProps> = ({
       });
     }
   };
-  const getCardBorderColor = (status: string) => {
-    switch (status) {
-      case 'Нова':
-        return 'border-l-4 border-l-primary';
-      case 'В обработка':
-        return 'border-l-4 border-l-info';
-      case 'Неуспешна връзка':
-        return 'border-l-4 border-l-warning';
-      case 'Потвърдена':
-        return 'border-l-4 border-l-success';
-      case 'Платена с карта':
-        return 'border-l-4 border-l-purple';
-      case 'На лизинг през TBI':
-      case 'На лизинг през BNP':
-      case 'На лизинг през UniCredit':
-        return 'border-l-4 border-l-teal';
-      case 'Изпратена':
-        return 'border-l-4 border-l-warning';
-      case 'Неуспешна доставка':
-        return 'border-l-4 border-l-destructive';
-      case 'Доставена':
-        return 'border-l-4 border-l-success';
-      case 'Завършена':
-        return 'border-l-4 border-l-success';
-      case 'Върната':
-        return 'border-l-4 border-l-muted-foreground';
-      case 'Отказана':
-        return 'border-l-4 border-l-destructive';
-      case 'Анулирана':
-        return 'border-l-4 border-l-muted-foreground';
-      default:
-        return 'border-l-4 border-l-muted';
-    }
+  const getStatusBorderStyle = (status: string): React.CSSProperties => {
+    const colorMap: Record<string, string> = {
+      'Нова': 'hsl(var(--primary))',
+      'В обработка': 'hsl(var(--info))',
+      'Неуспешна връзка': 'hsl(var(--warning))',
+      'Потвърдена': 'hsl(var(--success))',
+      'Платена с карта': 'hsl(var(--purple))',
+      'На лизинг през TBI': 'hsl(var(--teal))',
+      'На лизинг през BNP': 'hsl(var(--teal))',
+      'На лизинг през UniCredit': 'hsl(var(--teal))',
+      'Изпратена': 'hsl(var(--warning))',
+      'Неуспешна доставка': 'hsl(var(--destructive))',
+      'Доставена': 'hsl(var(--success))',
+      'Завършена': 'hsl(var(--success))',
+      'Върната': 'hsl(var(--muted-foreground))',
+      'Отказана': 'hsl(var(--destructive))',
+      'Анулирана': 'hsl(var(--muted-foreground))',
+    };
+    return { borderLeft: `4px solid ${colorMap[status] || 'hsl(var(--muted))'}` };
   };
 
   return (
-    <div className={`${getCardBorderColor(order.status)} ${noCardBorder ? '' : 'border rounded-lg shadow-sm'} overflow-hidden`}>
+    <div style={getStatusBorderStyle(order.status)} className={`${noCardBorder ? '' : 'border rounded-lg shadow-sm'}`}>
       <div className="p-4 space-y-3">
-        {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Checkbox
