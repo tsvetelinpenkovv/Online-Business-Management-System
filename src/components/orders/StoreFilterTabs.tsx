@@ -151,7 +151,7 @@ export const StoreFilterTabs = ({
   if (enabledStores.length === 0) return null;
 
   return (
-    <div className="border border-b-0 bg-card overflow-hidden">
+    <div className="border border-b-0 rounded-t-lg bg-card overflow-hidden">
       {/* Flags row */}
       <div className="relative flex items-center overflow-hidden">
         {/* Left arrow */}
