@@ -1,6 +1,6 @@
-import { useMemo, FC } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback, FC } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Globe } from 'lucide-react';
+import { Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Store } from '@/hooks/useStores';
 
 // SVG Flag components
@@ -121,53 +121,100 @@ export const StoreFilterTabs = ({
   totalOrders,
 }: StoreFilterTabsProps) => {
   const enabledStores = useMemo(() => stores.filter(s => s.is_enabled), [stores]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 1);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', checkScroll, { passive: true });
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => { el.removeEventListener('scroll', checkScroll); ro.disconnect(); };
+  }, [checkScroll, enabledStores]);
+
+  const scroll = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -120 : 120, behavior: 'smooth' });
+  };
 
   if (enabledStores.length === 0) return null;
 
   return (
-    <div className="flex items-center border border-b-0 rounded-t-lg bg-card overflow-x-auto scrollbar-hide">
-      {/* All stores tab */}
-      <button
-        onClick={() => onSelectStore(null)}
-        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
-          selectedStoreId === null
-            ? 'bg-primary text-primary-foreground'
-            : 'hover:bg-muted/50 text-muted-foreground'
-        }`}
-      >
-        <Globe className="w-3.5 h-3.5" />
-        <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
-          {totalOrders}
-        </Badge>
-      </button>
+    <div className="relative flex items-center border border-b-0 rounded-t-lg bg-card overflow-hidden">
+      {/* Left arrow */}
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 z-10 h-full px-1 bg-gradient-to-r from-card via-card/90 to-transparent flex items-center"
+        >
+          <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
+      )}
 
-      {/* Per-store tabs */}
-      {enabledStores.map((store) => {
-        const FlagComponent = getFlagByCountryCode(store.country_code);
-        const count = orderCountByStore[store.id] || 0;
+      {/* Scrollable tabs */}
+      <div ref={scrollRef} className="flex items-center overflow-x-auto scrollbar-hide w-full">
+        {/* All stores tab */}
+        <button
+          onClick={() => onSelectStore(null)}
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r transition-colors flex-shrink-0 ${
+            selectedStoreId === null
+              ? 'bg-primary text-primary-foreground'
+              : 'hover:bg-muted/50 text-muted-foreground'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
+            {totalOrders}
+          </Badge>
+        </button>
 
-        return (
-          <button
-            key={store.id}
-            onClick={() => onSelectStore(store.id)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r last:border-r-0 transition-colors flex-shrink-0 ${
-              selectedStoreId === store.id
-                ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-muted/50 text-muted-foreground'
-            }`}
-          >
-            {FlagComponent ? (
-              <FlagComponent className="w-5 h-3.5 flex-shrink-0 rounded-[1px] shadow-sm" />
-            ) : (
-              <span className="text-sm">{store.flag_emoji}</span>
-            )}
-            <span className="hidden sm:inline">{store.country_name}</span>
-            <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
-              {count}
-            </Badge>
-          </button>
-        );
-      })}
+        {/* Per-store tabs */}
+        {enabledStores.map((store) => {
+          const FlagComponent = getFlagByCountryCode(store.country_code);
+          const count = orderCountByStore[store.id] || 0;
+
+          return (
+            <button
+              key={store.id}
+              onClick={() => onSelectStore(store.id)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-r last:border-r-0 transition-colors flex-shrink-0 ${
+                selectedStoreId === store.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted/50 text-muted-foreground'
+              }`}
+            >
+              {FlagComponent ? (
+                <FlagComponent className="w-5 h-3.5 flex-shrink-0 rounded-[1px] shadow-sm" />
+              ) : (
+                <span className="text-sm">{store.flag_emoji}</span>
+              )}
+              <span className="hidden sm:inline">{store.country_name}</span>
+              <Badge className="h-4 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground hover:bg-destructive border-0">
+                {count}
+              </Badge>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right arrow */}
+      {canScrollRight && (
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 z-10 h-full px-1 bg-gradient-to-l from-card via-card/90 to-transparent flex items-center"
+        >
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
+      )}
     </div>
   );
 };
