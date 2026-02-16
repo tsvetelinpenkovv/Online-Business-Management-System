@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Courier {
@@ -8,30 +9,21 @@ export interface Courier {
   url_pattern: string | null;
 }
 
+const fetchCouriers = async (): Promise<Courier[]> => {
+  const { data, error } = await supabase
+    .from('couriers')
+    .select('*')
+    .order('name');
+
+  if (error) throw error;
+  return data || [];
+};
+
 export const useCouriers = () => {
-  const [couriers, setCouriers] = useState<Courier[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchCouriers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('couriers')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setCouriers(data || []);
-    } catch (error) {
-      console.error('Error fetching couriers:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCouriers();
-  }, [fetchCouriers]);
+  const { data: couriers = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['couriers'],
+    queryFn: fetchCouriers,
+  });
 
   const getCourierByUrl = useCallback(
     (url: string | null | undefined): Courier | null => {
@@ -48,5 +40,5 @@ export const useCouriers = () => {
     [couriers],
   );
 
-  return { couriers, loading, getCourierByUrl, refetch: fetchCouriers };
+  return { couriers, loading, getCourierByUrl, refetch };
 };
