@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { MessageCircle, Smartphone, Check, CheckCheck, Clock, XCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MessageStatusIconProps {
   channel: 'viber' | 'sms';
@@ -46,32 +46,30 @@ export const MessageStatusIcon = forwardRef<HTMLDivElement, MessageStatusIconPro
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div ref={ref} className={`relative inline-flex ${className}`}>
-            {channel === 'viber' ? (
-              <MessageCircle className={`w-4 h-4 ${getChannelColor()}`} />
-            ) : (
-              <Smartphone className={`w-4 h-4 ${getChannelColor()}`} />
-            )}
-            <div className="absolute -bottom-0.5 -right-0.5 bg-background rounded-full p-[1px]">
-              {getStatusIcon()}
-            </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div ref={ref} className={`relative inline-flex ${className}`}>
+          {channel === 'viber' ? (
+            <MessageCircle className={`w-4 h-4 ${getChannelColor()}`} />
+          ) : (
+            <Smartphone className={`w-4 h-4 ${getChannelColor()}`} />
+          )}
+          <div className="absolute -bottom-0.5 -right-0.5 bg-background rounded-full p-[1px]">
+            {getStatusIcon()}
           </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="text-xs">
-            <p className="font-medium">{channel === 'viber' ? 'Viber' : 'SMS'} - {getStatusText()}</p>
-            {sentAt && (
-              <p className="text-muted-foreground">
-                {new Date(sentAt).toLocaleString('bg-BG')}
-              </p>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="text-xs">
+          <p className="font-medium">{channel === 'viber' ? 'Viber' : 'SMS'} - {getStatusText()}</p>
+          {sentAt && (
+            <p className="text-muted-foreground">
+              {new Date(sentAt).toLocaleString('bg-BG')}
+            </p>
+          )}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 });
 

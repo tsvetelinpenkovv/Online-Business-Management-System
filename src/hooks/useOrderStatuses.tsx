@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,32 +14,26 @@ export interface OrderStatusConfig {
   updated_at: string;
 }
 
+const fetchStatuses = async (): Promise<OrderStatusConfig[]> => {
+  const { data, error } = await supabase
+    .from('order_statuses')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+};
+
 export const useOrderStatuses = () => {
-  const [statuses, setStatuses] = useState<OrderStatusConfig[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchStatuses = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('order_statuses')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
-      
-      setStatuses(data || []);
-    } catch (error) {
-      console.error('Error fetching statuses:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Auto-fetch on first use
-  useState(() => {
-    fetchStatuses();
+  const { data: statuses = [], isLoading: loading } = useQuery({
+    queryKey: ['order-statuses'],
+    queryFn: fetchStatuses,
   });
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['order-statuses'] });
 
   const addStatus = async (name: string, color: string, icon: string) => {
     try {
@@ -57,7 +52,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      setStatuses(prev => [...prev, data]);
+      invalidate();
       
       toast({
         title: 'Успех',
@@ -86,7 +81,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      setStatuses(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+      invalidate();
       
       toast({
         title: 'Успех',
@@ -110,7 +105,7 @@ export const useOrderStatuses = () => {
 
       if (error) throw error;
       
-      setStatuses(prev => prev.filter(s => s.id !== id));
+      invalidate();
       
       toast({
         title: 'Успех',
@@ -136,12 +131,7 @@ export const useOrderStatuses = () => {
 
       await Promise.all(updates);
       
-      const reorderedStatuses = orderedIds
-        .map(id => statuses.find(s => s.id === id))
-        .filter((s): s is OrderStatusConfig => s !== undefined)
-        .map((s, index) => ({ ...s, sort_order: index + 1 }));
-      
-      setStatuses(reorderedStatuses);
+      invalidate();
       
       toast({
         title: 'Успех',
@@ -163,6 +153,6 @@ export const useOrderStatuses = () => {
     updateStatus,
     deleteStatus,
     reorderStatuses,
-    refetch: fetchStatuses,
+    refetch: invalidate,
   };
 };
