@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, OrdersFilter } from '@/hooks/useOrders';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useCompanyLogo } from '@/hooks/useCompanyLogo';
 import { useToast } from '@/hooks/use-toast';
@@ -50,13 +50,6 @@ type AutoRefreshInterval = 0 | 60000 | 120000 | 300000 | 600000;
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { canView, canCreate, canEdit, canDelete } = usePermissions();
-  const { orders, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders();
-  // Realtime notifications for new orders
-  useRealtimeOrders({
-    onNewOrder: refetch,
-    onOrderUpdated: refetch,
-    onOrderDeleted: refetch,
-  });
   const { logoUrl } = useCompanyLogo();
   const { toast } = useToast();
   const { getText } = useInterfaceTexts();
@@ -82,6 +75,26 @@ const Index = () => {
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(getDefaultVisibleColumns);
   const { stores, multiStoreEnabled } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+
+  // Server-side filters for orders
+  const ordersFilter: OrdersFilter = useMemo(() => ({
+    search: debouncedSearchTerm || undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    source: sourceFilter !== 'all' ? sourceFilter : undefined,
+    storeId: selectedStoreId,
+    dateFrom,
+    dateTo,
+  }), [debouncedSearchTerm, statusFilter, sourceFilter, selectedStoreId, dateFrom, dateTo]);
+
+  const { orders, totalCount, loading: ordersLoading, createOrder, deleteOrder, deleteOrders, updateOrder, updateOrdersStatus, refetch } = useOrders(currentPage, ordersPerPage, ordersFilter);
+  
+  // Realtime notifications for new orders
+  useRealtimeOrders({
+    onNewOrder: refetch,
+    onOrderUpdated: refetch,
+    onOrderDeleted: refetch,
+  });
+
   const [companySettings, setCompanySettings] = useState<{
     company_name: string | null;
     registered_address: string | null;
@@ -189,22 +202,7 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [autoRefreshInterval, refetch]);
 
-  // Helper function to normalize phone number for search comparison
-  const normalizePhoneForSearch = (phone: string): string => {
-    // Remove all non-digit characters except +
-    const cleaned = phone.replace(/[^\d+]/g, '');
-    // Convert +359 to 0 for comparison, or vice versa
-    if (cleaned.startsWith('+359')) {
-      return '0' + cleaned.slice(4);
-    }
-    if (cleaned.startsWith('00359')) {
-      return '0' + cleaned.slice(5);
-    }
-    if (cleaned.startsWith('359')) {
-      return '0' + cleaned.slice(3);
-    }
-    return cleaned;
-  };
+  // Phone normalization now handled server-side
 
   // Determine if selected store is Bulgaria (for Connectix/Nekorekten)
   const selectedStoreBG = useMemo(() => {
@@ -221,36 +219,10 @@ const Index = () => {
     return stores.find(s => s.country_code === 'BG')?.id || null;
   }, [stores]);
 
-  const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      // Normalize search term for phone comparison
-      const normalizedSearch = normalizePhoneForSearch(debouncedSearchTerm);
-      const normalizedPhone = normalizePhoneForSearch(order.phone);
-      
-      const matchesSearch = debouncedSearchTerm === '' || 
-        order.customer_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        order.phone.includes(debouncedSearchTerm) ||
-        normalizedPhone.includes(normalizedSearch) ||
-        order.id.toString().includes(debouncedSearchTerm) ||
-        order.code.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        (order.catalog_number && order.catalog_number.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+  // Server-side filtering is now handled by useOrders hook
+  // Orders returned are already filtered and paginated
 
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-      const matchesSource = sourceFilter === 'all' || order.source === sourceFilter;
-
-      const orderDate = new Date(order.created_at);
-      const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
-      const matchesDateTo = !dateTo || orderDate <= dateTo;
-
-      // Store filter - orders without store_id belong to Bulgaria
-      const orderStoreId = (order as any).store_id || bgStoreId;
-      const matchesStore = !selectedStoreId || orderStoreId === selectedStoreId;
-
-      return matchesSearch && matchesStatus && matchesSource && matchesDateFrom && matchesDateTo && matchesStore;
-    });
-  }, [orders, debouncedSearchTerm, statusFilter, sourceFilter, dateFrom, dateTo, selectedStoreId, bgStoreId]);
-
-  // Order count by store - orders without store_id count as Bulgaria
+  // Order count by store - uses totalCount from server
   const orderCountByStore = useMemo(() => {
     const counts: Record<string, number> = {};
     orders.forEach(order => {
@@ -262,12 +234,10 @@ const Index = () => {
     return counts;
   }, [orders, bgStoreId]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (currentPage - 1) * ordersPerPage;
-    return filteredOrders.slice(startIndex, startIndex + ordersPerPage);
-  }, [filteredOrders, currentPage, ordersPerPage]);
+  // Pagination - now server-side
+  const totalPages = Math.ceil(totalCount / ordersPerPage);
+  // Orders are already paginated from server
+  const paginatedOrders = orders;
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -354,7 +324,7 @@ const Index = () => {
 
   const exportToCSV = () => {
     const headers = ['ID', 'Дата', 'Клиент', 'Телефон', 'Имейл', 'Продукт', 'Кат.№', 'Количество', 'Цена', 'Статус', 'Адрес', 'Коментар', 'Източник'];
-    const rows = filteredOrders.map(order => [
+    const rows = orders.map(order => [
       order.id,
       new Date(order.created_at).toLocaleDateString('bg-BG'),
       order.customer_name,
@@ -386,7 +356,7 @@ const Index = () => {
   const exportToXML = () => {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<orders>\n';
     
-    filteredOrders.forEach(order => {
+    orders.forEach(order => {
       xml += '  <order>\n';
       xml += `    <id>${order.id}</id>\n`;
       xml += `    <date>${new Date(order.created_at).toISOString()}</date>\n`;
@@ -455,7 +425,7 @@ const Index = () => {
             <div className="min-w-0">
               <h1 className="text-base sm:text-xl font-semibold truncate">{companySettings?.orders_page_title || getText('orders_page_title')}</h1>
               <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                <span>{filteredOrders.length} {getText('orders_header_subtitle')}</span>
+                <span>{totalCount} {getText('orders_header_subtitle')}</span>
                 {websiteUrl && (
                   <>
                     <span>•</span>
@@ -999,7 +969,7 @@ const Index = () => {
                 </Button>
                 
                 <span className="text-sm text-muted-foreground ml-2">
-                  {getText('common_page_label')} {currentPage} {getText('common_of_label')} {totalPages} ({filteredOrders.length} {getText('orders_header_subtitle')})
+                  {getText('common_page_label')} {currentPage} {getText('common_of_label')} {totalPages} ({totalCount} {getText('orders_header_subtitle')})
                 </span>
               </div>
             )}

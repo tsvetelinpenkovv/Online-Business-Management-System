@@ -19,8 +19,22 @@ interface StockSettings {
   reserveStatus: string;
 }
 
-export const useOrders = () => {
+export interface OrdersFilter {
+  search?: string;
+  status?: string;
+  source?: string;
+  storeId?: string | null;
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
+export const useOrders = (
+  page: number = 1,
+  pageSize: number = 100,
+  filters: OrdersFilter = {}
+) => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [stockSettings, setStockSettings] = useState<StockSettings>({
     deductionStatus: DEFAULT_SHIPPED_STATUS,
@@ -86,16 +100,48 @@ export const useOrders = () => {
     }
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
         .from('orders')
-        .select('*')
+        .select('*', { count: 'exact' });
+
+      // Apply server-side filters
+      if (filters.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+      if (filters.source && filters.source !== 'all') {
+        query = query.eq('source', filters.source);
+      }
+      if (filters.storeId) {
+        query = query.eq('store_id', filters.storeId);
+      }
+      if (filters.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom.toISOString());
+      }
+      if (filters.dateTo) {
+        query = query.lte('created_at', filters.dateTo.toISOString());
+      }
+      if (filters.search && filters.search.trim()) {
+        const s = filters.search.trim();
+        // Use or() for multi-column search
+        query = query.or(
+          `customer_name.ilike.%${s}%,phone.ilike.%${s}%,code.ilike.%${s}%,catalog_number.ilike.%${s}%,id.eq.${isNaN(Number(s)) ? 0 : s}`
+        );
+      }
+
+      const { data, error, count } = await query
         .order('created_at', { ascending: false })
-        .order('id', { ascending: false });
+        .order('id', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
       setOrders((data || []) as Order[]);
+      setTotalCount(count || 0);
     } catch (error: any) {
       toast({
         title: 'Грешка',
@@ -105,12 +151,17 @@ export const useOrders = () => {
     } finally {
       setLoading(false);
     }
+  }, [page, pageSize, filters.search, filters.status, filters.source, filters.storeId, filters.dateFrom?.getTime(), filters.dateTo?.getTime(), toast]);
+
+  // Fetch a single order from DB (for stock operations when order may not be in current page)
+  const fetchOrderById = async (id: number): Promise<Order | null> => {
+    const { data } = await supabase.from('orders').select('*').eq('id', id).single();
+    return data as Order | null;
   };
 
   const deleteOrder = async (id: number) => {
     try {
-      // Get order data before deleting for audit log
-      const orderToDelete = orders.find(o => o.id === id);
+      const orderToDelete = orders.find(o => o.id === id) || await fetchOrderById(id);
 
       const { error } = await supabase
         .from('orders')
@@ -119,12 +170,12 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Log deletion to audit
       if (orderToDelete) {
-        await logAuditAction('delete', 'orders', id.toString(), orderToDelete, null);
+        await logAuditAction('delete', 'orders', id.toString(), orderToDelete as any, null);
       }
 
       setOrders(orders.filter(order => order.id !== id));
+      setTotalCount(prev => prev - 1);
       toast({
         title: 'Успех',
         description: 'Поръчката беше изтрита',
@@ -140,9 +191,6 @@ export const useOrders = () => {
 
   const deleteOrders = async (ids: number[]) => {
     try {
-      // Get orders to delete for audit log
-      const ordersToDelete = orders.filter(o => ids.includes(o.id));
-
       const { error } = await supabase
         .from('orders')
         .delete()
@@ -150,12 +198,8 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Log bulk deletion to audit
-      for (const order of ordersToDelete) {
-        await logAuditAction('delete', 'orders', order.id.toString(), order, null);
-      }
-
       setOrders(orders.filter(order => !ids.includes(order.id)));
+      setTotalCount(prev => prev - ids.length);
       toast({
         title: 'Успех',
         description: `${ids.length} поръчки бяха изтрити`,
@@ -173,9 +217,7 @@ export const useOrders = () => {
   const findProduct = async (catalogNumber: string | null, productName: string) => {
     let product = null;
     
-    // First try by catalog number (SKU or barcode)
     if (catalogNumber) {
-      // Handle multiple catalog numbers separated by comma
       const catalogNumbers = catalogNumber.split(',').map(c => c.trim()).filter(Boolean);
       
       for (const catNum of catalogNumbers) {
@@ -191,10 +233,7 @@ export const useOrders = () => {
       }
     }
     
-    // If not found by catalog number, try by SKU directly from product name
-    // Sometimes product_name contains the SKU (e.g., "BST551516 (x2)")
     if (!product && productName) {
-      // Extract potential SKU from product name (first word or alphanumeric code)
       const skuMatch = productName.match(/^([A-Z0-9-]+)/i);
       if (skuMatch) {
         const potentialSku = skuMatch[1];
@@ -209,9 +248,7 @@ export const useOrders = () => {
       }
     }
     
-    // Finally, try by name similarity
     if (!product && productName) {
-      // Clean up product name (remove quantity indicators like "(x2)")
       const cleanName = productName.replace(/\s*\(x\d+\)\s*/gi, '').trim();
       const { data } = await supabase
         .from('inventory_products')
@@ -225,7 +262,6 @@ export const useOrders = () => {
     return product;
   };
 
-  // Process order items (for orders with multiple products)
   const processOrderItems = async (orderId: number, operation: 'deduct' | 'restore' | 'reserve' | 'unreserve') => {
     const { data: orderItems } = await supabase
       .from('order_items')
@@ -245,7 +281,6 @@ export const useOrders = () => {
     return results;
   };
 
-  // Process stock for a single product
   const processProductStock = async (
     product: { id: string; current_stock: number; reserved_stock: number; name: string; is_bundle: boolean },
     quantity: number,
@@ -258,7 +293,6 @@ export const useOrders = () => {
       if (operation === 'deduct') {
         const stockAfter = stockBefore - quantity;
         
-        // Create stock movement - trigger will handle bundle components
         await supabase.from('stock_movements').insert({
           product_id: product.id,
           movement_type: 'out',
@@ -268,7 +302,6 @@ export const useOrders = () => {
           reason: reason,
         });
 
-        // Update product stock and clear reservation
         await supabase
           .from('inventory_products')
           .update({ 
@@ -283,7 +316,6 @@ export const useOrders = () => {
       if (operation === 'restore') {
         const stockAfter = stockBefore + quantity;
         
-        // Create return movement
         await supabase.from('stock_movements').insert({
           product_id: product.id,
           movement_type: 'return',
@@ -324,10 +356,8 @@ export const useOrders = () => {
     }
   };
 
-  // Main function to handle stock for an order
   const handleOrderStock = async (order: Order, operation: 'deduct' | 'restore' | 'reserve' | 'unreserve') => {
     try {
-      // First, check if order has multiple items
       const itemResults = await processOrderItems(order.id, operation);
       
       if (itemResults.length > 0) {
@@ -340,7 +370,6 @@ export const useOrders = () => {
         };
       }
       
-      // If no order_items, use the main order product
       const product = await findProduct(order.catalog_number, order.product_name);
       
       if (!product) {
@@ -359,7 +388,6 @@ export const useOrders = () => {
     }
   };
 
-  // Reserve stock when order is created
   const reserveStockForOrder = async (order: Order) => {
     const result = await handleOrderStock(order, 'reserve');
     if (result.success) {
@@ -368,11 +396,9 @@ export const useOrders = () => {
     return result;
   };
 
-  // Deduct stock when order is shipped
   const deductStockForOrder = async (order: Order) => {
     const result = await handleOrderStock(order, 'deduct');
     
-    // Mark order as stock deducted
     if (result.success) {
       await supabase
         .from('orders')
@@ -383,9 +409,7 @@ export const useOrders = () => {
     return result;
   };
 
-  // Restore stock when order is cancelled
   const restoreStockForOrder = async (order: Order) => {
-    // Only restore if stock was already deducted
     const { data: orderData } = await supabase
       .from('orders')
       .select('stock_deducted')
@@ -393,7 +417,6 @@ export const useOrders = () => {
       .single();
     
     if (!orderData?.stock_deducted) {
-      // If stock wasn't deducted, just unreserve
       return handleOrderStock(order, 'unreserve');
     }
     
@@ -411,7 +434,8 @@ export const useOrders = () => {
 
   const updateOrder = async (order: Order) => {
     try {
-      const oldOrder = orders.find(o => o.id === order.id);
+      // Fetch old order from DB to ensure we have the correct state
+      const oldOrder = orders.find(o => o.id === order.id) || await fetchOrderById(order.id);
       const isBeingShipped = oldOrder && oldOrder.status !== stockSettings.deductionStatus && order.status === stockSettings.deductionStatus;
       const isBeingCancelled = oldOrder && oldOrder.status !== stockSettings.restoreStatus && order.status === stockSettings.restoreStatus;
       const isBeingReserved = oldOrder && oldOrder.status !== stockSettings.reserveStatus && order.status === stockSettings.reserveStatus;
@@ -457,14 +481,13 @@ export const useOrders = () => {
         }
       }
 
-      // Handle unreserve when leaving reserve status (but not when shipping or cancelling - those handle their own stock ops)
+      // Handle unreserve when leaving reserve status
       const isLeavingReserveStatus = oldOrder && oldOrder.status === stockSettings.reserveStatus && 
         order.status !== stockSettings.reserveStatus && 
         order.status !== stockSettings.deductionStatus && 
         order.status !== stockSettings.restoreStatus;
       
       if (isLeavingReserveStatus) {
-        // Unreserve the stock without deducting
         const result = await handleOrderStock(order, 'unreserve');
         if (result.success) {
           toast({
@@ -522,7 +545,7 @@ export const useOrders = () => {
 
       // Log update to audit
       if (oldOrder) {
-        await logAuditAction('update', 'orders', order.id.toString(), oldOrder, order);
+        await logAuditAction('update', 'orders', order.id.toString(), oldOrder as any, order as any);
       }
 
       setOrders(orders.map(o => o.id === order.id ? order : o));
@@ -541,23 +564,29 @@ export const useOrders = () => {
 
   const updateOrdersStatus = async (ids: number[], status: string) => {
     try {
+      // Fetch current orders for stock operations (from DB if not in current page)
+      const currentOrders: Order[] = [];
+      for (const id of ids) {
+        const order = orders.find(o => o.id === id) || await fetchOrderById(id);
+        if (order) currentOrders.push(order);
+      }
+
       const ordersToShip = status === stockSettings.deductionStatus 
-        ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.deductionStatus)
+        ? currentOrders.filter(o => o.status !== stockSettings.deductionStatus)
         : [];
       
       const ordersToCancel = status === stockSettings.restoreStatus
-        ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.restoreStatus)
+        ? currentOrders.filter(o => o.status !== stockSettings.restoreStatus)
         : [];
 
       const ordersToReserve = status === stockSettings.reserveStatus
-        ? orders.filter(o => ids.includes(o.id) && o.status !== stockSettings.reserveStatus)
+        ? currentOrders.filter(o => o.status !== stockSettings.reserveStatus)
         : [];
 
-      // Orders leaving reserve status (but not being shipped or cancelled)
       const ordersToUnreserve = status !== stockSettings.reserveStatus && 
         status !== stockSettings.deductionStatus && 
         status !== stockSettings.restoreStatus
-        ? orders.filter(o => ids.includes(o.id) && o.status === stockSettings.reserveStatus)
+        ? currentOrders.filter(o => o.status === stockSettings.reserveStatus)
         : [];
 
       const { error } = await supabase
@@ -679,6 +708,7 @@ export const useOrders = () => {
       await reserveStockForOrder(newOrder);
 
       setOrders([newOrder, ...orders]);
+      setTotalCount(prev => prev + 1);
       toast({
         title: 'Успех',
         description: 'Поръчката беше създадена',
@@ -697,10 +727,11 @@ export const useOrders = () => {
   useEffect(() => {
     fetchOrders();
     loadStockSettings();
-  }, [loadStockSettings]);
+  }, [fetchOrders, loadStockSettings]);
 
   return { 
     orders, 
+    totalCount,
     loading, 
     createOrder, 
     deleteOrder, 
