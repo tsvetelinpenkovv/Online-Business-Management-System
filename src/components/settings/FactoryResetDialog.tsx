@@ -1,7 +1,6 @@
 import { FC, useState } from 'react';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -34,12 +33,18 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const [deleteExpenses, setDeleteExpenses] = useState(true);
   const [deleteAuditLogs, setDeleteAuditLogs] = useState(true);
   const [deleteLogoFavicon, setDeleteLogoFavicon] = useState(true);
+  const [deleteCompanySettings, setDeleteCompanySettings] = useState(true);
+  const [deleteApiSettings, setDeleteApiSettings] = useState(true);
+  const [deleteCouriers, setDeleteCouriers] = useState(false);
+  const [deleteEcommercePlatforms, setDeleteEcommercePlatforms] = useState(false);
+  const [deleteStores, setDeleteStores] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const CONFIRM_TEXT = 'ИЗТРИЙ ВСИЧКО';
-  const isValid = confirmText === CONFIRM_TEXT && (deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon);
+  const hasAnySelected = deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon || deleteCompanySettings || deleteApiSettings || deleteCouriers || deleteEcommercePlatforms || deleteStores;
+  const isValid = confirmText === CONFIRM_TEXT && hasAnySelected;
 
   const handleReset = async () => {
     if (!isValid) return;
@@ -52,7 +57,6 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteInvoices) {
-        // Delete credit notes first (references invoices)
         await supabase.from('credit_notes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('invoices').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         // Reset invoice counter
@@ -63,9 +67,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteCustomers) {
-        // Delete customer notes first
         await supabase.from('customer_notes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        // Delete customers
         await supabase.from('customers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
@@ -74,11 +76,8 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteOrders) {
-        // Delete order items
         await supabase.from('order_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        // Delete connectix messages
         await supabase.from('connectix_messages').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        // Delete orders
         await supabase.from('orders').delete().neq('id', 0);
       }
 
@@ -95,22 +94,69 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteLogoFavicon) {
-        // Delete all files from logos bucket
         const { data: logoFiles } = await supabase.storage.from('logos').list();
         if (logoFiles && logoFiles.length > 0) {
-          const logoPaths = logoFiles.map(f => f.name);
-          await supabase.storage.from('logos').remove(logoPaths);
+          await supabase.storage.from('logos').remove(logoFiles.map(f => f.name));
         }
-        // Delete all files from login-backgrounds bucket
         const { data: bgFiles } = await supabase.storage.from('login-backgrounds').list();
         if (bgFiles && bgFiles.length > 0) {
-          const bgPaths = bgFiles.map(f => f.name);
-          await supabase.storage.from('login-backgrounds').remove(bgPaths);
+          await supabase.storage.from('login-backgrounds').remove(bgFiles.map(f => f.name));
         }
       }
 
       if (deleteAuditLogs) {
         await supabase.from('audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteCompanySettings) {
+        // Reset company settings to defaults (not delete the row)
+        const { data: cs } = await supabase.from('company_settings').select('id').limit(1).maybeSingle();
+        if (cs) {
+          await supabase.from('company_settings').update({
+            company_name: null,
+            eik: null,
+            registered_address: null,
+            correspondence_address: null,
+            manager_name: null,
+            vat_registered: false,
+            vat_number: null,
+            email: null,
+            phone: null,
+            bank_name: null,
+            bank_iban: null,
+            bank_bic: null,
+            website_url: null,
+            orders_page_title: 'Управление на поръчки',
+            inventory_page_title: 'Склад',
+            footer_text: null,
+            footer_link_text: null,
+            footer_link: null,
+            footer_website: null,
+            login_title: null,
+            login_description: null,
+            login_background_color: null,
+            secret_path: null,
+          }).eq('id', cs.id);
+        }
+      }
+
+      if (deleteApiSettings) {
+        // Delete all api_settings (connectix config, sender defaults, interface texts, etc.)
+        await supabase.from('api_settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteCouriers) {
+        // Delete courier API settings first (FK)
+        await supabase.from('courier_api_settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('couriers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteEcommercePlatforms) {
+        await supabase.from('ecommerce_platforms').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteStores) {
+        await supabase.from('stores').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       // Invalidate all cached queries so UI refreshes
@@ -143,7 +189,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
           Фабрични настройки
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="w-5 h-5" />
@@ -188,9 +234,33 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-logo-favicon" checked={deleteLogoFavicon} onCheckedChange={(checked) => setDeleteLogoFavicon(!!checked)} />
-                <Label htmlFor="delete-logo-favicon" className="cursor-pointer">Лого и фавикон (от хранилището)</Label>
+                <Label htmlFor="delete-logo-favicon" className="cursor-pointer">Лого, фавикон и фон за вход</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-company-settings" checked={deleteCompanySettings} onCheckedChange={(checked) => setDeleteCompanySettings(!!checked)} />
+                <Label htmlFor="delete-company-settings" className="cursor-pointer">Фирмени данни (нулиране)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-api-settings" checked={deleteApiSettings} onCheckedChange={(checked) => setDeleteApiSettings(!!checked)} />
+                <Label htmlFor="delete-api-settings" className="cursor-pointer">API настройки, Connectix, текстове на интерфейса</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-couriers" checked={deleteCouriers} onCheckedChange={(checked) => setDeleteCouriers(!!checked)} />
+                <Label htmlFor="delete-couriers" className="cursor-pointer">Всички куриери и техните API настройки</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-ecommerce" checked={deleteEcommercePlatforms} onCheckedChange={(checked) => setDeleteEcommercePlatforms(!!checked)} />
+                <Label htmlFor="delete-ecommerce" className="cursor-pointer">Всички e-commerce платформи</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-stores" checked={deleteStores} onCheckedChange={(checked) => setDeleteStores(!!checked)} />
+                <Label htmlFor="delete-stores" className="cursor-pointer">Всички магазини</Label>
               </div>
             </div>
+
+            <p className="text-xs text-muted-foreground">
+              Няма да бъдат изтрити: потребители, роли и техните права, статуси на поръчки, мерни единици.
+            </p>
 
             <div className="space-y-2 pt-2">
               <Label htmlFor="confirm-text">
