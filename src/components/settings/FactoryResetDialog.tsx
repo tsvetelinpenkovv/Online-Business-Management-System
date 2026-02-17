@@ -32,11 +32,12 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const [deleteCustomers, setDeleteCustomers] = useState(true);
   const [deleteExpenses, setDeleteExpenses] = useState(true);
   const [deleteAuditLogs, setDeleteAuditLogs] = useState(true);
+  const [deleteLogoFavicon, setDeleteLogoFavicon] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const CONFIRM_TEXT = 'ИЗТРИЙ ВСИЧКО';
-  const isValid = confirmText === CONFIRM_TEXT && (deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs);
+  const isValid = confirmText === CONFIRM_TEXT && (deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon);
 
   const handleReset = async () => {
     if (!isValid) return;
@@ -52,6 +53,11 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         // Delete credit notes first (references invoices)
         await supabase.from('credit_notes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('invoices').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        // Reset invoice counter
+        const { data: settings } = await supabase.from('company_settings').select('id').limit(1).maybeSingle();
+        if (settings) {
+          await supabase.from('company_settings').update({ next_invoice_number: 1 }).eq('id', settings.id);
+        }
       }
 
       if (deleteCustomers) {
@@ -84,6 +90,21 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         await supabase.from('inventory_products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('inventory_categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('suppliers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteLogoFavicon) {
+        // Delete all files from logos bucket
+        const { data: logoFiles } = await supabase.storage.from('logos').list();
+        if (logoFiles && logoFiles.length > 0) {
+          const logoPaths = logoFiles.map(f => f.name);
+          await supabase.storage.from('logos').remove(logoPaths);
+        }
+        // Delete all files from login-backgrounds bucket
+        const { data: bgFiles } = await supabase.storage.from('login-backgrounds').list();
+        if (bgFiles && bgFiles.length > 0) {
+          const bgPaths = bgFiles.map(f => f.name);
+          await supabase.storage.from('login-backgrounds').remove(bgPaths);
+        }
       }
 
       if (deleteAuditLogs) {
@@ -159,6 +180,10 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-audit-logs" checked={deleteAuditLogs} onCheckedChange={(checked) => setDeleteAuditLogs(!!checked)} />
                 <Label htmlFor="delete-audit-logs" className="cursor-pointer">Всички одит логове</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-logo-favicon" checked={deleteLogoFavicon} onCheckedChange={(checked) => setDeleteLogoFavicon(!!checked)} />
+                <Label htmlFor="delete-logo-favicon" className="cursor-pointer">Лого и фавикон (от хранилището)</Label>
               </div>
             </div>
 
