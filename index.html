@@ -17,10 +17,13 @@
     <meta name="twitter:title" content="" />
     <meta name="twitter:description" content="" />
     
-    <!-- Google Fonts - Open Sans -->
+    <!-- Preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://gpmwkgkvikvlzvqpbqus.supabase.co">
+    <!-- Google Fonts - Open Sans (non-render-blocking) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#3b82f6">
     <link rel="apple-touch-icon" href="/pwa-192.png">
