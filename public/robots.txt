@@ -30,5 +30,16 @@ Disallow: /
 User-agent: LinkedInBot
 Disallow: /
 
+# Block Wayback Machine / Internet Archive
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
+# Block other archivers
+User-agent: Arquivo-web-crawler
+Disallow: /
+
 # No sitemap - we don't want to be indexed
 # Sitemap: none
