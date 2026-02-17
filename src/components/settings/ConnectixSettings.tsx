@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -97,7 +97,11 @@ const defaultConfig: ConnectixConfig = {
   delivered_status: 'Доставена',
 };
 
-export const ConnectixSettings: FC = () => {
+export interface ConnectixSettingsRef {
+  saveConfig: () => Promise<void>;
+}
+
+export const ConnectixSettings = forwardRef<ConnectixSettingsRef>((_, ref) => {
   const [config, setConfig] = useState<ConnectixConfig>(defaultConfig);
   const [templates, setTemplates] = useState<ConnectixTemplate[]>([]);
   const [rules, setRules] = useState<ConnectixRule[]>([]);
@@ -123,9 +127,11 @@ export const ConnectixSettings: FC = () => {
     channel: 'viber',
   });
 
-  useEffect(() => {
-    loadConfig();
-  }, []);
+  useImperativeHandle(ref, () => ({
+    saveConfig: async () => {
+      await saveConfigSilent();
+    },
+  }));
 
   const loadConfig = async () => {
     try {
@@ -181,19 +187,25 @@ export const ConnectixSettings: FC = () => {
     }
   };
 
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const saveConfigSilent = async () => {
+    const { error } = await supabase
+      .from('api_settings')
+      .upsert({
+        setting_key: 'connectix_config',
+        setting_value: JSON.stringify(config),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'setting_key' });
+    if (error) throw error;
+  };
+
   const saveConfig = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('api_settings')
-        .upsert({
-          setting_key: 'connectix_config',
-          setting_value: JSON.stringify(config),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'setting_key' });
-
-      if (error) throw error;
-
+      await saveConfigSilent();
       toast({ title: 'Успех', description: 'Connectix настройките са запазени' });
     } catch (err) {
       toast({ 
@@ -944,4 +956,6 @@ export const ConnectixSettings: FC = () => {
       </AlertDialog>
     </div>
   );
-};
+});
+
+ConnectixSettings.displayName = 'ConnectixSettings';
