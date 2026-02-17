@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Truck, Loader2, Check, Eye, EyeOff, Settings2, MapPin, Package, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
+
+export interface CourierApiSettingsRef {
+  saveConfig: () => Promise<void>;
+}
 
 interface Courier {
   id: string;
@@ -55,7 +59,7 @@ const COURIER_AUTH_TYPES: Record<string, { fields: string[], displayName: string
   'cvc': { fields: ['username', 'password'], displayName: 'CVC' },
 };
 
-export const CourierApiSettings = () => {
+export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => {
   const { toast } = useToast();
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [settings, setSettings] = useState<Record<string, CourierApiSetting>>({});
@@ -65,6 +69,37 @@ export const CourierApiSettings = () => {
   const [refreshingOffices, setRefreshingOffices] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState<Record<string, CourierApiSetting>>({});
+
+  const saveAllConfigs = async () => {
+    for (const courier of couriers) {
+      const data = formData[courier.id];
+      if (!data) continue;
+      const payload = {
+        api_url: data.api_url || null,
+        username: data.username || null,
+        password: data.password || null,
+        client_id: data.client_id || null,
+        client_secret: data.client_secret || null,
+        api_key: data.api_key || null,
+        is_test_mode: data.is_test_mode,
+        is_enabled: data.is_enabled,
+        extra_config: data.extra_config as unknown as Json,
+      };
+      if (settings[courier.id]) {
+        await supabase.from('courier_api_settings').update(payload).eq('courier_id', courier.id);
+      } else {
+        // Only insert if there's actual data
+        const hasData = payload.username || payload.password || payload.client_id || payload.client_secret || payload.api_key;
+        if (hasData) {
+          await supabase.from('courier_api_settings').insert([{ courier_id: courier.id, ...payload }]);
+        }
+      }
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    saveConfig: saveAllConfigs,
+  }));
 
   useEffect(() => {
     fetchData();
@@ -539,4 +574,6 @@ export const CourierApiSettings = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+CourierApiSettings.displayName = 'CourierApiSettings';
