@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +24,7 @@ import { SenderDefaultsSettings } from '@/components/settings/SenderDefaultsSett
 import { StatusSettings } from '@/components/settings/StatusSettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
 import { PlatformApiSettings } from '@/components/settings/PlatformApiSettings';
-import { ConnectixSettings } from '@/components/settings/ConnectixSettings';
+import { ConnectixSettings, ConnectixSettingsRef } from '@/components/settings/ConnectixSettings';
 import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
 import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
@@ -92,6 +92,7 @@ const Settings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const connectixRef = useRef<ConnectixSettingsRef>(null);
   
   // User management state
   const [isAdmin, setIsAdmin] = useState(false);
@@ -434,6 +435,11 @@ const Settings = () => {
       // Also save company settings if they exist
       if (companySettings) {
         await handleSaveCompanySettings();
+      }
+
+      // Also save Connectix settings
+      if (connectixRef.current) {
+        await connectixRef.current.saveConfig();
       }
 
       toast({
@@ -1564,7 +1570,7 @@ const Settings = () => {
 
           <TabsContent value="api" className="space-y-6">
             {/* Connectix Settings */}
-            <ConnectixSettings />
+            <ConnectixSettings ref={connectixRef} />
 
         <Card>
           <CardHeader>
