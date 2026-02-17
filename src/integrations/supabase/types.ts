@@ -1599,6 +1599,8 @@ export type Database = {
       }
       is_admin: { Args: { _email: string }; Returns: boolean }
       is_allowed_user: { Args: { _email: string }; Returns: boolean }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role:
