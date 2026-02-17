@@ -1,10 +1,16 @@
 # Lovable / Netlify / Cloudflare Pages headers
-# HTML — always revalidate so users get fresh deploys
-/
-  Cache-Control: no-cache
+
+# Global headers for ALL responses
+/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: frame-ancestors 'none'
+
+# HTML — always revalidate so users get fresh deploys
+/
+  Cache-Control: no-cache
 
 /index.html
   Cache-Control: no-cache
