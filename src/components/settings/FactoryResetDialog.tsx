@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface FactoryResetDialogProps {
@@ -35,6 +36,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const [deleteLogoFavicon, setDeleteLogoFavicon] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const CONFIRM_TEXT = 'ИЗТРИЙ ВСИЧКО';
   const isValid = confirmText === CONFIRM_TEXT && (deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon);
@@ -110,6 +112,9 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       if (deleteAuditLogs) {
         await supabase.from('audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
+
+      // Invalidate all cached queries so UI refreshes
+      await queryClient.invalidateQueries();
 
       toast({
         title: 'Успех',
