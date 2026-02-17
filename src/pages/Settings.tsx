@@ -19,7 +19,7 @@ import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
-import { CourierApiSettings } from '@/components/settings/CourierApiSettings';
+import { CourierApiSettings, CourierApiSettingsRef } from '@/components/settings/CourierApiSettings';
 import { SenderDefaultsSettings, SenderDefaultsSettingsRef } from '@/components/settings/SenderDefaultsSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
@@ -95,6 +95,7 @@ const Settings = () => {
   const connectixRef = useRef<ConnectixSettingsRef>(null);
   const senderDefaultsRef = useRef<SenderDefaultsSettingsRef>(null);
   const interfaceTextRef = useRef<InterfaceTextEditorRef>(null);
+  const courierApiRef = useRef<CourierApiSettingsRef>(null);
   
   // User management state
   const [isAdmin, setIsAdmin] = useState(false);
@@ -454,6 +455,11 @@ const Settings = () => {
         await interfaceTextRef.current.saveConfig();
       }
 
+      // Also save Courier API settings
+      if (courierApiRef.current) {
+        await courierApiRef.current.saveConfig();
+      }
+
       toast({
         title: 'Успех',
         description: 'Всички настройки бяха запазени',
@@ -747,7 +753,7 @@ const Settings = () => {
 
           <TabsContent value="couriers" className="space-y-6">
             <SenderDefaultsSettings ref={senderDefaultsRef} />
-            <CourierApiSettings />
+            <CourierApiSettings ref={courierApiRef} />
             <CourierSettings />
           </TabsContent>
 
