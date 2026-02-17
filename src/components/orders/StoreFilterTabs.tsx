@@ -223,7 +223,7 @@ export const StoreFilterTabs = ({
 
       {/* Bottom row (e.g. select-all checkbox) */}
       {trailingContent && (
-        <div className="flex items-center gap-2 px-4 py-1.5 border-t border-b border-border/50">
+        <div className="flex items-center gap-2 pl-6 py-1.5 border-t border-b border-border/50">
           {trailingContent}
         </div>
       )}
