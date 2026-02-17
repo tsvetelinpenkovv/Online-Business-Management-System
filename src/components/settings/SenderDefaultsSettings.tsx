@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,11 @@ interface SenderDefaults {
   officeCode: string;
 }
 
-export const SenderDefaultsSettings = () => {
+export interface SenderDefaultsSettingsRef {
+  saveConfig: () => Promise<void>;
+}
+
+export const SenderDefaultsSettings = forwardRef<SenderDefaultsSettingsRef>((_, ref) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,31 +82,30 @@ export const SenderDefaultsSettings = () => {
     }
   };
 
+  const saveConfigSilent = async () => {
+    const payload = {
+      setting_key: 'sender_defaults',
+      setting_value: JSON.stringify(defaults),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('api_settings')
+      .upsert(payload, { onConflict: 'setting_key' });
+
+    if (error) throw error;
+  };
+
+  useImperativeHandle(ref, () => ({
+    saveConfig: async () => {
+      await saveConfigSilent();
+    },
+  }));
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data: existing } = await supabase
-        .from('api_settings')
-        .select('id')
-        .eq('setting_key', 'sender_defaults')
-        .maybeSingle();
-
-      const payload = {
-        setting_key: 'sender_defaults',
-        setting_value: JSON.stringify(defaults),
-      };
-
-      if (existing) {
-        await supabase
-          .from('api_settings')
-          .update(payload)
-          .eq('setting_key', 'sender_defaults');
-      } else {
-        await supabase
-          .from('api_settings')
-          .insert([payload]);
-      }
-
+      await saveConfigSilent();
       toast({ title: 'Успех', description: 'Данните на подателя са запазени' });
     } catch (err) {
       console.error('Error saving sender defaults:', err);
@@ -230,4 +233,6 @@ export const SenderDefaultsSettings = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+SenderDefaultsSettings.displayName = 'SenderDefaultsSettings';

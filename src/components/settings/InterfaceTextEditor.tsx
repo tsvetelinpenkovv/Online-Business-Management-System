@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -478,7 +478,11 @@ const IconSelector: FC<{ value: IconName; onChange: (icon: IconName) => void; la
   );
 };
 
-export const InterfaceTextEditor: FC = () => {
+export interface InterfaceTextEditorRef {
+  saveConfig: () => Promise<void>;
+}
+
+export const InterfaceTextEditor = forwardRef<InterfaceTextEditorRef>((_, ref) => {
   const [texts, setTexts] = useState<TextConfig>(defaultTexts);
   const [icons, setIcons] = useState<IconConfig>(defaultIcons);
   const [loading, setLoading] = useState(true);
@@ -512,22 +516,31 @@ export const InterfaceTextEditor: FC = () => {
     }
   };
 
+  const saveConfigSilent = async () => {
+    await Promise.all([
+      supabase.from('api_settings').upsert({
+        setting_key: SETTING_KEY,
+        setting_value: JSON.stringify(texts),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'setting_key' }),
+      supabase.from('api_settings').upsert({
+        setting_key: ICONS_SETTING_KEY,
+        setting_value: JSON.stringify(icons),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'setting_key' }),
+    ]);
+  };
+
+  useImperativeHandle(ref, () => ({
+    saveConfig: async () => {
+      await saveConfigSilent();
+    },
+  }));
+
   const saveSettings = async () => {
     setSaving(true);
     try {
-      await Promise.all([
-        supabase.from('api_settings').upsert({
-          setting_key: SETTING_KEY,
-          setting_value: JSON.stringify(texts),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'setting_key' }),
-        supabase.from('api_settings').upsert({
-          setting_key: ICONS_SETTING_KEY,
-          setting_value: JSON.stringify(icons),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'setting_key' }),
-      ]);
-
+      await saveConfigSilent();
       toast({
         title: 'Успех',
         description: 'Настройките бяха запазени успешно',
@@ -1055,4 +1068,6 @@ export const InterfaceTextEditor: FC = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+InterfaceTextEditor.displayName = 'InterfaceTextEditor';

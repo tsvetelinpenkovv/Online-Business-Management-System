@@ -20,14 +20,14 @@ import { RolePermissionsManager } from '@/components/settings/RolePermissionsMan
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourierSettings } from '@/components/settings/CourierSettings';
 import { CourierApiSettings } from '@/components/settings/CourierApiSettings';
-import { SenderDefaultsSettings } from '@/components/settings/SenderDefaultsSettings';
+import { SenderDefaultsSettings, SenderDefaultsSettingsRef } from '@/components/settings/SenderDefaultsSettings';
 import { StatusSettings } from '@/components/settings/StatusSettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
 import { PlatformApiSettings } from '@/components/settings/PlatformApiSettings';
 import { ConnectixSettings, ConnectixSettingsRef } from '@/components/settings/ConnectixSettings';
 import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
-import { InterfaceTextEditor } from '@/components/settings/InterfaceTextEditor';
+import { InterfaceTextEditor, InterfaceTextEditorRef } from '@/components/settings/InterfaceTextEditor';
 import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
 import { CacheManagementCard } from '@/components/settings/CacheManagementCard';
 import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
@@ -93,6 +93,8 @@ const Settings = () => {
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const connectixRef = useRef<ConnectixSettingsRef>(null);
+  const senderDefaultsRef = useRef<SenderDefaultsSettingsRef>(null);
+  const interfaceTextRef = useRef<InterfaceTextEditorRef>(null);
   
   // User management state
   const [isAdmin, setIsAdmin] = useState(false);
@@ -442,6 +444,16 @@ const Settings = () => {
         await connectixRef.current.saveConfig();
       }
 
+      // Also save Sender Defaults settings
+      if (senderDefaultsRef.current) {
+        await senderDefaultsRef.current.saveConfig();
+      }
+
+      // Also save Interface Text settings
+      if (interfaceTextRef.current) {
+        await interfaceTextRef.current.saveConfig();
+      }
+
       toast({
         title: 'Успех',
         description: 'Всички настройки бяха запазени',
@@ -734,7 +746,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="couriers" className="space-y-6">
-            <SenderDefaultsSettings />
+            <SenderDefaultsSettings ref={senderDefaultsRef} />
             <CourierApiSettings />
             <CourierSettings />
           </TabsContent>
@@ -1883,7 +1895,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="interface" className="space-y-6">
-            <InterfaceTextEditor />
+            <InterfaceTextEditor ref={interfaceTextRef} />
           </TabsContent>
 
           <TabsContent value="docs" className="space-y-6">
