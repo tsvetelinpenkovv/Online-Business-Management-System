@@ -131,14 +131,9 @@ export const useFavicon = () => {
         }
       }
 
-      // Restore default favicon
+      // Remove all favicon links - no default
       const existingLinks = document.querySelectorAll("link[rel*='icon']");
       existingLinks.forEach(link => link.remove());
-      
-      const link = document.createElement('link');
-      link.rel = 'icon';
-      link.href = '/favicon.ico';
-      document.head.appendChild(link);
 
       setFaviconUrl(null);
       return true;
