@@ -132,9 +132,10 @@
 
   /* Prevent Radix dialogs/dropdowns from removing scrollbar and causing layout shift */
   body {
-    overflow: inherit !important;
+    overflow: visible !important;
     margin-right: 0 !important;
     padding-right: 0 !important;
+    width: 100% !important;
   }
 
   body {
