@@ -4,8 +4,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { InventoryProduct } from '@/types/inventory';
 import { supabase } from '@/integrations/supabase/client';
 import { useStockSync } from '@/hooks/useStockSync';
-type SortKey = 'name' | 'sku' | 'current_stock' | 'purchase_price' | 'sale_price' | 'category';
-type SortDirection = 'asc' | 'desc';
+import { useProductsPage, type ProductSortKey } from '@/hooks/useProductsPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,7 +87,6 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
   const { canCreate, canEdit, canDelete } = usePermissions();
   const { syncProductStock } = useStockSync();
   const [copiedText, setCopiedText] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editProduct, setEditProduct] = useState<InventoryProduct | null>(null);
@@ -109,15 +107,32 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
     is_active: true,
     current_stock: 0,
   });
-  const [sortKey, setSortKey] = useState<SortKey>('name');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [productsPerPage, setProductsPerPage] = useState(50);
+
+  // Server-side paginated products
+  const {
+    products: paginatedProducts,
+    totalCount,
+    totalPages,
+    page,
+    setPage,
+    search,
+    setSearch,
+    sortKey,
+    sortDirection,
+    handleSort,
+    loading: productsLoading,
+    refetch: refetchProducts,
+  } = useProductsPage(productsPerPage);
+
+  // Use paginated products for the table
+  const filteredAndSortedProducts = paginatedProducts;
 
   // Handle inline stock save
   const handleInlineStockSave = useCallback(async (productId: string, newStock: number): Promise<boolean> => {
-    const product = inventory.products.find(p => p.id === productId);
+    const product = paginatedProducts.find(p => p.id === productId);
     if (!product) return false;
 
-    // Update in database using adjustment movement
     const success = await inventory.createStockMovement(
       productId,
       'adjustment',
@@ -126,63 +141,21 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
       'Ръчна корекция на наличността',
       undefined,
       undefined,
-      !syncStockToWoo // Skip sync if syncStockToWoo is false
+      !syncStockToWoo
     );
 
     if (success) {
-      // If sync is enabled, manually trigger sync
       if (syncStockToWoo && product.sku) {
         await syncProductStock(productId, product.sku, product.name, newStock);
       }
       toast.success('Наличността е актуализирана');
+      refetchProducts();
       return true;
     }
     return false;
-  }, [inventory, syncStockToWoo, syncProductStock]);
+  }, [paginatedProducts, inventory, syncStockToWoo, syncProductStock, refetchProducts]);
 
-  const filteredAndSortedProducts = useMemo(() => {
-    const filtered = inventory.products.filter(p => 
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase()) ||
-      p.barcode?.toLowerCase().includes(search.toLowerCase())
-    );
-
-    return [...filtered].sort((a, b) => {
-      let comparison = 0;
-      switch (sortKey) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name, 'bg');
-          break;
-        case 'sku':
-          comparison = a.sku.localeCompare(b.sku);
-          break;
-        case 'current_stock':
-          comparison = a.current_stock - b.current_stock;
-          break;
-        case 'purchase_price':
-          comparison = a.purchase_price - b.purchase_price;
-          break;
-        case 'sale_price':
-          comparison = a.sale_price - b.sale_price;
-          break;
-        case 'category':
-          comparison = (a.category?.name || '').localeCompare(b.category?.name || '', 'bg');
-          break;
-      }
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }, [inventory.products, search, sortKey, sortDirection]);
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDirection('asc');
-    }
-  };
-
-  const SortableHeader = ({ columnKey, children, icon: Icon }: { columnKey: SortKey; children: React.ReactNode; icon?: React.ElementType }) => (
+  const SortableHeader = ({ columnKey, children, icon: Icon }: { columnKey: ProductSortKey; children: React.ReactNode; icon?: React.ElementType }) => (
     <TableHead 
       className={`cursor-pointer select-none hover:bg-muted/50 transition-colors ${columnKey === 'current_stock' || columnKey === 'purchase_price' || columnKey === 'sale_price' ? 'text-right' : ''}`}
       onClick={() => handleSort(columnKey)}
@@ -272,12 +245,14 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
       }
     }
     setIsDialogOpen(false);
+    refetchProducts();
   };
 
   const handleDelete = async () => {
     if (deleteId) {
       await inventory.deleteProduct(deleteId);
       setDeleteId(null);
+      refetchProducts();
     }
   };
 
@@ -715,7 +690,50 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
         </Card>
       )}
 
-      {/* Create/Edit Dialog */}
+      {/* Pagination Controls */}
+      {totalPages > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Показани {((page - 1) * productsPerPage) + 1}–{Math.min(page * productsPerPage, totalCount)} от {totalCount}</span>
+            <Select
+              value={String(productsPerPage)}
+              onValueChange={(val) => { setProductsPerPage(Number(val)); setPage(1); }}
+            >
+              <SelectTrigger className="w-[80px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="200">200</SelectItem>
+              </SelectContent>
+            </Select>
+            <span>на стр.</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page <= 1 || productsLoading}
+            >
+              ← Назад
+            </Button>
+            <span className="text-sm text-muted-foreground px-2">
+              {page} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages || productsLoading}
+            >
+              Напред →
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
