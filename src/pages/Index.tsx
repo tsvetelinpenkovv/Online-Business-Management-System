@@ -15,7 +15,7 @@ import { useStores } from '@/hooks/useStores';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3 } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3, RotateCcw } from 'lucide-react';
 
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -707,6 +707,10 @@ const Index = () => {
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Аналитика
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(buildPath('/returns'))} className="cursor-pointer">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Връщания
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -769,6 +773,10 @@ const Index = () => {
                 <DropdownMenuItem onClick={() => navigate(buildPath('/analytics'))} className="cursor-pointer">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Аналитика
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(buildPath('/returns'))} className="cursor-pointer">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Връщания
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="p-0">
