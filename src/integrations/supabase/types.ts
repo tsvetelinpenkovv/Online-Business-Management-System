@@ -1048,6 +1048,68 @@ export type Database = {
           },
         ]
       }
+      product_images: {
+        Row: {
+          alt: string | null
+          cached_url: string | null
+          content_hash: string | null
+          created_at: string
+          external_image_id: string | null
+          file_size: number | null
+          height: number | null
+          id: string
+          last_fetched_at: string | null
+          original_url: string
+          position: number
+          product_id: string
+          thumbnail_url: string | null
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          alt?: string | null
+          cached_url?: string | null
+          content_hash?: string | null
+          created_at?: string
+          external_image_id?: string | null
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          last_fetched_at?: string | null
+          original_url: string
+          position?: number
+          product_id: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          alt?: string | null
+          cached_url?: string | null
+          content_hash?: string | null
+          created_at?: string
+          external_image_id?: string | null
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          last_fetched_at?: string | null
+          original_url?: string
+          position?: number
+          product_id?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_create: boolean | null
