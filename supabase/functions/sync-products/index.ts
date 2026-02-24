@@ -16,6 +16,7 @@ interface SyncResult {
   synced: number;
   created: number;
   bundles: number;
+  images?: number;
   errors?: number;
 }
 
@@ -31,6 +32,12 @@ interface WooCommerceProduct {
   regular_price: string;
   description: string;
   short_description: string;
+  images?: Array<{
+    id: number;
+    src: string;
+    name: string;
+    alt: string;
+  }>;
   grouped_products?: number[];
   bundled_items?: Array<{
     product_id: number;
@@ -51,6 +58,66 @@ interface WooCommerceProduct {
 function generateSku(platformPrefix: string, productId: number | string): string {
   return `${platformPrefix}-${productId}`;
 }
+
+// ─── Image Sync Helper ───────────────────────────────────────────────
+interface ImageToSync {
+  original_url: string;
+  alt?: string | null;
+  position: number;
+  external_image_id?: string | null;
+}
+
+async function syncProductImages(
+  supabase: any,
+  productId: string,
+  images: ImageToSync[]
+): Promise<number> {
+  if (!images.length) return 0;
+  let count = 0;
+
+  for (const img of images) {
+    if (!img.original_url) continue;
+
+    // Upsert by product_id + position to avoid duplicates
+    const { data: existing } = await supabase
+      .from('product_images')
+      .select('id, original_url')
+      .eq('product_id', productId)
+      .eq('position', img.position)
+      .maybeSingle();
+
+    if (existing) {
+      // Only update if URL changed
+      if (existing.original_url !== img.original_url) {
+        await supabase
+          .from('product_images')
+          .update({
+            original_url: img.original_url,
+            alt: img.alt || null,
+            external_image_id: img.external_image_id || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+        count++;
+      }
+    } else {
+      const { error } = await supabase
+        .from('product_images')
+        .insert({
+          product_id: productId,
+          original_url: img.original_url,
+          alt: img.alt || null,
+          position: img.position,
+          external_image_id: img.external_image_id || null,
+        });
+      if (!error) count++;
+    }
+  }
+
+  return count;
+}
+
+// ─── WooCommerce ─────────────────────────────────────────────────────
 
 async function fetchWooCommerceProducts(config: PlatformConfig): Promise<WooCommerceProduct[]> {
   const credentials = btoa(`${config.api_key}:${config.api_secret}`);
@@ -133,6 +200,7 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
   let synced = 0;
   let created = 0;
   let bundles = 0;
+  let imageCount = 0;
   
   for (const wcProduct of products) {
     let existingProduct = null;
@@ -204,6 +272,17 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
       created++;
     }
     
+    // ── Sync images ──
+    if (existingProduct && wcProduct.images?.length) {
+      const imgs: ImageToSync[] = wcProduct.images.map((img, idx) => ({
+        original_url: img.src,
+        alt: img.alt || img.name || null,
+        position: idx,
+        external_image_id: String(img.id),
+      }));
+      imageCount += await syncProductImages(supabase, existingProduct.id, imgs);
+    }
+    
     // Handle bundles
     if (isBundleType && existingProduct) {
       const bundledItems = await fetchWooCommerceBundledItems(config, wcProduct.id);
@@ -255,14 +334,17 @@ async function syncWooCommerceProducts(config: PlatformConfig, supabase: any): P
     }
   }
   
-  return { synced, created, bundles };
+  return { synced, created, bundles, images: imageCount };
 }
+
+// ─── PrestaShop ──────────────────────────────────────────────────────
 
 async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   const credentials = btoa(`${config.api_key}:`);
   let synced = 0;
   let created = 0;
   let bundles = 0;
+  let imageCount = 0;
   
   const productsUrl = `${config.store_url}/api/products?output_format=JSON&display=full`;
   const productsRes = await fetch(productsUrl, {
@@ -271,7 +353,7 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
   
   if (!productsRes.ok) {
     console.error('Failed to fetch PrestaShop products');
-    return { synced: 0, created: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0, images: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -346,6 +428,21 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
       created++;
     }
     
+    // ── Sync images (PrestaShop images via associations) ──
+    if (existingProduct && psProduct.associations?.images) {
+      const psImages = Array.isArray(psProduct.associations.images)
+        ? psProduct.associations.images
+        : [psProduct.associations.images];
+      
+      const imgs: ImageToSync[] = psImages.map((img: any, idx: number) => ({
+        original_url: `${config.store_url}/api/images/products/${psProduct.id}/${img.id}`,
+        alt: productName,
+        position: idx,
+        external_image_id: String(img.id),
+      }));
+      imageCount += await syncProductImages(supabase, existingProduct.id, imgs);
+    }
+    
     // Handle pack bundles
     if (isPack && psProduct.associations?.pack && existingProduct) {
       const packItems = Array.isArray(psProduct.associations.pack)
@@ -400,13 +497,16 @@ async function syncPrestaShopProducts(config: PlatformConfig, supabase: any): Pr
     }
   }
   
-  return { synced, created, bundles };
+  return { synced, created, bundles, images: imageCount };
 }
+
+// ─── Shopify ─────────────────────────────────────────────────────────
 
 async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   let synced = 0;
   let created = 0;
   let bundles = 0;
+  let imageCount = 0;
   
   // Fetch all products from Shopify
   const productsUrl = `${config.store_url}/admin/api/2024-01/products.json?limit=250`;
@@ -419,7 +519,7 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
   
   if (!productsRes.ok) {
     console.error('Failed to fetch Shopify products');
-    return { synced: 0, created: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0, images: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -494,6 +594,17 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
       
       existingProduct = newProduct;
       created++;
+    }
+    
+    // ── Sync images (Shopify images array) ──
+    if (existingProduct && shopifyProduct.images?.length) {
+      const imgs: ImageToSync[] = shopifyProduct.images.map((img: any, idx: number) => ({
+        original_url: img.src,
+        alt: img.alt || shopifyProduct.title || null,
+        position: idx,
+        external_image_id: String(img.id),
+      }));
+      imageCount += await syncProductImages(supabase, existingProduct.id, imgs);
     }
     
     // Handle bundles using metafields
@@ -572,13 +683,16 @@ async function syncShopifyProducts(config: PlatformConfig, supabase: any): Promi
     }
   }
   
-  return { synced, created, bundles };
+  return { synced, created, bundles, images: imageCount };
 }
+
+// ─── OpenCart ─────────────────────────────────────────────────────────
 
 async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   let synced = 0;
   let created = 0;
   let bundles = 0;
+  let imageCount = 0;
   
   // OpenCart REST API - fetch products
   const productsUrl = `${config.store_url}/index.php?route=api/product&limit=1000`;
@@ -591,7 +705,7 @@ async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Prom
   
   if (!productsRes.ok) {
     console.error('Failed to fetch OpenCart products');
-    return { synced: 0, created: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0, images: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -663,15 +777,50 @@ async function syncOpenCartProducts(config: PlatformConfig, supabase: any): Prom
       existingProduct = newProduct;
       created++;
     }
+    
+    // ── Sync images (OpenCart main image + additional images) ──
+    if (existingProduct) {
+      const imgs: ImageToSync[] = [];
+      
+      // Main image
+      if (ocProduct.image) {
+        const mainUrl = ocProduct.image.startsWith('http')
+          ? ocProduct.image
+          : `${config.store_url}/image/${ocProduct.image}`;
+        imgs.push({ original_url: mainUrl, alt: ocProduct.name, position: 0 });
+      }
+      
+      // Additional images
+      if (ocProduct.images && Array.isArray(ocProduct.images)) {
+        ocProduct.images.forEach((img: any, idx: number) => {
+          const imgUrl = (img.image || img).startsWith?.('http')
+            ? (img.image || img)
+            : `${config.store_url}/image/${img.image || img}`;
+          imgs.push({
+            original_url: imgUrl,
+            alt: ocProduct.name,
+            position: idx + 1,
+            external_image_id: img.product_image_id ? String(img.product_image_id) : null,
+          });
+        });
+      }
+      
+      if (imgs.length) {
+        imageCount += await syncProductImages(supabase, existingProduct.id, imgs);
+      }
+    }
   }
   
-  return { synced, created, bundles };
+  return { synced, created, bundles, images: imageCount };
 }
+
+// ─── Magento ─────────────────────────────────────────────────────────
 
 async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promise<SyncResult> {
   let synced = 0;
   let created = 0;
   let bundles = 0;
+  let imageCount = 0;
   
   // Get Magento admin token
   const tokenUrl = `${config.store_url}/rest/V1/integration/admin/token`;
@@ -686,7 +835,7 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
   
   if (!tokenRes.ok) {
     console.error('Failed to get Magento token');
-    return { synced: 0, created: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0, images: 0 };
   }
   
   const token = await tokenRes.json();
@@ -700,7 +849,7 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
   
   if (!productsRes.ok) {
     console.error('Failed to fetch Magento products');
-    return { synced: 0, created: 0, bundles: 0 };
+    return { synced: 0, created: 0, bundles: 0, images: 0 };
   }
   
   const productsData = await productsRes.json();
@@ -788,6 +937,23 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
       created++;
     }
     
+    // ── Sync images (Magento media_gallery_entries) ──
+    if (existingProduct && magentoProduct.media_gallery_entries?.length) {
+      const imgs: ImageToSync[] = magentoProduct.media_gallery_entries
+        .filter((entry: any) => !entry.disabled)
+        .map((entry: any, idx: number) => ({
+          original_url: entry.file
+            ? `${config.store_url}/pub/media/catalog/product${entry.file}`
+            : '',
+          alt: entry.label || magentoProduct.name || null,
+          position: entry.position ?? idx,
+          external_image_id: String(entry.id),
+        }))
+        .filter((img: ImageToSync) => img.original_url);
+      
+      imageCount += await syncProductImages(supabase, existingProduct.id, imgs);
+    }
+    
     // Handle bundles
     if (isBundleType && existingProduct) {
       // Fetch bundle options
@@ -858,8 +1024,10 @@ async function syncMagentoProducts(config: PlatformConfig, supabase: any): Promi
     }
   }
   
-  return { synced, created, bundles };
+  return { synced, created, bundles, images: imageCount };
 }
+
+// ─── Main Handler ────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -929,7 +1097,7 @@ Deno.serve(async (req) => {
           results[p.name] = await syncMagentoProducts(config, supabase);
           break;
         default:
-          results[p.name] = { synced: 0, created: 0, bundles: 0 };
+          results[p.name] = { synced: 0, created: 0, bundles: 0, images: 0 };
       }
       
       console.log(`${p.name} sync complete:`, results[p.name]);
@@ -942,6 +1110,7 @@ Deno.serve(async (req) => {
       synced: Object.values(results).reduce((sum, r) => sum + r.synced, 0),
       created: Object.values(results).reduce((sum, r) => sum + r.created, 0),
       bundles: Object.values(results).reduce((sum, r) => sum + r.bundles, 0),
+      images: Object.values(results).reduce((sum, r) => sum + (r.images || 0), 0),
       errors: Object.values(results).reduce((sum, r) => sum + (r.errors || 0), 0),
     };
 
@@ -953,8 +1122,9 @@ Deno.serve(async (req) => {
       synced: totals.synced,
       created: totals.created,
       bundles: totals.bundles,
+      images: totals.images,
       errors: totals.errors,
-      message: `Синхронизирани: ${totals.synced}, Създадени: ${totals.created}, Бъндъли: ${totals.bundles}`
+      message: `Синхронизирани: ${totals.synced}, Създадени: ${totals.created}, Бъндъли: ${totals.bundles}, Снимки: ${totals.images}`
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
