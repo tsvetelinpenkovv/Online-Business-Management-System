@@ -1110,6 +1110,125 @@ export type Database = {
           },
         ]
       }
+      return_items: {
+        Row: {
+          catalog_number: string | null
+          condition: string | null
+          created_at: string
+          id: string
+          product_name: string
+          quantity: number
+          reason: string | null
+          restock: boolean
+          return_id: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          catalog_number?: string | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          product_name: string
+          quantity?: number
+          reason?: string | null
+          restock?: boolean
+          return_id: string
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          catalog_number?: string | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          product_name?: string
+          quantity?: number
+          reason?: string | null
+          restock?: boolean
+          return_id?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      returns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credit_note_id: string | null
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          order_id: number | null
+          reason: string
+          reason_details: string | null
+          refund_amount: number | null
+          refund_method: string | null
+          return_type: string
+          status: string
+          stock_restored: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credit_note_id?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          order_id?: number | null
+          reason: string
+          reason_details?: string | null
+          refund_amount?: number | null
+          refund_method?: string | null
+          return_type?: string
+          status?: string
+          stock_restored?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credit_note_id?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          order_id?: number | null
+          reason?: string
+          reason_details?: string | null
+          refund_amount?: number | null
+          refund_method?: string | null
+          return_type?: string
+          status?: string
+          stock_restored?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_credit_note_id_fkey"
+            columns: ["credit_note_id"]
+            isOneToOne: false
+            referencedRelation: "credit_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_create: boolean | null
