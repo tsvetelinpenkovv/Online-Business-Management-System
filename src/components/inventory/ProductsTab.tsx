@@ -519,7 +519,11 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[56px] text-center">
+                      <div className="flex items-center justify-center">
+                        <Package className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    </TableHead>
                     <SortableHeader columnKey="sku" icon={Hash}>Код</SortableHeader>
                     <SortableHeader columnKey="name" icon={FileText}>Наименование</SortableHeader>
                     <SortableHeader columnKey="category" icon={FolderOpen}>Категория</SortableHeader>
