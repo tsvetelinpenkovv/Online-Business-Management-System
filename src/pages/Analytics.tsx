@@ -22,6 +22,10 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { format } from 'date-fns';
 import { exportOrdersExcel, exportOrdersPDF } from '@/lib/exportUtils';
+import { SalesByProductChart } from '@/components/analytics/SalesByProductChart';
+import { SalesByRegionChart } from '@/components/analytics/SalesByRegionChart';
+import { RevenueExpenseTrend } from '@/components/analytics/RevenueExpenseTrend';
+import { MapPin, Wallet } from 'lucide-react';
 
 const COLORS = [
   'hsl(221, 83%, 53%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)',
@@ -339,10 +343,13 @@ const Analytics = () => {
         </div>
 
         <Tabs defaultValue="stores">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="stores"><Store className="w-4 h-4 mr-1" />По магазин</TabsTrigger>
+            <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />По продукт</TabsTrigger>
+            <TabsTrigger value="regions"><MapPin className="w-4 h-4 mr-1" />По регион</TabsTrigger>
             <TabsTrigger value="abc"><Package className="w-4 h-4 mr-1" />ABC Анализ</TabsTrigger>
             <TabsTrigger value="customers"><Users className="w-4 h-4 mr-1" />Топ клиенти</TabsTrigger>
+            <TabsTrigger value="trend"><Wallet className="w-4 h-4 mr-1" />Приходи/Разходи</TabsTrigger>
           </TabsList>
 
           <TabsContent value="stores">
@@ -388,6 +395,18 @@ const Analytics = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="products">
+            <SalesByProductChart orders={hasFilters ? filteredOrders : rawOrders} />
+          </TabsContent>
+
+          <TabsContent value="regions">
+            <SalesByRegionChart orders={hasFilters ? filteredOrders : rawOrders} />
+          </TabsContent>
+
+          <TabsContent value="trend">
+            <RevenueExpenseTrend orders={hasFilters ? filteredOrders : rawOrders} dateFrom={dateFrom} dateTo={dateTo} />
           </TabsContent>
 
           <TabsContent value="abc">
