@@ -55,6 +55,8 @@ import { format } from 'date-fns';
 import { EditOrderDialog } from './EditOrderDialog';
 import { CreateShipmentDialog } from './CreateShipmentDialog';
 import { Input } from '@/components/ui/input';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { printPackingSlip, printHandoverProtocol, printProformaInvoice } from '@/lib/documentPrinter';
 
 type OrderSortKey = 'id' | 'created_at' | 'customer_name' | 'phone' | 'total_price' | 'product_name' | 'catalog_number' | 'quantity' | 'status';
 
@@ -1011,6 +1013,20 @@ export const OrdersTable: FC<OrdersTableProps> = ({
                         <Printer className="w-4 h-4 mr-2" />
                         Печат на поръчка
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => printPackingSlip(order as any, {})}>
+                        <Package className="w-4 h-4 mr-2" />
+                        Опаковъчен лист
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => printHandoverProtocol(order as any, {})}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Приемо-предавателен протокол
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => printProformaInvoice(order as any, {})}>
+                        <Euro className="w-4 h-4 mr-2" />
+                        Проформа фактура
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => setShipmentOrder(order)}
                       >
