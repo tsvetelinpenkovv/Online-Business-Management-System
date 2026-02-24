@@ -1523,6 +1523,89 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_job_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          id: string
+          job_id: string
+          level: string
+          message: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          job_id: string
+          level?: string
+          message: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          job_id?: string
+          level?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_job_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "sync_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          failed_items: number | null
+          id: string
+          job_type: string
+          metadata: Json | null
+          platform: string | null
+          processed_items: number | null
+          started_at: string | null
+          started_by: string | null
+          status: string
+          total_items: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          failed_items?: number | null
+          id?: string
+          job_type: string
+          metadata?: Json | null
+          platform?: string | null
+          processed_items?: number | null
+          started_at?: string | null
+          started_by?: string | null
+          status?: string
+          total_items?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          failed_items?: number | null
+          id?: string
+          job_type?: string
+          metadata?: Json | null
+          platform?: string | null
+          processed_items?: number | null
+          started_at?: string | null
+          started_by?: string | null
+          status?: string
+          total_items?: number | null
+        }
+        Relationships: []
+      }
       units_of_measure: {
         Row: {
           abbreviation: string
@@ -1580,6 +1663,45 @@ export type Database = {
           name?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json | null
+          platform: string
+          processed: boolean
+          processed_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_id: string
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          platform: string
+          processed?: boolean
+          processed_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          platform?: string
+          processed?: boolean
+          processed_at?: string | null
         }
         Relationships: []
       }
