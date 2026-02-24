@@ -36,6 +36,7 @@ import { ImportExportDialog } from '@/components/inventory/ImportExportDialog';
 import { WarehouseSettings } from '@/components/inventory/WarehouseSettings';
 import { WarehouseDashboard } from '@/components/inventory/WarehouseDashboard';
 import { StockDeductionSettings } from '@/components/inventory/StockDeductionSettings';
+import { SyncJobsPanel } from '@/components/inventory/SyncJobsPanel';
 import { BulkPriceChangeDialog } from '@/components/inventory/BulkPriceChangeDialog';
 import { ScheduledRevisionDialog } from '@/components/inventory/ScheduledRevisionDialog';
 import { useWarehouses } from '@/hooks/useWarehouses';
@@ -423,6 +424,9 @@ export default function Inventory() {
 
           <TabsContent value="dashboard" className="mt-4 sm:mt-6">
             <InventoryDashboard inventory={inventory} />
+            <div className="mt-6">
+              <SyncJobsPanel />
+            </div>
           </TabsContent>
 
           <TabsContent value="products" className="mt-4 sm:mt-6">

@@ -27,6 +27,7 @@ import { printOrderReceipts } from '@/components/orders/OrderReceipt';
 import { AddOrderDialog } from '@/components/orders/AddOrderDialog';
 import { BulkShipmentDialog } from '@/components/orders/BulkShipmentDialog';
 import { buildPath } from '@/components/SecretPathGuard';
+import { KPIDashboard } from '@/components/dashboard/KPIDashboard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -829,6 +830,7 @@ const Index = () => {
       </header>
 
       <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
+        <KPIDashboard />
         <OrderFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}

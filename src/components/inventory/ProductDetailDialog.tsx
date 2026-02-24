@@ -48,6 +48,8 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
   const [selectedCourier, setSelectedCourier] = useState<string>('all');
   const [couriers, setCouriers] = useState<CourierOption[]>([]);
   const [productImage, setProductImage] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [previousStats, setPreviousStats] = useState<OrderStats | null>(null);
 
   // Fetch couriers
@@ -173,10 +175,21 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
         setStats(calculateStats(currentOrders || []));
         setPreviousStats(calculateStats(prevOrders || []));
 
-        // Try to get product image from WooCommerce API if woocommerce_id exists
-        if (product.woocommerce_id) {
+        // Try to load images from product_images table first
+        const { data: imagesData } = await supabase
+          .from('product_images')
+          .select('thumbnail_url, cached_url, original_url')
+          .eq('product_id', product.id)
+          .order('position', { ascending: true });
+
+        if (imagesData && imagesData.length > 0) {
+          const urls = imagesData.map(img => img.cached_url || img.original_url);
+          setProductImages(urls);
+          setProductImage(imagesData[0].thumbnail_url || imagesData[0].cached_url || imagesData[0].original_url);
+          setActiveImageIdx(0);
+        } else if (product.woocommerce_id) {
+          // Fallback: fetch from WooCommerce API
           try {
-            // Fetch from ecommerce_platforms config
             const { data: platformData } = await supabase
               .from('ecommerce_platforms')
               .select('config')
@@ -193,9 +206,10 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
                 if (response.ok) {
                   const productData = await response.json();
                   if (productData.images && productData.images.length > 0) {
-                    // Use medium size or first available
-                    const image = productData.images[0];
-                    setProductImage(image.src);
+                    const urls = productData.images.map((img: any) => img.src);
+                    setProductImages(urls);
+                    setProductImage(urls[0]);
+                    setActiveImageIdx(0);
                   }
                 }
               }
@@ -277,13 +291,29 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
 
         {/* Product Info Header */}
         <div className="flex flex-col sm:flex-row gap-4 p-4 bg-muted/50 rounded-lg">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-muted rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-muted rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 mx-auto sm:mx-0 relative">
             {productImage ? (
               <img src={productImage} alt={product.name} className="w-full h-full object-cover" />
             ) : (
               <Package className="w-12 h-12 text-muted-foreground" />
             )}
           </div>
+          {/* Thumbnail strip */}
+          {productImages.length > 1 && (
+            <div className="flex sm:flex-col gap-1 overflow-x-auto sm:overflow-y-auto sm:max-h-32">
+              {productImages.map((url, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setProductImage(url); setActiveImageIdx(idx); }}
+                  className={`w-8 h-8 rounded border overflow-hidden flex-shrink-0 transition-all ${
+                    idx === activeImageIdx ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex-1 min-w-0 text-center sm:text-left">
             <h3 className="font-semibold text-lg truncate">{product.name}</h3>
             <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>

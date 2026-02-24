@@ -64,6 +64,7 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { InlineStockEditor } from './InlineStockEditor';
 import { ProductDetailDialog } from './ProductDetailDialog';
+import { useProductThumbnails } from '@/hooks/useProductThumbnails';
 
 interface ProductsTabProps {
   inventory: ReturnType<typeof useInventory>;
@@ -127,6 +128,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
 
   // Use paginated products for the table
   const filteredAndSortedProducts = paginatedProducts;
+
+  // Fetch thumbnails for visible products
+  const productIds = paginatedProducts.map(p => p.id);
+  const thumbnails = useProductThumbnails(productIds);
 
   // Handle inline stock save
   const handleInlineStockSave = useCallback(async (productId: string, newStock: number): Promise<boolean> => {
@@ -514,6 +519,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]"></TableHead>
                     <SortableHeader columnKey="sku" icon={Hash}>Код</SortableHeader>
                     <SortableHeader columnKey="name" icon={FileText}>Наименование</SortableHeader>
                     <SortableHeader columnKey="category" icon={FolderOpen}>Категория</SortableHeader>
@@ -552,6 +558,15 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                   ) : (
                     filteredAndSortedProducts.map((product) => (
                       <TableRow key={product.id}>
+                        <TableCell className="w-[50px] p-2">
+                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center overflow-hidden">
+                            {thumbnails[product.id] ? (
+                              <img src={thumbnails[product.id]} alt="" className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                              <Package className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <span className="font-mono text-sm">{product.sku}</span>
