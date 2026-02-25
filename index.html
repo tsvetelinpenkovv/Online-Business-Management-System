@@ -39,6 +39,33 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Emergency SW recovery: if page is blank for too long, unregister SW and reload
+      (function() {
+        var timeout = setTimeout(function() {
+          if (document.getElementById('root') && !document.getElementById('root').hasChildNodes()) {
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.unregister(); });
+                if (regs.length > 0) {
+                  caches.keys().then(function(names) {
+                    names.forEach(function(name) { caches.delete(name); });
+                  }).then(function() { location.reload(); });
+                }
+              });
+            }
+          }
+        }, 8000);
+        // Cancel if app renders successfully
+        var observer = new MutationObserver(function() {
+          if (document.getElementById('root') && document.getElementById('root').hasChildNodes()) {
+            clearTimeout(timeout);
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById('root') || document.body, { childList: true, subtree: true });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
