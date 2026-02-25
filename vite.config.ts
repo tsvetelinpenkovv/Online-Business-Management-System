@@ -33,15 +33,34 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Force new service worker to take control immediately
+        skipWaiting: true,
+        clientsClaim: true,
+        // Clean up old caches from previous versions
+        cleanupOutdatedCaches: true,
+        // Only cache static assets, not HTML (HTML should always be fresh)
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
+        // Don't cache navigation requests - always fetch fresh HTML
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
             options: { cacheName: 'google-fonts', expiration: { maxEntries: 10, maxAgeSeconds: 365 * 24 * 60 * 60 } },
           },
+          {
+            // Never cache Supabase API calls
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkOnly',
+          },
+          {
+            // Never cache edge functions
+            urlPattern: /\/functions\/v1\/.*/i,
+            handler: 'NetworkOnly',
+          },
         ],
-        navigateFallbackDenylist: [/^\/~oauth/],
+        // Exclude preview/auth URLs from SW scope
+        navigateFallbackDenylist: [/^\/~oauth/, /\?__lovable_token=/, /auth-bridge/],
       },
     }),
   ].filter(Boolean),
