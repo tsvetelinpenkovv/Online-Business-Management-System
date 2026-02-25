@@ -100,44 +100,46 @@ export const useOrders = (
     }
   }, []);
 
+  const buildQuery = useCallback((pageNum: number) => {
+    const from = (pageNum - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('orders')
+      .select('*', { count: 'exact' });
+
+    if (filters.status && filters.status !== 'all') {
+      query = query.eq('status', filters.status);
+    }
+    if (filters.source && filters.source !== 'all') {
+      query = query.eq('source', filters.source);
+    }
+    if (filters.storeId) {
+      query = query.eq('store_id', filters.storeId);
+    }
+    if (filters.dateFrom) {
+      query = query.gte('created_at', filters.dateFrom.toISOString());
+    }
+    if (filters.dateTo) {
+      query = query.lte('created_at', filters.dateTo.toISOString());
+    }
+    if (filters.search && filters.search.trim()) {
+      const s = filters.search.trim();
+      query = query.or(
+        `customer_name.ilike.%${s}%,phone.ilike.%${s}%,code.ilike.%${s}%,catalog_number.ilike.%${s}%,id.eq.${isNaN(Number(s)) ? 0 : s}`
+      );
+    }
+
+    return query
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, to);
+  }, [pageSize, filters.search, filters.status, filters.source, filters.storeId, filters.dateFrom?.getTime(), filters.dateTo?.getTime()]);
+
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      let query = supabase
-        .from('orders')
-        .select('*', { count: 'exact' });
-
-      // Apply server-side filters
-      if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
-      }
-      if (filters.source && filters.source !== 'all') {
-        query = query.eq('source', filters.source);
-      }
-      if (filters.storeId) {
-        query = query.eq('store_id', filters.storeId);
-      }
-      if (filters.dateFrom) {
-        query = query.gte('created_at', filters.dateFrom.toISOString());
-      }
-      if (filters.dateTo) {
-        query = query.lte('created_at', filters.dateTo.toISOString());
-      }
-      if (filters.search && filters.search.trim()) {
-        const s = filters.search.trim();
-        // Use or() for multi-column search
-        query = query.or(
-          `customer_name.ilike.%${s}%,phone.ilike.%${s}%,code.ilike.%${s}%,catalog_number.ilike.%${s}%,id.eq.${isNaN(Number(s)) ? 0 : s}`
-        );
-      }
-
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false })
-        .order('id', { ascending: false })
-        .range(from, to);
+      const { data, error, count } = await buildQuery(page);
 
       if (error) throw error;
       setOrders((data || []) as Order[]);
@@ -151,7 +153,19 @@ export const useOrders = (
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, filters.search, filters.status, filters.source, filters.storeId, filters.dateFrom?.getTime(), filters.dateTo?.getTime(), toast]);
+  }, [page, buildQuery, toast]);
+
+  // Prefetch next page for instant navigation
+  const prefetchNextPage = useCallback(async () => {
+    const totalPages = Math.ceil(totalCount / pageSize);
+    if (page < totalPages) {
+      try {
+        await buildQuery(page + 1);
+      } catch {
+        // Silent prefetch failure
+      }
+    }
+  }, [page, totalCount, pageSize, buildQuery]);
 
   // Fetch a single order from DB (for stock operations when order may not be in current page)
   const fetchOrderById = async (id: number): Promise<Order | null> => {
@@ -736,6 +750,13 @@ export const useOrders = (
     fetchOrders();
     loadStockSettings();
   }, [fetchOrders, loadStockSettings]);
+
+  // Prefetch next page after current page loads
+  useEffect(() => {
+    if (!loading && totalCount > 0) {
+      prefetchNextPage();
+    }
+  }, [loading, totalCount, prefetchNextPage]);
 
   return { 
     orders, 
