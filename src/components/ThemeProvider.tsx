@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 type Theme = "dark" | "light" | "system";
 
@@ -20,34 +21,6 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-async function fetchThemeFromIP(): Promise<Theme | null> {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/theme-preference`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.theme as Theme | null;
-  } catch {
-    return null;
-  }
-}
-
-async function saveThemeToIP(theme: Theme): Promise<void> {
-  try {
-    await fetch(`${SUPABASE_URL}/functions/v1/theme-preference`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ theme: theme === 'system' ? 'light' : theme }),
-    });
-  } catch {
-    // silent fail
-  }
-}
-
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -57,22 +30,40 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
-  const [ipLoaded, setIpLoaded] = useState(false);
+  const userLoadedRef = useRef(false);
 
-  // On mount, fetch theme from IP if no local preference exists
+  // On mount & auth change, load theme from user_preferences
   useEffect(() => {
-    const localTheme = localStorage.getItem(storageKey);
-    if (!localTheme) {
-      fetchThemeFromIP().then((ipTheme) => {
-        if (ipTheme && (ipTheme === 'dark' || ipTheme === 'light')) {
-          setThemeState(ipTheme);
-          localStorage.setItem(storageKey, ipTheme);
+    const loadUserTheme = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && !userLoadedRef.current) {
+        const { data } = await supabase
+          .from('user_preferences')
+          .select('theme')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        if (data?.theme && (data.theme === 'dark' || data.theme === 'light')) {
+          setThemeState(data.theme as Theme);
+          localStorage.setItem(storageKey, data.theme);
         }
-        setIpLoaded(true);
-      });
-    } else {
-      setIpLoaded(true);
-    }
+        userLoadedRef.current = true;
+      }
+    };
+
+    loadUserTheme();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        userLoadedRef.current = false;
+        loadUserTheme();
+      }
+      if (event === 'SIGNED_OUT') {
+        userLoadedRef.current = false;
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [storageKey]);
 
   useEffect(() => {
@@ -91,11 +82,22 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  const setTheme = useCallback((newTheme: Theme) => {
+  const setTheme = useCallback(async (newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
     setThemeState(newTheme);
-    // Save to IP in background
-    saveThemeToIP(newTheme);
+
+    // Save to user_preferences in background
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const themeValue = newTheme === 'system' ? 'light' : newTheme;
+      await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: session.user.id,
+          theme: themeValue,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+    }
   }, [storageKey]);
 
   const value = { theme, setTheme };

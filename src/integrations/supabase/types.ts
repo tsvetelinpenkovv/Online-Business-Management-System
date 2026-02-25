@@ -2150,6 +2150,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       warehouses: {
         Row: {
           address: string | null
