@@ -2111,6 +2111,24 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_preferences: {
+        Row: {
+          ip_address: string
+          theme: string
+          updated_at: string
+        }
+        Insert: {
+          ip_address: string
+          theme?: string
+          updated_at?: string
+        }
+        Update: {
+          ip_address?: string
+          theme?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       units_of_measure: {
         Row: {
           abbreviation: string
