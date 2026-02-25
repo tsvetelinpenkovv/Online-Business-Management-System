@@ -434,8 +434,12 @@ export const useOrders = (
 
   const updateOrder = async (order: Order) => {
     try {
+      // OPTIMISTIC UPDATE: immediately reflect in UI
+      const previousOrders = [...orders];
+      setOrders(orders.map(o => o.id === order.id ? order : o));
+
       // Fetch old order from DB to ensure we have the correct state
-      const oldOrder = orders.find(o => o.id === order.id) || await fetchOrderById(order.id);
+      const oldOrder = previousOrders.find(o => o.id === order.id) || await fetchOrderById(order.id);
       const isBeingShipped = oldOrder && oldOrder.status !== stockSettings.deductionStatus && order.status === stockSettings.deductionStatus;
       const isBeingCancelled = oldOrder && oldOrder.status !== stockSettings.restoreStatus && order.status === stockSettings.restoreStatus;
       const isBeingReserved = oldOrder && oldOrder.status !== stockSettings.reserveStatus && order.status === stockSettings.reserveStatus;
@@ -461,7 +465,11 @@ export const useOrders = (
         })
         .eq('id', order.id);
 
-      if (error) throw error;
+      if (error) {
+        // ROLLBACK on error
+        setOrders(previousOrders);
+        throw error;
+      }
 
       // Handle stock reservation when status changes to reserve status
       if (isBeingReserved) {
