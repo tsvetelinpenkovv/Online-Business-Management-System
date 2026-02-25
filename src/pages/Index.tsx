@@ -15,7 +15,7 @@ import { useStores } from '@/hooks/useStores';
 import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
-import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3, RotateCcw } from 'lucide-react';
+import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3, RotateCcw, Edit3 } from 'lucide-react';
 
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -26,6 +26,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { printOrderReceipts } from '@/components/orders/OrderReceipt';
 import { AddOrderDialog } from '@/components/orders/AddOrderDialog';
 import { BulkShipmentDialog } from '@/components/orders/BulkShipmentDialog';
+import { BulkEditDialog } from '@/components/orders/BulkEditDialog';
+import { StockAlertsButton } from '@/components/orders/StockAlertsPanel';
 import { buildPath } from '@/components/SecretPathGuard';
 import { KPIDashboard } from '@/components/dashboard/KPIDashboard';
 import {
@@ -65,6 +67,7 @@ const Index = () => {
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkShipmentDialog, setShowBulkShipmentDialog] = useState(false);
+  const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [showAddOrderDialog, setShowAddOrderDialog] = useState(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0);
@@ -615,6 +618,16 @@ const Index = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
+                {canEdit('orders') && (
+                  <Button 
+                    onClick={() => setShowBulkEditDialog(true)} 
+                    variant="outline" 
+                    className="gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    Редактирай ({selectedOrders.length})
+                  </Button>
+                )}
                 {canDelete('orders') && (
                   <Button 
                     onClick={() => setShowBulkDeleteDialog(true)} 
@@ -686,6 +699,7 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
+            <StockAlertsButton />
             <QuickCacheClear />
             {/* Navigation group */}
             <DropdownMenu>
@@ -1055,6 +1069,16 @@ const Index = () => {
         open={showBulkShipmentDialog}
         onOpenChange={setShowBulkShipmentDialog}
         onComplete={() => {
+          refetch();
+          setSelectedOrders([]);
+        }}
+      />
+
+      <BulkEditDialog
+        open={showBulkEditDialog}
+        onOpenChange={setShowBulkEditDialog}
+        selectedIds={selectedOrders}
+        onSuccess={() => {
           refetch();
           setSelectedOrders([]);
         }}

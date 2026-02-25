@@ -107,6 +107,51 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_enabled: boolean
+          name: string
+          priority: number | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          name: string
+          priority?: number | null
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          name?: string
+          priority?: number | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_settings: {
         Row: {
           bank_bic: string | null
@@ -266,6 +311,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "connectix_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
       courier_api_settings: {
@@ -404,6 +456,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
             referencedColumns: ["id"]
           },
         ]
@@ -760,6 +819,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
       login_attempts: {
@@ -785,6 +851,60 @@ export type Database = {
           success?: boolean
         }
         Relationships: []
+      }
+      order_history: {
+        Row: {
+          action: string
+          created_at: string
+          field_changed: string | null
+          id: string
+          metadata: Json | null
+          new_value: string | null
+          old_value: string | null
+          order_id: number
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          field_changed?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+          order_id: number
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          field_changed?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+          order_id?: number
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -828,6 +948,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
       order_statuses: {
@@ -863,8 +990,40 @@ export type Database = {
         }
         Relationships: []
       }
+      order_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          template_data: Json
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          template_data?: Json
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          template_data?: Json
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
+          assigned_at: string | null
+          assigned_to: string | null
           catalog_number: string | null
           code: string
           comment: string | null
@@ -893,6 +1052,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
           catalog_number?: string | null
           code: string
           comment?: string | null
@@ -921,6 +1082,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
           catalog_number?: string | null
           code?: string
           comment?: string | null
@@ -964,6 +1127,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      outgoing_webhooks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          events: string[]
+          failure_count: number | null
+          headers: Json | null
+          id: string
+          is_enabled: boolean
+          last_triggered_at: string | null
+          name: string
+          secret_key: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          events?: string[]
+          failure_count?: number | null
+          headers?: Json | null
+          id?: string
+          is_enabled?: boolean
+          last_triggered_at?: string | null
+          name: string
+          secret_key?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          events?: string[]
+          failure_count?: number | null
+          headers?: Json | null
+          id?: string
+          is_enabled?: boolean
+          last_triggered_at?: string | null
+          name?: string
+          secret_key?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
       price_history: {
         Row: {
@@ -1227,6 +1435,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
       role_permissions: {
@@ -1264,6 +1479,67 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      scheduled_actions: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          order_id: number | null
+          rule_id: string | null
+          scheduled_for: string
+          status: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          order_id?: number | null
+          rule_id?: string | null
+          scheduled_for: string
+          status?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          order_id?: number | null
+          rule_id?: string | null
+          scheduled_for?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_actions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_actions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_actions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shipments: {
         Row: {
@@ -1360,6 +1636,54 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          current_stock: number
+          id: string
+          is_read: boolean
+          product_id: string
+          resolved_at: string | null
+          threshold: number
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string
+          current_stock: number
+          id?: string
+          is_read?: boolean
+          product_id: string
+          resolved_at?: string | null
+          threshold: number
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          current_stock?: number
+          id?: string
+          is_read?: boolean
+          product_id?: string
+          resolved_at?: string | null
+          threshold?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
             referencedColumns: ["id"]
           },
         ]
@@ -1847,6 +2171,47 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_deliveries: {
+        Row: {
+          delivered_at: string
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          success: boolean
+          webhook_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          success?: boolean
+          webhook_id: string
+        }
+        Update: {
+          delivered_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          success?: boolean
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "outgoing_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_events: {
         Row: {
           attempts: number
@@ -1888,9 +2253,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      orders_full: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          catalog_number: string | null
+          code: string | null
+          comment: string | null
+          courier_id: string | null
+          courier_tracking_url: string | null
+          created_at: string | null
+          currency: string | null
+          currency_symbol: string | null
+          customer_email: string | null
+          customer_name: string | null
+          delivery_address: string | null
+          id: number | null
+          is_correct: boolean | null
+          items: Json | null
+          items_count: number | null
+          latest_shipment_status: string | null
+          latest_waybill: string | null
+          paid_amount: number | null
+          payment_date: string | null
+          payment_method: string | null
+          payment_status: string | null
+          phone: string | null
+          product_name: string | null
+          quantity: number | null
+          shipments: Json | null
+          shipments_count: number | null
+          source: string | null
+          status: string | null
+          stock_deducted: boolean | null
+          store_id: string | null
+          total_price: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      check_duplicate_order: {
+        Args: { _hours?: number; _phone: string; _product_name: string }
+        Returns: {
+          duplicate_code: string
+          duplicate_date: string
+          duplicate_id: number
+          similarity_score: number
+        }[]
+      }
       cleanup_old_login_attempts: { Args: never; Returns: undefined }
       generate_document_number: {
         Args: { doc_type: Database["public"]["Enums"]["document_type"] }
