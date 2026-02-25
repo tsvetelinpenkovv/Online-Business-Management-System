@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags } from 'lucide-react';
+import { OutgoingWebhooksSettings } from '@/components/settings/OutgoingWebhooksSettings';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -720,6 +721,12 @@ const Settings = () => {
                   <Type className="w-4 h-4" />
                   <span>Интерфейс</span>
                 </TabsTrigger>
+                {isAdmin && (
+                  <TabsTrigger value="webhooks" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1">
+                    <Webhook className="w-4 h-4" />
+                    <span>Webhooks</span>
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-destructive" />
                   <span>Документация</span>
@@ -1903,6 +1910,12 @@ const Settings = () => {
           <TabsContent value="interface" className="space-y-6">
             <InterfaceTextEditor ref={interfaceTextRef} />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="webhooks" className="space-y-6">
+              <OutgoingWebhooksSettings />
+            </TabsContent>
+          )}
 
           <TabsContent value="docs" className="space-y-6">
             <DocumentationTab />
