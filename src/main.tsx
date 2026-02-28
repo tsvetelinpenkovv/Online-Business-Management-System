@@ -21,7 +21,17 @@ if ("serviceWorker" in navigator) {
     });
   } else {
     import("virtual:pwa-register").then(({ registerSW }) => {
-      registerSW({ immediate: true });
+      registerSW({
+        immediate: true,
+        onRegisteredSW(swUrl, registration) {
+          // Check for updates every 60 seconds
+          if (registration) {
+            setInterval(() => {
+              registration.update();
+            }, 60 * 1000);
+          }
+        },
+      });
     });
   }
 }

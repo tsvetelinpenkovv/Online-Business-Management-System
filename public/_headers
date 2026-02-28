@@ -7,6 +7,8 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Content-Security-Policy: frame-ancestors 'none'
+  Vary: Accept-Encoding
+  Permissions-Policy: interest-cohort=()
 
 # HTML — always revalidate so users get fresh deploys
 /
