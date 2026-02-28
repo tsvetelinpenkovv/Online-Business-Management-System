@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => ({
           },
         ],
         // Exclude preview/auth URLs from SW scope
-        navigateFallbackDenylist: [/^\/~oauth/, /\?__lovable_token=/, /auth-bridge/],
+        navigateFallbackDenylist: [/^\/~oauth/, /[?&]__lovable_token=/, /[?&]_lovable_token=/, /auth-bridge/],
       },
     }),
   ].filter(Boolean),
