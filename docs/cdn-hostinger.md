@@ -85,6 +85,8 @@ RewriteRule ^ index.html [QSA,L]
   Header set X-Frame-Options "DENY"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set X-XSS-Protection "1; mode=block"
+  Header set Vary "Accept-Encoding"
+  Header set Permissions-Policy "interest-cohort=()"
 </IfModule>
 
 # ===== SECURITY =====

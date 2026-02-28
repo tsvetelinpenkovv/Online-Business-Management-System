@@ -10,6 +10,7 @@ import { SecretPathGuard } from "@/components/SecretPathGuard";
 import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 import { lazy, Suspense } from "react";
 import { Loader2, Package } from "lucide-react";
+import { SWUpdateToast } from "@/components/SWUpdateToast";
 
 // Lazy load pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -25,7 +26,7 @@ const Returns = lazy(() => import("./pages/Returns"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
+  <div className="min-h-screen min-w-full flex flex-col items-center justify-center gap-4 bg-background" style={{ containIntrinsicSize: '100vw 100vh', contentVisibility: 'auto' }}>
     <Package className="w-12 h-12 text-primary animate-pulse" />
     <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
   </div>
@@ -50,6 +51,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <SWUpdateToast />
             <SessionTimeoutWarning />
             <BrowserRouter>
               <SecretPathGuard>
