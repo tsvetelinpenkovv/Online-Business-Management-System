@@ -8,8 +8,9 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { InterfaceTextsProvider } from "@/hooks/useInterfaceTexts";
 import { SecretPathGuard } from "@/components/SecretPathGuard";
 import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ReactNode } from "react";
 import { Loader2, Package } from "lucide-react";
+import { useParams, Navigate } from "react-router-dom";
 import { SWUpdateToast } from "@/components/SWUpdateToast";
 
 // Lazy load pages for code splitting
@@ -23,7 +24,7 @@ const CRM = lazy(() => import("./pages/CRM"));
 const Finance = lazy(() => import("./pages/Finance"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Returns = lazy(() => import("./pages/Returns"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+
 
 const PageLoader = () => (
   <div className="min-h-screen min-w-full flex flex-col items-center justify-center gap-4 bg-background" style={{ containIntrinsicSize: '100vw 100vh', contentVisibility: 'auto' }}>
@@ -31,6 +32,26 @@ const PageLoader = () => (
     <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
   </div>
 );
+
+/**
+ * Validates that the :secretPath param in the URL matches the configured secret path.
+ * If no secret path is configured, these routes should NOT match — redirect to 404.
+ */
+const SecretPathValidator = ({ children }: { children: ReactNode }) => {
+  const { secretPath } = useParams<{ secretPath: string }>();
+  const storedPath = sessionStorage.getItem('secret_path');
+
+  // No secret path configured → these routes are invalid
+  if (!storedPath) return <NotFoundPage />;
+
+  // Normalize: stored path has leading slash, param does not
+  const normalizedStored = storedPath.startsWith('/') ? storedPath.slice(1) : storedPath;
+  if (secretPath !== normalizedStored) return <NotFoundPage />;
+
+  return <>{children}</>;
+};
+
+const NotFoundPage = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,20 +90,21 @@ const App = () => (
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/returns" element={<Returns />} />
                     
-                    {/* Routes with secret path prefix - using wildcard to capture any prefix */}
-                    <Route path="/:secretPath/" element={<Index />} />
-                    <Route path="/:secretPath/auth" element={<Auth />} />
-                    <Route path="/:secretPath/settings" element={<Settings />} />
-                    <Route path="/:secretPath/inventory" element={<Inventory />} />
-                    <Route path="/:secretPath/messages" element={<Messages />} />
-                    <Route path="/:secretPath/nekorekten" element={<Nekorekten />} />
-                    <Route path="/:secretPath/crm" element={<CRM />} />
-                    <Route path="/:secretPath/finance" element={<Finance />} />
-                    <Route path="/:secretPath/analytics" element={<Analytics />} />
+                    {/* Routes with secret path prefix - validated against configured secret */}
+                    <Route path="/:secretPath/" element={<SecretPathValidator><Index /></SecretPathValidator>} />
+                    <Route path="/:secretPath/auth" element={<SecretPathValidator><Auth /></SecretPathValidator>} />
+                    <Route path="/:secretPath/settings" element={<SecretPathValidator><Settings /></SecretPathValidator>} />
+                    <Route path="/:secretPath/inventory" element={<SecretPathValidator><Inventory /></SecretPathValidator>} />
+                    <Route path="/:secretPath/messages" element={<SecretPathValidator><Messages /></SecretPathValidator>} />
+                    <Route path="/:secretPath/nekorekten" element={<SecretPathValidator><Nekorekten /></SecretPathValidator>} />
+                    <Route path="/:secretPath/crm" element={<SecretPathValidator><CRM /></SecretPathValidator>} />
+                    <Route path="/:secretPath/finance" element={<SecretPathValidator><Finance /></SecretPathValidator>} />
+                    <Route path="/:secretPath/analytics" element={<SecretPathValidator><Analytics /></SecretPathValidator>} />
+                    <Route path="/:secretPath/returns" element={<SecretPathValidator><Returns /></SecretPathValidator>} />
                     <Route path="/:secretPath/returns" element={<Returns />} />
                     
                     {/* Catch-all for 404 */}
-                    <Route path="*" element={<NotFound />} />
+                    <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </Suspense>
               </SecretPathGuard>

@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
       .eq('ip_address', ip)
       .maybeSingle();
 
-    return new Response(JSON.stringify({ theme: data?.theme || null, ip }), {
+    return new Response(JSON.stringify({ theme: data?.theme || null }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
