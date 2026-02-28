@@ -2,9 +2,17 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-const isLovablePreview =
-  window.location.hostname.includes("id-preview--") ||
-  window.location.search.includes("__lovable_token=");
+const { hostname, search } = window.location;
+
+const hasLovableToken =
+  search.includes("__lovable_token=") || search.includes("_lovable_token=");
+
+const isPreviewHost =
+  hostname.includes("id-preview--") ||
+  hostname.includes("preview--") ||
+  hostname.endsWith(".lovableproject.com");
+
+const isLovablePreview = isPreviewHost || hasLovableToken;
 
 if ("serviceWorker" in navigator) {
   if (isLovablePreview) {
