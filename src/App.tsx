@@ -11,7 +11,7 @@ import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 import { lazy, Suspense, ReactNode } from "react";
 import { Loader2, Package } from "lucide-react";
 import { useParams, Navigate } from "react-router-dom";
-import { SWUpdateToast } from "@/components/SWUpdateToast";
+
 
 // Lazy load pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -72,7 +72,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <SWUpdateToast />
+            
             <SessionTimeoutWarning />
             <BrowserRouter>
               <SecretPathGuard>
