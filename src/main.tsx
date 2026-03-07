@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-const { hostname, search } = window.location;
+const { hostname, search, pathname, hash } = window.location;
 
 const hasLovableToken =
   search.includes("__lovable_token=") || search.includes("_lovable_token=");
@@ -13,6 +13,16 @@ const isPreviewHost =
   hostname.endsWith(".lovableproject.com");
 
 const isLovablePreview = isPreviewHost || hasLovableToken;
+
+// Remove preview-only token params from the visible URL to avoid oversized/share-broken links.
+if (hasLovableToken) {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("__lovable_token");
+  url.searchParams.delete("_lovable_token");
+  const cleanSearch = url.searchParams.toString();
+  const cleanUrl = `${pathname}${cleanSearch ? `?${cleanSearch}` : ""}${hash}`;
+  window.history.replaceState({}, "", cleanUrl);
+}
 
 if ("serviceWorker" in navigator) {
   if (isLovablePreview) {

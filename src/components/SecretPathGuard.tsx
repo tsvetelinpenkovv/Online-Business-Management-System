@@ -12,7 +12,15 @@ export const SecretPathGuard = ({ children }: SecretPathGuardProps) => {
   const [secretPath, setSecretPath] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkSecretPath = async () => {
+      const timeoutId = window.setTimeout(() => {
+        if (!isMounted) return;
+        console.warn('Secret path check timeout - allowing app render');
+        setIsLoading(false);
+      }, 8000);
+
       try {
         const { data, error } = await supabase
           .from('company_settings')
@@ -20,9 +28,10 @@ export const SecretPathGuard = ({ children }: SecretPathGuardProps) => {
           .limit(1)
           .maybeSingle();
 
+        if (!isMounted) return;
+
         if (error) {
           console.error('Error fetching secret path:', error);
-          setIsLoading(false);
           return;
         }
 
@@ -32,7 +41,7 @@ export const SecretPathGuard = ({ children }: SecretPathGuardProps) => {
         if (storedPath) {
           const currentPath = window.location.pathname;
           const normalizedSecretPath = storedPath.startsWith('/') ? storedPath : `/${storedPath}`;
-          
+
           // Check if current path starts with the secret path
           if (!currentPath.startsWith(normalizedSecretPath)) {
             setIsValidPath(false);
@@ -47,13 +56,21 @@ export const SecretPathGuard = ({ children }: SecretPathGuardProps) => {
           sessionStorage.removeItem('secret_path');
         }
       } catch (err) {
+        if (!isMounted) return;
         console.error('Error:', err);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          clearTimeout(timeoutId);
+          setIsLoading(false);
+        }
       }
     };
 
     checkSecretPath();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (isLoading) {
