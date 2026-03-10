@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush } from 'lucide-react';
 import { OutgoingWebhooksSettings } from '@/components/settings/OutgoingWebhooksSettings';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
@@ -30,6 +30,7 @@ import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
 import { InterfaceTextEditor, InterfaceTextEditorRef } from '@/components/settings/InterfaceTextEditor';
 import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
+import { SiteCustomizationTab } from '@/components/settings/SiteCustomizationTab';
 import { CacheManagementCard } from '@/components/settings/CacheManagementCard';
 import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
 import { MultiStoreSettings } from '@/components/settings/MultiStoreSettings';
@@ -727,6 +728,10 @@ const Settings = () => {
                     <span>Webhooks</span>
                   </TabsTrigger>
                 )}
+                <TabsTrigger value="customization" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Визуализация">
+                  <Paintbrush className="w-4 h-4" />
+                  <span>Визуализация</span>
+                </TabsTrigger>
                 <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-destructive" />
                   <span>Документация</span>
@@ -1916,6 +1921,10 @@ const Settings = () => {
               <OutgoingWebhooksSettings />
             </TabsContent>
           )}
+
+          <TabsContent value="customization" className="space-y-6">
+            <SiteCustomizationTab isAdmin={isAdmin} />
+          </TabsContent>
 
           <TabsContent value="docs" className="space-y-6">
             <DocumentationTab />

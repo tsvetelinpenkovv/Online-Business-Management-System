@@ -11,6 +11,7 @@ import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 import { lazy, Suspense, ReactNode } from "react";
 import { Loader2, Package } from "lucide-react";
 import { useParams, Navigate } from "react-router-dom";
+import { useSiteCustomization } from "@/hooks/useSiteCustomization";
 
 
 // Lazy load pages for code splitting
@@ -53,6 +54,13 @@ const SecretPathValidator = ({ children }: { children: ReactNode }) => {
 
 const NotFoundPage = lazy(() => import("./pages/NotFound"));
 
+// Initializes site customization (custom CSS, fonts, colors, JS) from database
+const SiteCustomizationInit = () => {
+  useSiteCustomization();
+  return null;
+};
+
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -73,6 +81,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             
+            <SiteCustomizationInit />
             <SessionTimeoutWarning />
             <BrowserRouter>
               <SecretPathGuard>
