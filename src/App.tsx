@@ -54,6 +54,13 @@ const SecretPathValidator = ({ children }: { children: ReactNode }) => {
 
 const NotFoundPage = lazy(() => import("./pages/NotFound"));
 
+// Initializes site customization (custom CSS, fonts, colors, JS) from database
+const SiteCustomizationInit = () => {
+  useSiteCustomization();
+  return null;
+};
+
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
