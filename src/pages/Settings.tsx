@@ -728,6 +728,10 @@ const Settings = () => {
                     <span>Webhooks</span>
                   </TabsTrigger>
                 )}
+                <TabsTrigger value="customization" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Визуализация">
+                  <Paintbrush className="w-4 h-4" />
+                  <span>Визуализация</span>
+                </TabsTrigger>
                 <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-destructive" />
                   <span>Документация</span>
