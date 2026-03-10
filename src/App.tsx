@@ -81,6 +81,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             
+            <SiteCustomizationInit />
             <SessionTimeoutWarning />
             <BrowserRouter>
               <SecretPathGuard>
