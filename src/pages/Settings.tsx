@@ -1922,6 +1922,10 @@ const Settings = () => {
             </TabsContent>
           )}
 
+          <TabsContent value="customization" className="space-y-6">
+            <SiteCustomizationTab isAdmin={isAdmin} />
+          </TabsContent>
+
           <TabsContent value="docs" className="space-y-6">
             <DocumentationTab />
           </TabsContent>
