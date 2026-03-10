@@ -11,6 +11,7 @@ import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 import { lazy, Suspense, ReactNode } from "react";
 import { Loader2, Package } from "lucide-react";
 import { useParams, Navigate } from "react-router-dom";
+import { useSiteCustomization } from "@/hooks/useSiteCustomization";
 
 
 // Lazy load pages for code splitting
