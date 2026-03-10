@@ -30,6 +30,7 @@ import { DocumentationTab } from '@/components/settings/DocumentationTab';
 import { NekorektenStatistics } from '@/components/settings/NekorektenStatistics';
 import { InterfaceTextEditor, InterfaceTextEditorRef } from '@/components/settings/InterfaceTextEditor';
 import { GlobalColorPicker } from '@/components/settings/GlobalColorPicker';
+import { SiteCustomizationTab } from '@/components/settings/SiteCustomizationTab';
 import { CacheManagementCard } from '@/components/settings/CacheManagementCard';
 import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
 import { MultiStoreSettings } from '@/components/settings/MultiStoreSettings';
