@@ -355,7 +355,17 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
                     </TableRow>
                   ) : (
                     filteredAndSortedSuppliers.map((supplier) => (
-                      <TableRow key={supplier.id}>
+                      <TableRow key={supplier.id} data-state={selectedIds.has(supplier.id) ? 'selected' : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(supplier.id)}
+                            onCheckedChange={(checked) => {
+                              const next = new Set(selectedIds);
+                              if (checked) next.add(supplier.id); else next.delete(supplier.id);
+                              setSelectedIds(next);
+                            }}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{supplier.name}</p>
