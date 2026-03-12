@@ -15,13 +15,19 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { 
   History, Search, RefreshCw, Eye, User, Calendar, 
   FileText, ArrowRight, Plus, Pencil, Trash2, 
-  LogIn, LogOut, Download, Package, List, Clock
+  LogIn, LogOut, Download, Package, List, Clock, X, ChevronDown
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 import * as XLSX from 'xlsx';
 
 const ACTION_LABELS: Record<string, { label: string; icon: React.ElementType; color: string }> = {
