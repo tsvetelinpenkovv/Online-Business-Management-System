@@ -166,15 +166,36 @@ export const WarehouseKPIDashboard: FC = () => {
       {/* Period Selector */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> От</Label>
-              <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-            </div>
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> До</Label>
-              <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[160px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
+            <span className="text-muted-foreground">—</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[160px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
           </div>
         </CardContent>
       </Card>

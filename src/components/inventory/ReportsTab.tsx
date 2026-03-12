@@ -193,7 +193,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
       filteredMovements.forEach(m => {
         csv += `"${format(new Date(m.created_at), 'dd.MM.yyyy HH:mm')}","${MOVEMENT_TYPE_LABELS[m.movement_type]}","${m.product?.name || ''}","${m.product?.sku || ''}",${m.quantity},${m.stock_before},${m.stock_after},${m.unit_price},${m.total_price}\n`;
       });
-      filename = `движения_${dateFrom}_${dateTo}.csv`;
+      filename = `движения_${format(dateFrom, 'yyyy-MM-dd')}_${format(dateTo, 'yyyy-MM-dd')}.csv`;
     }
 
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
