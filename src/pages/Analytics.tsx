@@ -74,7 +74,7 @@ const Analytics = () => {
   const [sourceFilter, setSourceFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, storeRevenue, loading, refetch, orders: rawOrders } = useAnalytics(dateFrom, dateTo);
+  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, storeRevenue, loading, refetch, orders: rawOrders } = useAnalytics(format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'));
 
   // Get unique sources and statuses for filter dropdowns
   const uniqueSources = useMemo(() => {
