@@ -347,7 +347,7 @@ CRM (Customer Relationship Management) модулът позволява цен�
 - **UI**: Tailwind CSS, shadcn/ui
 - **Графики**: Recharts
 - **Backend**: Lovable Cloud
-- **Edge Functions**: Deno
+- **Сървърни функции**: Deno
 - **PDF**: jsPDF
 - **Excel**: xlsx
 - **Маршрутизиране**: React Router DOM v7
