@@ -255,15 +255,19 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
         
         const result = await inventory.createProduct(productData);
         
-        // If created successfully and we have initial stock, create a stock movement
+        // If created successfully and we have initial stock, create a stock movement directly
+        // (can't use createStockMovement here because products state hasn't updated yet)
         if (result && formData.current_stock > 0) {
-          await inventory.createStockMovement(
-            result.id,
-            'in',
-            formData.current_stock,
-            formData.purchase_price,
-            'Начална наличност при създаване на продукт'
-          );
+          await supabase.from('stock_movements').insert({
+            product_id: result.id,
+            movement_type: 'in' as any,
+            quantity: formData.current_stock,
+            unit_price: formData.purchase_price,
+            total_price: formData.current_stock * formData.purchase_price,
+            stock_before: 0,
+            stock_after: formData.current_stock,
+            reason: 'Начална наличност при създаване на продукт',
+          });
         }
       }
       setIsDialogOpen(false);
