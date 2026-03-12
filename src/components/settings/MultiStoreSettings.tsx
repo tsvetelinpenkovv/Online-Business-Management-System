@@ -435,7 +435,7 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Consumer Secret</Label>
+              <Label className="text-xs">Потребителска тайна (Consumer Secret)</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
                 placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
