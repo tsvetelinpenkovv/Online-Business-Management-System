@@ -46,5 +46,13 @@ if ("serviceWorker" in navigator) {
   }
 }
 
+// Block right-click context menu on images globally
+document.addEventListener('contextmenu', (e) => {
+  const target = e.target as HTMLElement;
+  if (target.tagName === 'IMG' || target.closest('img')) {
+    e.preventDefault();
+  }
+});
+
 createRoot(document.getElementById("root")!).render(<App />);
 
