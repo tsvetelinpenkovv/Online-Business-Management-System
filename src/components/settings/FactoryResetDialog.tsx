@@ -276,11 +276,11 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-ecommerce" checked={deleteEcommercePlatforms} onCheckedChange={(checked) => setDeleteEcommercePlatforms(!!checked)} />
-                <Label htmlFor="delete-ecommerce" className="cursor-pointer">Всички e-commerce платформи</Label>
+                <Label htmlFor="delete-ecommerce" className="cursor-pointer">Деактивиране на всички e-commerce платформи</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-stores" checked={deleteStores} onCheckedChange={(checked) => setDeleteStores(!!checked)} />
-                <Label htmlFor="delete-stores" className="cursor-pointer">Всички магазини</Label>
+                <Label htmlFor="delete-stores" className="cursor-pointer">Деактивиране на всички магазини и multi-store</Label>
               </div>
             </div>
 
