@@ -68,10 +68,8 @@ const Analytics = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
 
-  const [dateFrom, setDateFrom] = useState(() => {
-    const d = new Date(); d.setMonth(d.getMonth() - 3); return d.toISOString().split('T')[0];
-  });
-  const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dateFrom, setDateFrom] = useState<Date>(() => subMonths(new Date(), 3));
+  const [dateTo, setDateTo] = useState<Date>(() => new Date());
 
   const [sourceFilter, setSourceFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
