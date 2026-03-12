@@ -93,7 +93,26 @@ const FIELD_DEFINITIONS: Record<ExportType, { key: string; label: string; requir
     { key: 'name', label: 'Име' },
     { key: 'current_stock', label: 'Системна наличност' },
     { key: 'actual_stock', label: 'Реална наличност', required: true },
-  ]
+  ],
+  movements: [
+    { key: 'sku', label: 'SKU', required: true },
+    { key: 'movement_type', label: 'Тип (in/out/adjustment)', required: true },
+    { key: 'quantity', label: 'Количество', required: true },
+    { key: 'unit_price', label: 'Ед. цена' },
+    { key: 'reason', label: 'Причина' },
+  ],
+  prices: [
+    { key: 'sku', label: 'SKU', required: true },
+    { key: 'purchase_price', label: 'Покупна цена' },
+    { key: 'sale_price', label: 'Продажна цена' },
+  ],
+  warehouses: [
+    { key: 'code', label: 'Код', required: true },
+    { key: 'name', label: 'Име', required: true },
+    { key: 'address', label: 'Адрес' },
+    { key: 'city', label: 'Град' },
+    { key: 'phone', label: 'Телефон' },
+  ],
 };
 
 const TEMPLATE_DATA: Record<ExportType, { headers: string[]; sampleRows: string[][] }> = {
