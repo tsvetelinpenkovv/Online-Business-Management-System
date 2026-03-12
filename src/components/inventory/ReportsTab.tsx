@@ -81,8 +81,8 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
     return inventory.movements.filter(m => {
       const movementDate = parseISO(m.created_at);
       return isWithinInterval(movementDate, {
-        start: parseISO(dateFrom),
-        end: parseISO(dateTo + 'T23:59:59'),
+        start: dateFrom,
+        end: new Date(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate(), 23, 59, 59),
       });
     });
   }, [inventory.movements, dateFrom, dateTo]);
