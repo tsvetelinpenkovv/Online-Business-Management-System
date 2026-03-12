@@ -464,7 +464,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                             Виж компоненти
                           </DropdownMenuItem>
                         )}
-                        {(product as any).reserved_stock > 0 && (
+                        {product.reserved_stock > 0 && (
                           <DropdownMenuItem onClick={() => inventory.releaseReservation(product.id)}>
                             <Unlock className="w-4 h-4 mr-2" />
                             Освободи резервация
