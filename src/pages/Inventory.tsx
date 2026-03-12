@@ -252,6 +252,7 @@ export default function Inventory() {
               
               {/* Desktop action buttons */}
               <Button
+                variant="outline"
                 size="sm"
                 onClick={() => navigate(buildPath('/orders'))}
                 className="hidden sm:flex bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground"
