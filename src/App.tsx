@@ -110,7 +110,6 @@ const App = () => (
                     <Route path="/:secretPath/finance" element={<SecretPathValidator><Finance /></SecretPathValidator>} />
                     <Route path="/:secretPath/analytics" element={<SecretPathValidator><Analytics /></SecretPathValidator>} />
                     <Route path="/:secretPath/returns" element={<SecretPathValidator><Returns /></SecretPathValidator>} />
-                    <Route path="/:secretPath/returns" element={<Returns />} />
                     
                     {/* Catch-all for 404 */}
                     <Route path="*" element={<NotFoundPage />} />
