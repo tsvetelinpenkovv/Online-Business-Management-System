@@ -147,7 +147,7 @@ const Analytics = () => {
   const handleExportPDF = () => {
     const data = hasFilters ? filteredOrders : rawOrders;
     if (data.length === 0) return;
-    exportOrdersPDF(data, undefined, dateFrom, dateTo);
+    exportOrdersPDF(data, undefined, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'));
   };
 
   if (authLoading || loading) {
