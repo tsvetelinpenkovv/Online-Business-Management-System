@@ -104,7 +104,7 @@ export const useSessionTimeout = () => {
     const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
 
     // Debounce activity handler to prevent too many resets
-    let activityTimeout: NodeJS.Timeout | null = null;
+    let activityTimeout: ReturnType<typeof setTimeout> | null = null;
     
     const handleActivity = () => {
       // Don't reset if warning is showing - user must explicitly extend

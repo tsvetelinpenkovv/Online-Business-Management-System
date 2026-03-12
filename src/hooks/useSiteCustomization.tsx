@@ -29,6 +29,16 @@ export interface SiteCustomization {
   [key: string]: string;
 }
 
+// Check if safe mode is active via ?safe=1 query param
+const isSafeMode = (): boolean => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('safe') === '1';
+  } catch {
+    return false;
+  }
+};
+
 // Hex to HSL conversion
 const hexToHsl = (hex: string): string | null => {
   hex = hex.replace(/^#/, '');
@@ -52,14 +62,18 @@ const hexToHsl = (hex: string): string | null => {
 };
 
 const applyCustomizations = (data: SiteCustomization) => {
-  // 1. Custom CSS
-  let styleEl = document.getElementById('site-custom-css') as HTMLStyleElement;
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = 'site-custom-css';
-    document.head.appendChild(styleEl);
+  const safeMode = isSafeMode();
+
+  // 1. Custom CSS (skip in safe mode)
+  if (!safeMode) {
+    let styleEl = document.getElementById('site-custom-css') as HTMLStyleElement;
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'site-custom-css';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = data.custom_css || '';
   }
-  styleEl.textContent = data.custom_css || '';
 
   // 2. Custom Font
   if (data.custom_font_family) {
@@ -111,8 +125,8 @@ const applyCustomizations = (data: SiteCustomization) => {
     }
   });
 
-  // 6. Custom HTML head
-  if (data.custom_html_head) {
+  // 6. Custom HTML head (skip in safe mode)
+  if (!safeMode && data.custom_html_head) {
     let headContainer = document.getElementById('site-custom-html-head');
     if (!headContainer) {
       headContainer = document.createElement('div');
@@ -122,19 +136,25 @@ const applyCustomizations = (data: SiteCustomization) => {
     headContainer.innerHTML = data.custom_html_head;
   }
 
-  // 7. Custom JS (only execute once)
-  if (data.custom_js) {
+  // 7. Custom JS with sandbox try/catch (skip in safe mode)
+  if (!safeMode && data.custom_js) {
     const existingScript = document.getElementById('site-custom-js');
     if (!existingScript) {
       try {
+        const wrappedCode = `try { ${data.custom_js} } catch(e) { console.error('[Custom JS Error]:', e); }`;
         const script = document.createElement('script');
         script.id = 'site-custom-js';
-        script.textContent = data.custom_js;
+        script.textContent = wrappedCode;
         document.body.appendChild(script);
       } catch (e) {
-        console.error('Custom JS error:', e);
+        console.error('[Custom JS injection error]:', e);
       }
     }
+  }
+
+  // Log safe mode status
+  if (safeMode) {
+    console.info('[Safe Mode] Custom CSS, JS, and HTML injection skipped. Remove ?safe=1 to re-enable.');
   }
 };
 
@@ -220,5 +240,31 @@ export const useSiteCustomization = () => {
     }
   }, []);
 
-  return { customization, loading, saveCustomization, saveMultiple };
+  const resetAllCustomCode = useCallback(async () => {
+    const keysToReset = ['custom_css', 'custom_js', 'custom_html_head', 'custom_html_body'];
+    try {
+      for (const key of keysToReset) {
+        await supabase
+          .from('api_settings')
+          .upsert({ setting_key: key, setting_value: '', updated_at: new Date().toISOString() }, { onConflict: 'setting_key' });
+      }
+
+      // Remove injected elements
+      ['site-custom-css', 'site-custom-js', 'site-custom-html-head'].forEach(id => {
+        document.getElementById(id)?.remove();
+      });
+
+      setCustomization(prev => {
+        const next = { ...prev };
+        keysToReset.forEach(k => { next[k] = ''; });
+        return next;
+      });
+      return true;
+    } catch (e) {
+      console.error('Error resetting custom code:', e);
+      return false;
+    }
+  }, []);
+
+  return { customization, loading, saveCustomization, saveMultiple, resetAllCustomCode };
 };
