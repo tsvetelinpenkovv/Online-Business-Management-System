@@ -26,8 +26,8 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--info))', 'hsl(var(--success))'
 export const WarehouseKPIDashboard: FC = () => {
   const isMobile = useIsMobile();
   const inventory = useInventory();
-  const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [dateFrom, setDateFrom] = useState<Date>(subDays(new Date(), 30));
+  const [dateTo, setDateTo] = useState<Date>(new Date());
   const [movementData, setMovementData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
