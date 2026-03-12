@@ -39,7 +39,7 @@ export const SourceIcon = forwardRef<HTMLElement, SourceIconProps>(({ source, cl
       return <ShopifyLogo className={className} />;
     case 'phone':
       return (
-        <Phone ref={ref as React.Ref<SVGSVGElement>} className={`${className} text-green-600`} />
+        <Phone ref={ref as unknown as Ref<SVGSVGElement>} className={`${className} text-green-600`} />
       );
     default:
       return null;
