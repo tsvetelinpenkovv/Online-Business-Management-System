@@ -131,7 +131,7 @@ export const AuditLogTab: FC = () => {
       
       let matchesDate = true;
       if (dateFrom) {
-        matchesDate = matchesDate && new Date(log.created_at) >= new Date(dateFrom);
+        matchesDate = matchesDate && new Date(log.created_at) >= dateFrom;
       }
       if (dateTo) {
         const toDate = new Date(dateTo);
