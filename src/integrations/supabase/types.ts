@@ -671,6 +671,7 @@ export type Database = {
           reserved_stock: number
           sale_price: number | null
           sku: string
+          track_serial_numbers: boolean
           unit_id: string | null
           updated_at: string
           woocommerce_id: number | null
@@ -691,6 +692,7 @@ export type Database = {
           reserved_stock?: number
           sale_price?: number | null
           sku: string
+          track_serial_numbers?: boolean
           unit_id?: string | null
           updated_at?: string
           woocommerce_id?: number | null
@@ -711,6 +713,7 @@ export type Database = {
           reserved_stock?: number
           sale_price?: number | null
           sku?: string
+          track_serial_numbers?: boolean
           unit_id?: string | null
           updated_at?: string
           woocommerce_id?: number | null
@@ -1540,6 +1543,97 @@ export type Database = {
             columns: ["rule_id"]
             isOneToOne: false
             referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      serial_numbers: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          id: string
+          movement_id: string | null
+          notes: string | null
+          order_id: number | null
+          product_id: string
+          received_at: string
+          serial_number: string
+          sold_at: string | null
+          status: string
+          updated_at: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          id?: string
+          movement_id?: string | null
+          notes?: string | null
+          order_id?: number | null
+          product_id: string
+          received_at?: string
+          serial_number: string
+          sold_at?: string | null
+          status?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          id?: string
+          movement_id?: string | null
+          notes?: string | null
+          order_id?: number | null
+          product_id?: string
+          received_at?: string
+          serial_number?: string
+          sold_at?: string | null
+          status?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serial_numbers_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "stock_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_full"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
         ]
