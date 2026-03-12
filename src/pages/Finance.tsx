@@ -67,10 +67,12 @@ const Finance = () => {
 
   const filteredOrders = useMemo(() => {
     let filtered = orders;
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
 
-    if (dateFrom) filtered = filtered.filter(o => o.created_at >= dateFrom);
-    if (dateTo) {
-      const to = new Date(dateTo);
+    if (fromStr) filtered = filtered.filter(o => o.created_at >= fromStr);
+    if (toStr) {
+      const to = new Date(toStr);
       to.setDate(to.getDate() + 1);
       filtered = filtered.filter(o => o.created_at < to.toISOString());
     }
