@@ -343,10 +343,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                 <SourceIcon source="facebook" className="w-4 h-4 mr-2" />
                 Facebook
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSourceFilterChange('woocommerce')}>
-                <SourceIcon source="woocommerce" className="w-4 h-4 mr-2" />
-                WooCommerce
-              </DropdownMenuItem>
+              {enabledPlatforms.map((platform) => (
+                <DropdownMenuItem key={platform.name} onClick={() => onSourceFilterChange(platform.name)}>
+                  <SourceIcon source={platform.name} className="w-4 h-4 mr-2" />
+                  {platform.display_name}
+                </DropdownMenuItem>
+              ))}
               <DropdownMenuItem onClick={() => onSourceFilterChange('phone')}>
                 <SourceIcon source="phone" className="w-4 h-4 mr-2" />
                 Телефон
