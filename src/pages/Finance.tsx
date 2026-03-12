@@ -54,7 +54,7 @@ const Finance = () => {
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState('other');
   const [expenseDescription, setExpenseDescription] = useState('');
-  const [expenseDate, setExpenseDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [expenseDate, setExpenseDate] = useState<Date>(() => new Date());
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
 
   // Payment edit
