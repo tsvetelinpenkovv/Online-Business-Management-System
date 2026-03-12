@@ -99,7 +99,7 @@ export const CustomCodeEditor: FC<Props> = ({
           />
           <Button onClick={() => save('head', onSaveHtmlHead, htmlHead)} disabled={!!savingField}>
             {savingField === 'head' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Запази HTML Head
+            Запази HTML за Head
           </Button>
         </CardContent>
       </Card>
