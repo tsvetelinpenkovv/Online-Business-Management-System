@@ -122,6 +122,35 @@ const Index = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Check default landing page and redirect if needed
+  useEffect(() => {
+    const checkLandingPage = async () => {
+      if (!user) return;
+      try {
+        const { data } = await supabase
+          .from('company_settings')
+          .select('default_landing_page')
+          .limit(1)
+          .maybeSingle();
+        if (data?.default_landing_page === 'inventory') {
+          navigate(buildPath('/inventory'), { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking landing page:', error);
+      }
+    };
+    
+    // Only check on initial load (not on every navigation)
+    if (user && !authLoading) {
+      const hasCheckedLanding = sessionStorage.getItem('landing_checked');
+      if (!hasCheckedLanding) {
+        sessionStorage.setItem('landing_checked', 'true');
+        checkLandingPage();
+      }
+    }
+  }, [user, authLoading, navigate]);
+
   // Fetch company settings and nekorekten enabled status
   useEffect(() => {
     const fetchCompanySettings = async () => {
