@@ -459,7 +459,7 @@ export function useInventory() {
       return false;
     }
 
-    const currentReserved = (product as any).reserved_stock || 0;
+    const currentReserved = product.reserved_stock || 0;
     if (currentReserved <= 0) {
       toast({ title: 'Внимание', description: 'Няма резервирана наличност', variant: 'default' });
       return false;
