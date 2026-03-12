@@ -42,7 +42,7 @@ export const CustomCodeEditor: FC<Props> = ({
       <Alert variant="destructive">
         <ShieldAlert className="h-4 w-4" />
         <AlertDescription>
-          <strong>Внимание!</strong> Custom JavaScript и HTML кодът се изпълняват директно в браузъра. Добавяйте код само от доверени източници. Грешен код може да счупи сайта.
+          <strong>Внимание!</strong> Потребителският JavaScript и HTML код се изпълняват директно в браузъра. Добавяйте код само от доверени източници. Грешен код може да счупи сайта.
         </AlertDescription>
       </Alert>
 
@@ -51,7 +51,7 @@ export const CustomCodeEditor: FC<Props> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileCode className="w-5 h-5" />
-            Custom JavaScript
+            Потребителски JavaScript
           </CardTitle>
           <CardDescription>
             Добавете JavaScript код (analytics, tracking pixels, custom логика). Изпълнява се еднократно при зареждане.
@@ -83,7 +83,7 @@ export const CustomCodeEditor: FC<Props> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5" />
-            Custom HTML (Head)
+            Потребителски HTML (Head)
           </CardTitle>
           <CardDescription>
             Meta тагове, external скриптове, link тагове — добавят се в &lt;head&gt; секцията.
@@ -99,7 +99,7 @@ export const CustomCodeEditor: FC<Props> = ({
           />
           <Button onClick={() => save('head', onSaveHtmlHead, htmlHead)} disabled={!!savingField}>
             {savingField === 'head' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Запази HTML Head
+            Запази HTML за Head
           </Button>
         </CardContent>
       </Card>
@@ -109,7 +109,7 @@ export const CustomCodeEditor: FC<Props> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5" />
-            Custom HTML (Body)
+            Потребителски HTML (Body)
           </CardTitle>
           <CardDescription>
             HTML съдържание, което се показва в началото на страницата (банери, уведомления, widgets).
@@ -125,7 +125,7 @@ export const CustomCodeEditor: FC<Props> = ({
           />
           <Button onClick={() => save('body', onSaveHtmlBody, htmlBody)} disabled={!!savingField}>
             {savingField === 'body' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Запази HTML Body
+            Запази HTML за Body
           </Button>
         </CardContent>
       </Card>

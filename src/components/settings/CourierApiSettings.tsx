@@ -362,26 +362,26 @@ export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => 
 
         {fields.includes('client_id') && (
           <div className="space-y-2">
-            <Label htmlFor={`client_id-${courier.id}`}>Client ID</Label>
+            <Label htmlFor={`client_id-${courier.id}`}>Клиентски идентификатор (Client ID)</Label>
             <Input
               id={`client_id-${courier.id}`}
               value={data.client_id || ''}
               onChange={(e) => handleFormChange(courier.id, 'client_id', e.target.value)}
-              placeholder="OAuth Client ID"
+              placeholder="Въведете Client ID"
             />
           </div>
         )}
 
         {fields.includes('client_secret') && (
           <div className="space-y-2">
-            <Label htmlFor={`client_secret-${courier.id}`}>Client Secret</Label>
+            <Label htmlFor={`client_secret-${courier.id}`}>Клиентска тайна (Client Secret)</Label>
             <div className="relative">
               <Input
                 id={`client_secret-${courier.id}`}
                 type={showPasswords[`secret-${courier.id}`] ? 'text' : 'password'}
                 value={data.client_secret || ''}
                 onChange={(e) => handleFormChange(courier.id, 'client_secret', e.target.value)}
-                placeholder="OAuth Client Secret"
+                placeholder="Въведете Client Secret"
               />
               <Button
                 type="button"
@@ -398,7 +398,7 @@ export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => 
 
         {fields.includes('api_key') && (
           <div className="space-y-2">
-            <Label htmlFor={`api_key-${courier.id}`}>API Key</Label>
+            <Label htmlFor={`api_key-${courier.id}`}>API Ключ</Label>
             <div className="relative">
               <Input
                 id={`api_key-${courier.id}`}

@@ -426,7 +426,7 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
           </div>
           <div className="grid grid-cols-1 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Consumer Key</Label>
+              <Label className="text-xs">Потребителски ключ (Consumer Key)</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
                 placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -435,7 +435,7 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Consumer Secret</Label>
+              <Label className="text-xs">Потребителска тайна (Consumer Secret)</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
                 placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -444,10 +444,10 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Webhook Secret</Label>
+              <Label className="text-xs">Тайна за Webhook</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
-                placeholder="webhook secret..."
+                placeholder="Въведете тайна за Webhook..."
                 value={form.wc_webhook_secret}
                 onChange={(e) => setForm({ ...form, wc_webhook_secret: e.target.value })}
               />

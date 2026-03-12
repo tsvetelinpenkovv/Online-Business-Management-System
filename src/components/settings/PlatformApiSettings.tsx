@@ -31,29 +31,29 @@ const platformLogos: Record<string, React.ReactNode> = {
 
 const platformApiLabels: Record<string, { apiKey: string; apiSecret: string; description: string }> = {
   woocommerce: { 
-    apiKey: 'Consumer Key', 
-    apiSecret: 'Consumer Secret',
+    apiKey: 'Потребителски ключ (Consumer Key)', 
+    apiSecret: 'Потребителска тайна (Consumer Secret)',
     description: 'Създайте ключове от WooCommerce → Settings → Advanced → REST API'
   },
   prestashop: { 
-    apiKey: 'Webservice Key', 
-    apiSecret: 'Webservice Secret (опционално)',
+    apiKey: 'Ключ за уебуслуга (Webservice Key)', 
+    apiSecret: 'Тайна за уебуслуга (опционално)',
     description: 'Създайте ключ от PrestaShop Admin → Advanced Parameters → Webservice'
   },
   opencart: { 
-    apiKey: 'API Username', 
-    apiSecret: 'API Key',
+    apiKey: 'API Потребител', 
+    apiSecret: 'API Ключ',
     description: 'Създайте API потребител от OpenCart Admin → System → Users → API'
   },
   magento: { 
-    apiKey: 'Access Token', 
-    apiSecret: 'Access Token Secret',
-    description: 'Създайте Integration от Magento Admin → System → Integrations'
+    apiKey: 'Токен за достъп (Access Token)', 
+    apiSecret: 'Тайна на токена (Access Token Secret)',
+    description: 'Създайте интеграция от Magento Admin → System → Integrations'
   },
   shopify: { 
-    apiKey: 'API Key', 
-    apiSecret: 'API Secret Key',
-    description: 'Създайте Private App от Shopify Admin → Apps → Manage private apps'
+    apiKey: 'API Ключ', 
+    apiSecret: 'API Таен ключ',
+    description: 'Създайте частно приложение от Shopify Admin → Apps → Manage private apps'
   },
 };
 

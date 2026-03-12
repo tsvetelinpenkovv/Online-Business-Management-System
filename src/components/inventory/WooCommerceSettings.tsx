@@ -232,7 +232,7 @@ export const WooCommerceSettings: FC<WooCommerceSettingsProps> = ({ onSync, onSy
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="consumer_key">Consumer Key</Label>
+            <Label htmlFor="consumer_key">Потребителски ключ (Consumer Key)</Label>
             <Input
               id="consumer_key"
               value={config.consumer_key}
@@ -242,7 +242,7 @@ export const WooCommerceSettings: FC<WooCommerceSettingsProps> = ({ onSync, onSy
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="consumer_secret">Consumer Secret</Label>
+            <Label htmlFor="consumer_secret">Потребителска тайна (Consumer Secret)</Label>
             <Input
               id="consumer_secret"
               type="password"

@@ -491,7 +491,7 @@ export const AuditLogTab: FC = () => {
 
               {selectedLog.user_agent && (
                 <div>
-                  <span className="text-muted-foreground text-sm">User Agent:</span>
+                  <span className="text-muted-foreground text-sm">Потребителски агент:</span>
                   <p className="text-xs bg-muted p-2 rounded mt-1 font-mono break-all">{selectedLog.user_agent}</p>
                 </div>
               )}

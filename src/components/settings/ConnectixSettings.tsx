@@ -469,7 +469,7 @@ export const ConnectixSettings = forwardRef<ConnectixSettingsRef>((_, ref) => {
                   </Badge>
                   {config.sandbox_mode && (
                     <Badge variant="outline" className="text-warning border-warning">
-                      Sandbox
+                      Демо
                     </Badge>
                   )}
                 </CardTitle>
@@ -564,7 +564,7 @@ export const ConnectixSettings = forwardRef<ConnectixSettingsRef>((_, ref) => {
                   onCheckedChange={(checked) => setConfig({ ...config, sandbox_mode: checked })}
                 />
                 <div>
-                  <Label htmlFor="sandbox_mode" className="cursor-pointer">Sandbox режим</Label>
+                  <Label htmlFor="sandbox_mode" className="cursor-pointer">Демо режим</Label>
                   <p className="text-xs text-muted-foreground">
                     Тестов режим - съобщенията няма да се изпращат реално
                   </p>
