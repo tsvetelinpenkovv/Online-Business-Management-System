@@ -482,7 +482,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Excel формат
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportMovementsReportPDF(filteredMovements, dateFrom, dateTo)}>
+                <DropdownMenuItem onClick={() => exportMovementsReportPDF(filteredMovements, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'))}>
                   <FileText className="w-4 h-4 mr-2" />
                   PDF формат
                 </DropdownMenuItem>
