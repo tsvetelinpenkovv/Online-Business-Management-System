@@ -403,6 +403,27 @@ export default function Inventory() {
                   )}
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="profitability" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Euro className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Рентабилност</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="serial-numbers" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Серийни номера</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="warehouse-kpi" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>KPI Склад</span>
+                </TabsTrigger>
+                <TabsTrigger 
                   value="warehouse-dashboard" 
                   className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                 >
