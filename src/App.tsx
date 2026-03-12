@@ -113,6 +113,7 @@ const App = () => {
                     
                     {/* Routes with secret path prefix - validated against configured secret */}
                     <Route path="/:secretPath/" element={<SecretPathValidator><Index /></SecretPathValidator>} />
+                    <Route path="/:secretPath/orders" element={<SecretPathValidator><Index /></SecretPathValidator>} />
                     <Route path="/:secretPath/auth" element={<SecretPathValidator><Auth /></SecretPathValidator>} />
                     <Route path="/:secretPath/settings" element={<SecretPathValidator><Settings /></SecretPathValidator>} />
                     <Route path="/:secretPath/inventory" element={<SecretPathValidator><Inventory /></SecretPathValidator>} />

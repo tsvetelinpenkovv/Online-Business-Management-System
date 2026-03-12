@@ -133,8 +133,14 @@ const Index = () => {
           .limit(1)
           .maybeSingle();
         if (data?.default_landing_page === 'inventory') {
-          navigate(buildPath('/inventory'), { replace: true });
-          return;
+          // Only redirect to inventory if we're on the root path, not on /orders
+          const currentPath = window.location.pathname;
+          const basePath = buildPath('/');
+          const isRootPath = currentPath === basePath || currentPath === basePath + '/';
+          if (isRootPath) {
+            navigate(buildPath('/inventory'), { replace: true });
+            return;
+          }
         }
       } catch (error) {
         console.error('Error checking landing page:', error);
