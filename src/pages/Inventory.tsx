@@ -499,6 +499,18 @@ export default function Inventory() {
             <ForecastTab inventory={inventory} />
           </TabsContent>
 
+          <TabsContent value="profitability" className="mt-4 sm:mt-6">
+            <ProfitabilityReport inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="serial-numbers" className="mt-4 sm:mt-6">
+            <SerialNumbersTab inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="warehouse-kpi" className="mt-4 sm:mt-6">
+            <WarehouseKPIDashboard />
+          </TabsContent>
+
           <TabsContent value="warehouse-dashboard" className="mt-4 sm:mt-6">
             <WarehouseDashboard />
           </TabsContent>
