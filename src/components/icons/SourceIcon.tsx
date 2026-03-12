@@ -27,7 +27,7 @@ export const SourceIcon = forwardRef<HTMLElement, SourceIconProps>(({ source, cl
       );
     case 'woocommerce':
       return (
-        <img ref={ref as React.Ref<HTMLImageElement>} src={woocommerceLogo} alt="WooCommerce" className={className} />
+        <img ref={ref as unknown as Ref<HTMLImageElement>} src={woocommerceLogo} alt="WooCommerce" className={className} />
       );
     case 'prestashop':
       return <PrestaShopLogo className={className} />;
