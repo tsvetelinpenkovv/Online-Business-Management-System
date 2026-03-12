@@ -48,18 +48,38 @@
    const { products, refreshProducts } = useInventory();
    const { toast } = useToast();
  
-   const [fromWarehouse, setFromWarehouse] = useState<string>('');
-   const [toWarehouse, setToWarehouse] = useState<string>('');
-   const [selectedProduct, setSelectedProduct] = useState<string>('');
-   const [quantity, setQuantity] = useState<number>(1);
-   const [notes, setNotes] = useState<string>('');
-   const [transferItems, setTransferItems] = useState<TransferItem[]>([]);
-   const [isSubmitting, setIsSubmitting] = useState(false);
- 
-   const activeWarehouses = warehouses.filter(w => w.is_active);
- 
-   const selectedProductData = products.find(p => p.id === selectedProduct);
-   const maxQuantity = selectedProductData?.current_stock || 0;
+    const [fromWarehouse, setFromWarehouse] = useState<string>('');
+    const [toWarehouse, setToWarehouse] = useState<string>('');
+    const [selectedProduct, setSelectedProduct] = useState<string>('');
+    const [quantity, setQuantity] = useState<number>(1);
+    const [notes, setNotes] = useState<string>('');
+    const [transferItems, setTransferItems] = useState<TransferItem[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [warehouseStock, setWarehouseStock] = useState<number>(0);
+
+    const activeWarehouses = warehouses.filter(w => w.is_active);
+
+    const selectedProductData = products.find(p => p.id === selectedProduct);
+
+    // Fetch warehouse-specific stock when product or source warehouse changes
+    useEffect(() => {
+      const fetchWarehouseStock = async () => {
+        if (!selectedProduct || !fromWarehouse) {
+          setWarehouseStock(0);
+          return;
+        }
+        const { data } = await supabase
+          .from('stock_by_warehouse')
+          .select('current_stock')
+          .eq('product_id', selectedProduct)
+          .eq('warehouse_id', fromWarehouse)
+          .maybeSingle();
+        setWarehouseStock(data?.current_stock || 0);
+      };
+      fetchWarehouseStock();
+    }, [selectedProduct, fromWarehouse]);
+
+    const maxQuantity = multiWarehouseEnabled && fromWarehouse ? warehouseStock : (selectedProductData?.current_stock || 0);
  
    const addItemToTransfer = () => {
      if (!selectedProduct || quantity <= 0) return;
@@ -128,27 +148,27 @@
  
          const stockBefore = product.current_stock;
  
-         // Create OUT movement from source warehouse
-         await supabase.from('stock_movements').insert({
-           product_id: item.productId,
-           movement_type: 'transfer',
-           quantity: item.quantity,
-           stock_before: stockBefore,
-           stock_after: stockBefore, // Stock stays same for transfer
-           warehouse_id: fromWarehouse,
-           reason: `Трансфер към ${toWarehouseName}${notes ? ': ' + notes : ''}`,
-         });
- 
-         // Create IN movement to destination warehouse
-         await supabase.from('stock_movements').insert({
-           product_id: item.productId,
-           movement_type: 'transfer',
-           quantity: item.quantity,
-           stock_before: stockBefore,
-           stock_after: stockBefore, // Stock stays same for transfer
-           warehouse_id: toWarehouse,
-           reason: `Трансфер от ${fromWarehouseName}${notes ? ': ' + notes : ''}`,
-         });
+          // Create OUT movement from source warehouse
+          await supabase.from('stock_movements').insert({
+            product_id: item.productId,
+            movement_type: 'transfer' as any,
+            quantity: item.quantity,
+            stock_before: stockBefore,
+            stock_after: stockBefore, // Global stock stays same for transfer
+            warehouse_id: fromWarehouse,
+            reason: `Трансфер към ${toWarehouseName}${notes ? ': ' + notes : ''}`,
+          });
+
+          // Create IN movement to destination warehouse
+          await supabase.from('stock_movements').insert({
+            product_id: item.productId,
+            movement_type: 'transfer' as any,
+            quantity: item.quantity,
+            stock_before: stockBefore,
+            stock_after: stockBefore, // Global stock stays same for transfer
+            warehouse_id: toWarehouse,
+            reason: `Трансфер от ${fromWarehouseName}${notes ? ': ' + notes : ''}`,
+          });
  
          // Update stock_by_warehouse if exists
          // Decrease from source

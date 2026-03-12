@@ -145,18 +145,26 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
     setItems(newItems);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     const validItems = items.filter(item => item.productId && item.quantity > 0);
     if (validItems.length === 0) return;
 
-    await inventory.createStockDocument(
-      formData.document_type,
-      validItems,
-      formData.supplier_id || undefined,
-      formData.counterparty_name || undefined,
-      formData.notes || undefined
-    );
-    setIsDialogOpen(false);
+    setIsSubmitting(true);
+    try {
+      await inventory.createStockDocument(
+        formData.document_type,
+        validItems,
+        formData.supplier_id || undefined,
+        formData.counterparty_name || undefined,
+        formData.notes || undefined
+      );
+      setIsDialogOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getDocumentIcon = (type: DocumentType) => {
@@ -481,9 +489,9 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={!items.some(item => item.productId && item.quantity > 0)}
+              disabled={!items.some(item => item.productId && item.quantity > 0) || isSubmitting}
             >
-              Създай документ
+              {isSubmitting ? 'Създаване...' : 'Създай документ'}
             </Button>
           </DialogFooter>
         </DialogContent>

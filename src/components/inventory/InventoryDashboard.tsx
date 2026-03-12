@@ -23,10 +23,10 @@ export const InventoryDashboard: FC<InventoryDashboardProps> = ({ inventory }) =
 
   // Calculate available stock stats (current - reserved)
   const availableStockStats = useMemo(() => {
-    const totalReserved = inventory.products.reduce((sum, p) => sum + ((p as any).reserved_stock || 0), 0);
+    const totalReserved = inventory.products.reduce((sum, p) => sum + (p.reserved_stock || 0), 0);
     const totalCurrent = inventory.products.reduce((sum, p) => sum + p.current_stock, 0);
     const totalAvailable = totalCurrent - totalReserved;
-    const productsWithReservations = inventory.products.filter(p => ((p as any).reserved_stock || 0) > 0).length;
+    const productsWithReservations = inventory.products.filter(p => (p.reserved_stock || 0) > 0).length;
     return { totalReserved, totalCurrent, totalAvailable, productsWithReservations };
   }, [inventory.products]);
 

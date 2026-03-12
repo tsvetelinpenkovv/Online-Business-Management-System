@@ -40,6 +40,7 @@ export interface InventoryProduct {
   sale_price: number;
   min_stock_level: number;
   current_stock: number;
+  reserved_stock: number;
   woocommerce_id: number | null;
   barcode: string | null;
   is_active: boolean;
@@ -86,7 +87,7 @@ export interface StockBatch {
   supplier?: Supplier;
 }
 
-export type MovementType = 'in' | 'out' | 'adjustment' | 'return';
+export type MovementType = 'in' | 'out' | 'adjustment' | 'return' | 'transfer';
 export type DocumentType = 'receiving' | 'dispatch' | 'adjustment' | 'return' | 'inventory';
 
 export interface StockDocument {
@@ -139,4 +140,5 @@ export const MOVEMENT_TYPE_LABELS: Record<MovementType, string> = {
   out: 'Разход',
   adjustment: 'Корекция',
   return: 'Връщане',
+  transfer: 'Трансфер',
 };

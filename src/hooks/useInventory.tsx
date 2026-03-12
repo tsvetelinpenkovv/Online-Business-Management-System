@@ -153,7 +153,7 @@ export function useInventory() {
   }, [fetchAll]);
 
   // Product CRUD
-  const createProduct = async (product: Omit<InventoryProduct, 'id' | 'created_at' | 'updated_at' | 'current_stock' | 'category' | 'unit'>) => {
+  const createProduct = async (product: Omit<InventoryProduct, 'id' | 'created_at' | 'updated_at' | 'current_stock' | 'reserved_stock' | 'category' | 'unit'>) => {
     const { data, error } = await supabase
       .from('inventory_products')
       .insert(product)
@@ -318,6 +318,10 @@ export function useInventory() {
       stockAfter = stockBefore + quantity;
     } else if (movementType === 'out') {
       stockAfter = stockBefore - quantity;
+      if (stockAfter < 0) {
+        toast({ title: 'Грешка', description: `Недостатъчна наличност. Налични: ${stockBefore} бр.`, variant: 'destructive' });
+        return null;
+      }
     } else if (movementType === 'adjustment') {
       stockAfter = quantity; // For adjustment, quantity IS the new stock level
     }
@@ -455,7 +459,7 @@ export function useInventory() {
       return false;
     }
 
-    const currentReserved = (product as any).reserved_stock || 0;
+    const currentReserved = product.reserved_stock || 0;
     if (currentReserved <= 0) {
       toast({ title: 'Внимание', description: 'Няма резервирана наличност', variant: 'default' });
       return false;
