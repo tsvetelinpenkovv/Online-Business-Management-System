@@ -20,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
-type ExportType = 'products' | 'suppliers' | 'categories' | 'documents' | 'revision';
+type ExportType = 'products' | 'suppliers' | 'categories' | 'documents' | 'revision' | 'movements' | 'prices' | 'warehouses';
 type FileFormat = 'csv' | 'xlsx' | 'xls' | 'ods';
 type ImportStep = 'select' | 'mapping' | 'preview';
 
