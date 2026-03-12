@@ -85,6 +85,7 @@ const App = () => {
   }, []);
 
   return (
+  <AppErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="app-theme">
       <AuthProvider>
