@@ -83,7 +83,7 @@ export const CustomCodeEditor: FC<Props> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5" />
-            Custom HTML (Head)
+            Потребителски HTML (Head)
           </CardTitle>
           <CardDescription>
             Meta тагове, external скриптове, link тагове — добавят се в &lt;head&gt; секцията.
