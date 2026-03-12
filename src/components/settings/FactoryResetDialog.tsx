@@ -128,10 +128,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
             website_url: null,
             orders_page_title: 'Управление на поръчки',
             inventory_page_title: 'Склад',
-            footer_text: null,
-            footer_link_text: null,
-            footer_link: null,
-            footer_website: null,
+            // footer_text, footer_link_text, footer_link, footer_website are intentionally NOT reset
             login_title: null,
             login_description: null,
             login_background_color: null,
