@@ -137,6 +137,7 @@ const App = () => {
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </AppErrorBoundary>
   );
 };
 

@@ -4,9 +4,8 @@
 /*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: frame-ancestors 'none'
+  Content-Security-Policy: frame-ancestors 'self' https://*.lovable.app https://*.lovableproject.com https://lovable.dev https://*.lovable.dev
   Vary: Accept-Encoding
   Permissions-Policy: interest-cohort=()
 
