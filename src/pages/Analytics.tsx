@@ -104,8 +104,8 @@ const Analytics = () => {
     const totalRevenue = filteredOrders.reduce((s, o) => s + Number(o.total_price), 0);
     const totalOrders = filteredOrders.length;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const from = new Date(dateFrom);
-    const to = new Date(dateTo);
+    const from = dateFrom;
+    const to = dateTo;
     const daysRaw = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24) + 1;
     const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 1;
     const deliveredCount = filteredOrders.filter(o => o.status === 'Доставена' || o.status === 'Завършена').length;
