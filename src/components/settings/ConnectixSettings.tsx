@@ -469,7 +469,7 @@ export const ConnectixSettings = forwardRef<ConnectixSettingsRef>((_, ref) => {
                   </Badge>
                   {config.sandbox_mode && (
                     <Badge variant="outline" className="text-warning border-warning">
-                      Sandbox
+                      Демо
                     </Badge>
                   )}
                 </CardTitle>
