@@ -8,6 +8,7 @@ import { ORDER_STATUSES } from '@/types/order';
 import { StatusBadge } from './StatusBadge';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
+import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
 import {
   DropdownMenu,
   DropdownMenuContent,
