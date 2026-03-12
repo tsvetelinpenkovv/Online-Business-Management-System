@@ -2,8 +2,6 @@ import { FC, useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -12,14 +10,21 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useInventory } from '@/hooks/useInventory';
 import { 
   TrendingUp, TrendingDown, DollarSign, BarChart3, Package, 
-  FolderTree, Truck, Loader2, Download, Euro, Percent
+  FolderTree, Truck, Loader2, Download, Euro, Percent, Calendar, ChevronDown
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 interface ProfitabilityReportProps {
   inventory: ReturnType<typeof useInventory>;
