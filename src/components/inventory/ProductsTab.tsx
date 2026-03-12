@@ -506,12 +506,12 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Резерв</p>
-                      {(product as any).reserved_stock > 0 ? (
+                      {product.reserved_stock > 0 ? (
                         <Badge 
                           variant="secondary" 
                           className="mt-0.5 pointer-events-none bg-destructive/20 text-destructive"
                         >
-                          {(product as any).reserved_stock} {product.unit?.abbreviation || 'бр.'}
+                          {product.reserved_stock} {product.unit?.abbreviation || 'бр.'}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground text-sm">—</span>
