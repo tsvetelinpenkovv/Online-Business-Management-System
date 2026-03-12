@@ -145,7 +145,7 @@ export const SiteCustomizationTab: FC<Props> = ({ isAdmin }) => {
           <AccordionTrigger className="px-4 hover:no-underline">
             <div className="flex items-center gap-2">
               <Code className="w-5 h-5 text-primary" />
-              <span className="font-medium">Custom CSS</span>
+              <span className="font-medium">Потребителски CSS</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
