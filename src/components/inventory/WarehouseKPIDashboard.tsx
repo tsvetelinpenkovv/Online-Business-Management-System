@@ -3,17 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { 
   Warehouse, Package, AlertTriangle, TrendingUp, TrendingDown,
   BarChart3, Boxes, Euro, Clock, RotateCcw, Skull, ArrowUpDown,
-  Loader2, Calendar
+  Loader2, Calendar, X, ChevronDown
 } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { format, subDays, differenceInDays, parseISO } from 'date-fns';
+import { format, subDays, differenceInDays } from 'date-fns';
+import { bg } from 'date-fns/locale';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--info))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--accent))'];
 
