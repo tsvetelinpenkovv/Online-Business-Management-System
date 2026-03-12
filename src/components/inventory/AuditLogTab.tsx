@@ -101,8 +101,8 @@ export const AuditLogTab: FC = () => {
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [tableFilter, setTableFilter] = useState<string>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedLog, setSelectedLog] = useState<typeof logs[0] | null>(null);
   const [viewMode, setViewMode] = useState<string>('table');
 
