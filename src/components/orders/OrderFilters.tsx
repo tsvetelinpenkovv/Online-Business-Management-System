@@ -61,6 +61,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 }) => {
   const navigate = useNavigate();
   const { getText } = useInterfaceTexts();
+  const { platforms } = useEcommercePlatforms();
+  const enabledPlatforms = platforms.filter(p => p.is_enabled);
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
 
   const getStatusLabel = () => {
