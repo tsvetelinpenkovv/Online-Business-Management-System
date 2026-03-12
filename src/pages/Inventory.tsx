@@ -189,15 +189,6 @@ export default function Inventory() {
         <div className="container mx-auto px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => navigate(buildPath('/'))}
-                title="Назад към поръчки"
-                className="flex-shrink-0"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
               <div className="flex items-center gap-2 min-w-0">
                 {logoUrl ? (
                   <img 
