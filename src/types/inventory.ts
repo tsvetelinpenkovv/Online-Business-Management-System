@@ -40,6 +40,7 @@ export interface InventoryProduct {
   sale_price: number;
   min_stock_level: number;
   current_stock: number;
+  reserved_stock: number;
   woocommerce_id: number | null;
   barcode: string | null;
   is_active: boolean;

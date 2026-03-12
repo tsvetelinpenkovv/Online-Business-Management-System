@@ -899,8 +899,8 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Отказ
             </Button>
-            <Button onClick={handleSubmit} disabled={!formData.sku || !formData.name}>
-              {editProduct ? 'Запази' : 'Създай'}
+            <Button onClick={handleSubmit} disabled={!formData.sku.trim() || !formData.name.trim() || isSubmitting}>
+              {isSubmitting ? 'Запазване...' : (editProduct ? 'Запази' : 'Създай')}
             </Button>
           </DialogFooter>
         </DialogContent>
