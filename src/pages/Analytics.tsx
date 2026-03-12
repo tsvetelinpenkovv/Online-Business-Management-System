@@ -141,7 +141,7 @@ const Analytics = () => {
   const handleExportExcel = () => {
     const data = hasFilters ? filteredOrders : rawOrders;
     if (data.length === 0) return;
-    exportOrdersExcel(data, `аналитика_${dateFrom}_${dateTo}.xlsx`);
+    exportOrdersExcel(data, `аналитика_${format(dateFrom, 'yyyy-MM-dd')}_${format(dateTo, 'yyyy-MM-dd')}.xlsx`);
   };
 
   const handleExportPDF = () => {
