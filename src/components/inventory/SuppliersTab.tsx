@@ -60,6 +60,7 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editSupplier, setEditSupplier] = useState<Supplier | null>(null);
   const [sortKey, setSortKey] = useState<SupplierSortKey>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
