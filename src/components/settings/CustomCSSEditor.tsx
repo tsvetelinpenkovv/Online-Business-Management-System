@@ -31,7 +31,7 @@ export const CustomCSSEditor: FC<Props> = ({ value, onSave }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Code className="w-5 h-5" />
-          Custom CSS
+          Потребителски CSS
         </CardTitle>
         <CardDescription>
           Добавете произволен CSS код, който ще се приложи глобално на сайта. Промените са видими веднага.

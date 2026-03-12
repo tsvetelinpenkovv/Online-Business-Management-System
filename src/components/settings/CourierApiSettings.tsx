@@ -398,7 +398,7 @@ export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => 
 
         {fields.includes('api_key') && (
           <div className="space-y-2">
-            <Label htmlFor={`api_key-${courier.id}`}>API Key</Label>
+            <Label htmlFor={`api_key-${courier.id}`}>API Ключ</Label>
             <div className="relative">
               <Input
                 id={`api_key-${courier.id}`}

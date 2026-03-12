@@ -447,7 +447,7 @@ const StoreCard = ({ store, index, totalStores, saving, showSecrets, onToggleSec
               <Label className="text-xs">Тайна за Webhook</Label>
               <Input
                 type={showSecrets ? 'text' : 'password'}
-                placeholder="webhook secret..."
+                placeholder="Въведете тайна за Webhook..."
                 value={form.wc_webhook_secret}
                 onChange={(e) => setForm({ ...form, wc_webhook_secret: e.target.value })}
               />

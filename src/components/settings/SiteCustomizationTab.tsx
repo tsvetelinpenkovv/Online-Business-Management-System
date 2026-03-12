@@ -159,7 +159,7 @@ export const SiteCustomizationTab: FC<Props> = ({ isAdmin }) => {
             <AccordionTrigger className="px-4 hover:no-underline">
               <div className="flex items-center gap-2">
                 <FileCode className="w-5 h-5 text-destructive" />
-                <span className="font-medium">Custom JavaScript & HTML</span>
+                <span className="font-medium">Потребителски JavaScript и HTML</span>
                 <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Само админ</span>
               </div>
             </AccordionTrigger>
