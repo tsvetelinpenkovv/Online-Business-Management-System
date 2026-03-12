@@ -240,6 +240,7 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
         woocommerce_id: null,
         is_bundle: false,
         external_bundle_type: null,
+        track_serial_numbers: false,
       };
       
       const result = await inventory.createProduct(productData);
