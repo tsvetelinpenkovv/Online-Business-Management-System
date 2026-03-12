@@ -381,7 +381,7 @@ export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => 
                 type={showPasswords[`secret-${courier.id}`] ? 'text' : 'password'}
                 value={data.client_secret || ''}
                 onChange={(e) => handleFormChange(courier.id, 'client_secret', e.target.value)}
-                placeholder="OAuth Client Secret"
+                placeholder="Въведете Client Secret"
               />
               <Button
                 type="button"
