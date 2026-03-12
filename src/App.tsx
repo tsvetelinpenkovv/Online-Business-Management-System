@@ -100,6 +100,7 @@ const App = () => {
                   <Routes>
                     {/* Routes without secret path prefix */}
                     <Route path="/" element={<Index />} />
+                    <Route path="/orders" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/inventory" element={<Inventory />} />
