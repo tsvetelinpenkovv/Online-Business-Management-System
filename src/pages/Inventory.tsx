@@ -253,7 +253,7 @@ export default function Inventory() {
               {/* Desktop action buttons */}
               <Button
                 size="sm"
-                onClick={() => navigate(buildPath('/orders'))}
+                onClick={() => navigate(buildPath('/'))}
                 className="hidden sm:flex bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 hover:bg-blue-500/25"
                 title="Управление на поръчки"
               >
