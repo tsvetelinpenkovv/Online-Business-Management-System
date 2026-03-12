@@ -65,8 +65,8 @@ interface SupplierProfitability {
 
 export const ProfitabilityReport: FC<ProfitabilityReportProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
-  const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [dateFrom, setDateFrom] = useState<Date>(subDays(new Date(), 30));
+  const [dateTo, setDateTo] = useState<Date>(new Date());
   const [orderData, setOrderData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'profit' | 'margin' | 'revenue'>('profit');
