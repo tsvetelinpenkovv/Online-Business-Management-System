@@ -141,13 +141,8 @@ const Index = () => {
       }
     };
     
-    // Only check on initial load (not on every navigation)
     if (user && !authLoading) {
-      const hasCheckedLanding = sessionStorage.getItem('landing_checked');
-      if (!hasCheckedLanding) {
-        sessionStorage.setItem('landing_checked', 'true');
-        checkLandingPage();
-      }
+      checkLandingPage();
     }
   }, [user, authLoading, navigate]);
 
