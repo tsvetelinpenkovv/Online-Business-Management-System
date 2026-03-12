@@ -2037,10 +2037,17 @@ const Settings = () => {
                 {companySettings.footer_link_text}
               </a>
             ) : (
-              <span className="font-medium">{companySettings?.footer_link_text || 'Цветелин Пенков'}</span>
+              <a
+                href="https://www.linkedin.com/in/tsvetelin-penkov/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                Цветелин Пенков
+              </a>
             )}
           </span>
-          {companySettings?.footer_website && (
+          {companySettings?.footer_website ? (
             <div className="mt-1">
               <a 
                 href={companySettings.footer_website.startsWith('http') ? companySettings.footer_website : `https://${companySettings.footer_website}`} 
@@ -2049,6 +2056,17 @@ const Settings = () => {
                 className="text-primary hover:underline"
               >
                 {companySettings.footer_website}
+              </a>
+            </div>
+          ) : (
+            <div className="mt-1">
+              <a 
+                href="https://www.penkovstudio.eu" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                www.penkovstudio.eu
               </a>
             </div>
           )}

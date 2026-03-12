@@ -530,10 +530,17 @@ export default function Inventory() {
                 {footerLinkText}
               </a>
             ) : (
-              <span className="font-medium">{footerLinkText}</span>
+              <a
+                href="https://www.linkedin.com/in/tsvetelin-penkov/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                {footerLinkText}
+              </a>
             )}
           </span>
-          {footerWebsite && (
+          {footerWebsite ? (
             <div className="mt-1">
               <a 
                 href={footerWebsite.startsWith('http') ? footerWebsite : `https://${footerWebsite}`} 
@@ -542,6 +549,17 @@ export default function Inventory() {
                 className="text-primary hover:underline"
               >
                 {footerWebsite}
+              </a>
+            </div>
+          ) : (
+            <div className="mt-1">
+              <a 
+                href="https://www.penkovstudio.eu" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                www.penkovstudio.eu
               </a>
             </div>
           )}
