@@ -262,6 +262,7 @@ const Settings = () => {
           footer_link: companySettings.footer_link,
           footer_website: companySettings.footer_website,
           secret_path: companySettings.secret_path,
+          default_landing_page: companySettings.default_landing_page,
         })
         .eq('id', companySettings.id);
 
