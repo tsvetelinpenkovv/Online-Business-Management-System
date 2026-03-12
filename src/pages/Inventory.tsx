@@ -59,6 +59,7 @@ export default function Inventory() {
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
   const [isBulkPriceOpen, setIsBulkPriceOpen] = useState(false);
   const [isRevisionOpen, setIsRevisionOpen] = useState(false);
+  const [isBarcodeInventoryOpen, setIsBarcodeInventoryOpen] = useState(false);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
