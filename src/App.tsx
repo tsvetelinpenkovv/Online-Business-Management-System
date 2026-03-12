@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { InterfaceTextsProvider } from "@/hooks/useInterfaceTexts";
 import { SecretPathGuard } from "@/components/SecretPathGuard";
 import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
-import { lazy, Suspense, ReactNode } from "react";
+import { lazy, Suspense, ReactNode, useEffect } from "react";
 import { Loader2, Package } from "lucide-react";
 import { useParams, Navigate } from "react-router-dom";
 import { useSiteCustomization } from "@/hooks/useSiteCustomization";
