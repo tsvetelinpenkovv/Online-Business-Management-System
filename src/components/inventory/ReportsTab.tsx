@@ -57,8 +57,8 @@ interface ReportsTabProps {
 
 export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
-  const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [dateFrom, setDateFrom] = useState<Date>(startOfMonth(new Date()));
+  const [dateTo, setDateTo] = useState<Date>(endOfMonth(new Date()));
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [stockSortKey, setStockSortKey] = useState<StockSortKey>('name');
   const [stockSortDirection, setStockSortDirection] = useState<'asc' | 'desc'>('asc');
