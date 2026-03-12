@@ -40,6 +40,10 @@ import { SyncJobsPanel } from '@/components/inventory/SyncJobsPanel';
 import { BulkPriceChangeDialog } from '@/components/inventory/BulkPriceChangeDialog';
 import { ScheduledRevisionDialog } from '@/components/inventory/ScheduledRevisionDialog';
 import { AuditLogTab } from '@/components/inventory/AuditLogTab';
+import { SerialNumbersTab } from '@/components/inventory/SerialNumbersTab';
+import { BarcodeInventoryDialog } from '@/components/inventory/BarcodeInventoryDialog';
+import { ProfitabilityReport } from '@/components/inventory/ProfitabilityReport';
+import { WarehouseKPIDashboard } from '@/components/inventory/WarehouseKPIDashboard';
 import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
