@@ -303,6 +303,23 @@ export default function Inventory() {
               <div className="hidden sm:flex items-center gap-1">
                 <ThemeToggle />
                 <QuickCacheClear />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(buildPath('/settings'))}
+                  title="Настройки"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async () => { await supabase.auth.signOut(); navigate(buildPath('/auth')); }}
+                  title="Изход"
+                  className="text-destructive hover:text-destructive"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
