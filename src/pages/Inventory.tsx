@@ -254,6 +254,16 @@ export default function Inventory() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => navigate(buildPath('/orders'))}
+                className="hidden sm:flex"
+                title="Управление на поръчки"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Поръчки
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setIsScannerOpen(true)}
                 className="hidden sm:flex"
                 title="Сканиране на баркод"
