@@ -41,12 +41,12 @@ const Finance = () => {
   const { canEdit, canCreate, canDelete } = usePermissions();
   const { orders, expenses, loading, updatePaymentStatus, addExpense, deleteExpense, getSummary } = useFinance();
 
-  const [dateFrom, setDateFrom] = useState(() => {
+  const [dateFrom, setDateFrom] = useState<Date>(() => {
     const d = new Date();
     d.setDate(1);
-    return d.toISOString().split('T')[0];
+    return d;
   });
-  const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dateTo, setDateTo] = useState<Date>(() => new Date());
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
