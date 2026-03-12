@@ -152,8 +152,11 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteEcommercePlatforms) {
-        // Deactivate instead of delete
+        // Deactivate all ecommerce platforms
         await supabase.from('ecommerce_platforms').update({ is_enabled: false, updated_at: new Date().toISOString() }).neq('id', '00000000-0000-0000-0000-000000000000');
+      } else {
+        // Always deactivate WooCommerce as source on reset
+        await supabase.from('ecommerce_platforms').update({ is_enabled: false, updated_at: new Date().toISOString() }).eq('name', 'woocommerce');
       }
 
       if (deleteStores) {
@@ -165,7 +168,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         }
       }
 
-      // Disable Nekorekten module
+      // Always disable Nekorekten module on reset
       const { data: nekorektenSetting } = await supabase.from('api_settings').select('id').eq('setting_key', 'nekorekten_enabled').maybeSingle();
       if (nekorektenSetting) {
         await supabase.from('api_settings').update({ setting_value: 'false', updated_at: new Date().toISOString() }).eq('id', nekorektenSetting.id);
@@ -173,7 +176,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         await supabase.from('api_settings').insert({ setting_key: 'nekorekten_enabled', setting_value: 'false' });
       }
 
-      // Disable Connectix/Messages module
+      // Always disable Connectix/Messages module on reset
       const { data: connectixSetting } = await supabase.from('api_settings').select('id, setting_value').eq('setting_key', 'connectix_config').maybeSingle();
       if (connectixSetting) {
         try {
@@ -185,12 +188,31 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         }
       }
 
-      // Invalidate all cached queries so UI refreshes
+      // Clear all system caches
+      queryClient.clear();
       await queryClient.invalidateQueries();
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
+      // Unregister service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
+      }
+      // Clear localStorage except auth
+      const keysToKeep = ['app-theme', 'sb-gpmwkgkvikvlzvqpbqus-auth-token'];
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (!keysToKeep.some(k => key.includes(k))) {
+          localStorage.removeItem(key);
+        }
+      });
+      sessionStorage.clear();
 
       toast({
         title: 'Успех',
-        description: 'Данните бяха изтрити успешно',
+        description: 'Системата беше нулирана и кешът изчистен успешно',
       });
 
       setOpen(false);
