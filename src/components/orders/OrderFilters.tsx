@@ -75,9 +75,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
     const sourceLabels: Record<string, string> = {
       google: 'Google',
       facebook: 'Facebook',
-      woocommerce: 'WooCommerce',
       phone: 'Телефон',
     };
+    // Check enabled platforms for label
+    const platform = enabledPlatforms.find(p => p.name === sourceFilter);
+    if (platform) return platform.display_name;
     return sourceLabels[sourceFilter] || sourceFilter;
   };
 
