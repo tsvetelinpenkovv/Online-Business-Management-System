@@ -367,7 +367,7 @@ export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => 
               id={`client_id-${courier.id}`}
               value={data.client_id || ''}
               onChange={(e) => handleFormChange(courier.id, 'client_id', e.target.value)}
-              placeholder="OAuth Client ID"
+              placeholder="Въведете Client ID"
             />
           </div>
         )}
