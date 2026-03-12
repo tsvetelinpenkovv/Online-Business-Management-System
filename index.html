@@ -41,26 +41,50 @@
   <body>
     <div id="root"></div>
     <script>
+      // Early boot guard: clean preview tokens before anything else
+      (function() {
+        try {
+          var s = window.location.search;
+          if (s.indexOf('__lovable_token=') !== -1 || s.indexOf('_lovable_token=') !== -1) {
+            var url = new URL(window.location.href);
+            url.searchParams.delete('__lovable_token');
+            url.searchParams.delete('_lovable_token');
+            var clean = url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') + url.hash;
+            history.replaceState({}, '', clean);
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <script>
       // Emergency SW recovery: if page is blank for too long, unregister SW and reload
       (function() {
         var timeout = setTimeout(function() {
           if (document.getElementById('root') && !document.getElementById('root').hasChildNodes()) {
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                regs.forEach(function(r) { r.unregister(); });
-                if (regs.length > 0) {
+            if (!sessionStorage.getItem('boot_recovery')) {
+              sessionStorage.setItem('boot_recovery', '1');
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(regs) {
+                  regs.forEach(function(r) { r.unregister(); });
                   caches.keys().then(function(names) {
                     names.forEach(function(name) { caches.delete(name); });
                   }).then(function() { location.reload(); });
-                }
-              });
+                });
+              } else {
+                location.reload();
+              }
+            } else {
+              // Show fallback UI instead of blank screen
+              var root = document.getElementById('root');
+              if (root && !root.hasChildNodes()) {
+                root.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui,sans-serif;padding:2rem;text-align:center"><div style="font-size:3rem;margin-bottom:1rem">⚠️</div><h1 style="font-size:1.25rem;font-weight:600;margin-bottom:.5rem">Страницата не успя да се зареди</h1><p style="color:#666;font-size:.875rem;margin-bottom:1.5rem">Моля, опитайте отново</p><button onclick="sessionStorage.removeItem(\'boot_recovery\');location.reload()" style="padding:.5rem 1.25rem;border-radius:.375rem;border:none;background:#3b82f6;color:#fff;font-weight:500;cursor:pointer;font-size:.875rem">Презареди</button></div>';
+              }
             }
           }
         }, 8000);
-        // Cancel if app renders successfully
         var observer = new MutationObserver(function() {
           if (document.getElementById('root') && document.getElementById('root').hasChildNodes()) {
             clearTimeout(timeout);
+            sessionStorage.removeItem('boot_recovery');
             observer.disconnect();
           }
         });

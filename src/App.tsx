@@ -11,6 +11,7 @@ import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 import { lazy, Suspense, ReactNode, useEffect } from "react";
 import { Loader2, Package } from "lucide-react";
 import { useParams, Navigate } from "react-router-dom";
+import AppErrorBoundary from "@/components/AppErrorBoundary";
 import { useSiteCustomization } from "@/hooks/useSiteCustomization";
 
 
@@ -84,6 +85,7 @@ const App = () => {
   }, []);
 
   return (
+  <AppErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="app-theme">
       <AuthProvider>
@@ -135,6 +137,7 @@ const App = () => {
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </AppErrorBoundary>
   );
 };
 
