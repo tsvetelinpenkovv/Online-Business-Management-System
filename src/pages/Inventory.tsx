@@ -12,10 +12,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { 
-  ArrowLeft, Package, Users, FolderTree, FileText, 
+  Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
   FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings,
-  Percent, ClipboardList, MoreVertical
+  Percent, ClipboardList, MoreVertical, LogOut
 } from 'lucide-react';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import {
@@ -189,15 +189,6 @@ export default function Inventory() {
         <div className="container mx-auto px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => navigate(buildPath('/'))}
-                title="Назад към поръчки"
-                className="flex-shrink-0"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
               <div className="flex items-center gap-2 min-w-0">
                 {logoUrl ? (
                   <img 
@@ -246,6 +237,15 @@ export default function Inventory() {
                   <DropdownMenuItem onClick={() => inventory.refresh()} className="cursor-pointer">
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Обнови
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Настройки
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={async () => { await supabase.auth.signOut(); navigate(buildPath('/auth')); }} className="cursor-pointer text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Изход
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -303,6 +303,23 @@ export default function Inventory() {
               <div className="hidden sm:flex items-center gap-1">
                 <ThemeToggle />
                 <QuickCacheClear />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(buildPath('/settings'))}
+                  title="Настройки"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async () => { await supabase.auth.signOut(); navigate(buildPath('/auth')); }}
+                  title="Изход"
+                  className="text-destructive hover:text-destructive"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
