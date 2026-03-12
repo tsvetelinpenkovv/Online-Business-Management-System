@@ -2,8 +2,6 @@ import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -22,9 +20,11 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SortableHeader } from '@/components/ui/sortable-header';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { 
   Package, TrendingUp, Warehouse, Download, FileSpreadsheet,
-  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History, FileText
+  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History, FileText, Calendar, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
@@ -43,6 +43,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 type StockSortKey = 'sku' | 'name' | 'category' | 'current_stock' | 'min_stock_level' | 'purchase_price' | 'value';
 type MovementReportSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'total_price';
