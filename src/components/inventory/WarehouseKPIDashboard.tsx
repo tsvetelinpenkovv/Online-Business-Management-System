@@ -68,7 +68,7 @@ export const WarehouseKPIDashboard: FC = () => {
 
   // 4. Stock Turnover Rate
   const turnoverRate = useMemo(() => {
-    const periodDays = differenceInDays(parseISO(dateTo), parseISO(dateFrom)) || 1;
+    const periodDays = differenceInDays(dateTo, dateFrom) || 1;
     const totalOutQty = movementData
       .filter(m => m.movement_type === 'out')
       .reduce((sum: number, m: any) => sum + (m.quantity || 0), 0);
