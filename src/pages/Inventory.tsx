@@ -12,10 +12,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { 
-  ArrowLeft, Package, Users, FolderTree, FileText, 
+  Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
   FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings,
-  Percent, ClipboardList, MoreVertical
+  Percent, ClipboardList, MoreVertical, LogOut
 } from 'lucide-react';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import {
