@@ -238,6 +238,10 @@ export default function Inventory() {
                     <ClipboardList className="w-4 h-4 mr-2" />
                     Инвентаризация
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsBarcodeInventoryOpen(true)} className="cursor-pointer">
+                    <ClipboardList className="w-4 h-4 mr-2" />
+                    Баркод инвентаризация
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => inventory.refresh()} className="cursor-pointer">
                     <RefreshCw className="w-4 h-4 mr-2" />
