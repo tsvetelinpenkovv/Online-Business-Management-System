@@ -436,7 +436,7 @@ const Analytics = () => {
           </TabsContent>
 
           <TabsContent value="trend">
-            <RevenueExpenseTrend orders={hasFilters ? filteredOrders : rawOrders} dateFrom={dateFrom} dateTo={dateTo} />
+            <RevenueExpenseTrend orders={hasFilters ? filteredOrders : rawOrders} dateFrom={format(dateFrom, 'yyyy-MM-dd')} dateTo={format(dateTo, 'yyyy-MM-dd')} />
           </TabsContent>
 
           <TabsContent value="abc">
