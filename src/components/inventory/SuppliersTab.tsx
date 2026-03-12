@@ -312,6 +312,15 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={selectedIds.size === filteredAndSortedSuppliers.length && filteredAndSortedSuppliers.length > 0}
+                        onCheckedChange={(checked) => {
+                          if (checked) setSelectedIds(new Set(filteredAndSortedSuppliers.map(s => s.id)));
+                          else setSelectedIds(new Set());
+                        }}
+                      />
+                    </TableHead>
                     <SortableHeader columnKey="name">
                       <Building className="w-4 h-4 text-muted-foreground" />
                       Наименование
