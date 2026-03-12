@@ -557,6 +557,13 @@ export default function Inventory() {
         inventory={inventory}
       />
 
+      {/* Barcode Inventory Dialog */}
+      <BarcodeInventoryDialog
+        open={isBarcodeInventoryOpen}
+        onOpenChange={setIsBarcodeInventoryOpen}
+        inventory={inventory}
+      />
+
       {/* Футер */}
       <footer className="mt-auto border-t bg-card py-4">
         <div className="container mx-auto px-3 sm:px-4 text-center text-xs text-muted-foreground">
