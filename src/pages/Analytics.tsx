@@ -6,26 +6,32 @@ import { buildPath } from '@/components/SecretPathGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getFlagByCountryCode } from '@/components/orders/StoreFilterTabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   ArrowLeft, TrendingUp, TrendingDown, ShoppingCart, DollarSign,
-  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store,
+  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store, Calendar, ChevronDown,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
+import { bg } from 'date-fns/locale';
 import { exportOrdersExcel, exportOrdersPDF } from '@/lib/exportUtils';
 import { SalesByProductChart } from '@/components/analytics/SalesByProductChart';
 import { SalesByRegionChart } from '@/components/analytics/SalesByRegionChart';
 import { RevenueExpenseTrend } from '@/components/analytics/RevenueExpenseTrend';
 import { MapPin, Wallet } from 'lucide-react';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 const COLORS = [
   'hsl(221, 83%, 53%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)',
