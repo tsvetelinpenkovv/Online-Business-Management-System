@@ -304,7 +304,7 @@ export default function Inventory() {
                 <ThemeToggle />
                 <QuickCacheClear />
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
                   onClick={() => navigate(buildPath('/settings'))}
                   title="Настройки"
@@ -312,7 +312,7 @@ export default function Inventory() {
                   <Settings className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
                   onClick={async () => { await supabase.auth.signOut(); navigate(buildPath('/auth')); }}
                   title="Изход"
