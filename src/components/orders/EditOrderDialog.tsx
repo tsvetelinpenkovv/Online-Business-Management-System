@@ -362,11 +362,14 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Отказ
           </Button>
-          <Button onClick={handleSave}>
-            Запази
+          <Button 
+            onClick={handleSave} 
+            disabled={isSubmitting || !(formData.customer_name || '').trim() || !(formData.phone || '').trim()}
+          >
+            {isSubmitting ? 'Запазване...' : 'Запази'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -566,23 +566,13 @@ export const useOrders = (
         }
       }
 
-      // Log status change to audit if status changed
-      if (oldOrder && oldOrder.status !== order.status) {
-        await logAuditAction(
-          'status_change', 
-          'orders', 
-          order.id.toString(), 
-          { status: oldOrder.status }, 
-          { status: order.status }
-        );
-      }
-
-      // Log update to audit
+      // Log update to audit (includes status changes)
       if (oldOrder) {
-        await logAuditAction('update', 'orders', order.id.toString(), oldOrder as any, order as any);
+        const action = oldOrder.status !== order.status ? 'status_change' : 'update';
+        await logAuditAction(action, 'orders', order.id.toString(), oldOrder as any, order as any);
       }
 
-      setOrders(orders.map(o => o.id === order.id ? order : o));
+      // Note: optimistic update already applied above, no need to setOrders again
       toast({
         title: 'Успех',
         description: 'Поръчката беше обновена',
