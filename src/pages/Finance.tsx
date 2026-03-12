@@ -91,8 +91,10 @@ const Finance = () => {
 
   const filteredExpenses = useMemo(() => {
     let filtered = expenses;
-    if (dateFrom) filtered = filtered.filter(e => e.expense_date >= dateFrom);
-    if (dateTo) filtered = filtered.filter(e => e.expense_date <= dateTo);
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
+    if (fromStr) filtered = filtered.filter(e => e.expense_date >= fromStr);
+    if (toStr) filtered = filtered.filter(e => e.expense_date <= toStr);
     return filtered;
   }, [expenses, dateFrom, dateTo]);
 
