@@ -45,6 +45,7 @@ export interface InventoryProduct {
   is_active: boolean;
   is_bundle: boolean;
   external_bundle_type: string | null;
+  track_serial_numbers: boolean;
   created_at: string;
   updated_at: string;
   // Joined fields

@@ -40,6 +40,10 @@ import { SyncJobsPanel } from '@/components/inventory/SyncJobsPanel';
 import { BulkPriceChangeDialog } from '@/components/inventory/BulkPriceChangeDialog';
 import { ScheduledRevisionDialog } from '@/components/inventory/ScheduledRevisionDialog';
 import { AuditLogTab } from '@/components/inventory/AuditLogTab';
+import { SerialNumbersTab } from '@/components/inventory/SerialNumbersTab';
+import { BarcodeInventoryDialog } from '@/components/inventory/BarcodeInventoryDialog';
+import { ProfitabilityReport } from '@/components/inventory/ProfitabilityReport';
+import { WarehouseKPIDashboard } from '@/components/inventory/WarehouseKPIDashboard';
 import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
@@ -55,6 +59,7 @@ export default function Inventory() {
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
   const [isBulkPriceOpen, setIsBulkPriceOpen] = useState(false);
   const [isRevisionOpen, setIsRevisionOpen] = useState(false);
+  const [isBarcodeInventoryOpen, setIsBarcodeInventoryOpen] = useState(false);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
@@ -233,6 +238,10 @@ export default function Inventory() {
                     <ClipboardList className="w-4 h-4 mr-2" />
                     Инвентаризация
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsBarcodeInventoryOpen(true)} className="cursor-pointer">
+                    <ClipboardList className="w-4 h-4 mr-2" />
+                    Баркод инвентаризация
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => inventory.refresh()} className="cursor-pointer">
                     <RefreshCw className="w-4 h-4 mr-2" />
@@ -394,6 +403,27 @@ export default function Inventory() {
                   )}
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="profitability" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Euro className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Рентабилност</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="serial-numbers" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Серийни номера</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="warehouse-kpi" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>KPI Склад</span>
+                </TabsTrigger>
+                <TabsTrigger 
                   value="warehouse-dashboard" 
                   className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                 >
@@ -469,6 +499,18 @@ export default function Inventory() {
             <ForecastTab inventory={inventory} />
           </TabsContent>
 
+          <TabsContent value="profitability" className="mt-4 sm:mt-6">
+            <ProfitabilityReport inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="serial-numbers" className="mt-4 sm:mt-6">
+            <SerialNumbersTab inventory={inventory} />
+          </TabsContent>
+
+          <TabsContent value="warehouse-kpi" className="mt-4 sm:mt-6">
+            <WarehouseKPIDashboard />
+          </TabsContent>
+
           <TabsContent value="warehouse-dashboard" className="mt-4 sm:mt-6">
             <WarehouseDashboard />
           </TabsContent>
@@ -512,6 +554,13 @@ export default function Inventory() {
       <ScheduledRevisionDialog
         open={isRevisionOpen}
         onOpenChange={setIsRevisionOpen}
+        inventory={inventory}
+      />
+
+      {/* Barcode Inventory Dialog */}
+      <BarcodeInventoryDialog
+        open={isBarcodeInventoryOpen}
+        onOpenChange={setIsBarcodeInventoryOpen}
         inventory={inventory}
       />
 
