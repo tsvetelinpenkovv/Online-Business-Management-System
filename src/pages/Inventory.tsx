@@ -238,6 +238,15 @@ export default function Inventory() {
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Обнови
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate(buildPath('/settings'))} className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Настройки
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={async () => { await supabase.auth.signOut(); navigate(buildPath('/auth')); }} className="cursor-pointer text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Изход
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
