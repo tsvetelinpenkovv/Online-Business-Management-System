@@ -37,11 +37,13 @@ export const WarehouseKPIDashboard: FC = () => {
 
   const fetchMovements = async () => {
     setLoading(true);
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
     const { data } = await supabase
       .from('stock_movements')
       .select('*, product:inventory_products(name, sku, purchase_price, sale_price)')
-      .gte('created_at', dateFrom)
-      .lte('created_at', dateTo + 'T23:59:59')
+      .gte('created_at', fromStr)
+      .lte('created_at', toStr + 'T23:59:59')
       .order('created_at', { ascending: false });
     setMovementData(data || []);
     setLoading(false);
