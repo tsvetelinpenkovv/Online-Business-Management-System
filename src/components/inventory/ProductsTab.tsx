@@ -209,49 +209,68 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
     setIsDialogOpen(true);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async () => {
-    if (editProduct) {
-      await inventory.updateProduct(editProduct.id, {
-        sku: formData.sku,
-        name: formData.name,
-        description: formData.description || null,
-        category_id: formData.category_id || null,
-        unit_id: formData.unit_id || null,
-        purchase_price: formData.purchase_price,
-        sale_price: formData.sale_price,
-        min_stock_level: formData.min_stock_level,
-        barcode: formData.barcode || null,
-        is_active: formData.is_active,
-        current_stock: formData.current_stock,
-      });
-    } else {
-      // For new products, create with current_stock included
-      const productData = {
-        sku: formData.sku,
-        name: formData.name,
-        description: formData.description || null,
-        category_id: formData.category_id || null,
-        unit_id: formData.unit_id || null,
-        purchase_price: formData.purchase_price,
-        sale_price: formData.sale_price,
-        min_stock_level: formData.min_stock_level,
-        barcode: formData.barcode || null,
-        is_active: formData.is_active,
-        woocommerce_id: null,
-        is_bundle: false,
-        external_bundle_type: null,
-        track_serial_numbers: false,
-      };
-      
-      const result = await inventory.createProduct(productData);
-      
-      // If created successfully and we have initial stock, update it
-      if (result && formData.current_stock > 0) {
-        await inventory.updateProduct(result.id, { current_stock: formData.current_stock });
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const trimmedSku = formData.sku.trim();
+      const trimmedName = formData.name.trim();
+      if (!trimmedSku || !trimmedName) {
+        toast.error('SKU и името не могат да бъдат празни');
+        return;
       }
+      if (editProduct) {
+        await inventory.updateProduct(editProduct.id, {
+          sku: trimmedSku,
+          name: trimmedName,
+          description: formData.description || null,
+          category_id: formData.category_id || null,
+          unit_id: formData.unit_id || null,
+          purchase_price: formData.purchase_price,
+          sale_price: formData.sale_price,
+          min_stock_level: formData.min_stock_level,
+          barcode: formData.barcode || null,
+          is_active: formData.is_active,
+          current_stock: formData.current_stock,
+        });
+      } else {
+        const productData = {
+          sku: trimmedSku,
+          name: trimmedName,
+          description: formData.description || null,
+          category_id: formData.category_id || null,
+          unit_id: formData.unit_id || null,
+          purchase_price: formData.purchase_price,
+          sale_price: formData.sale_price,
+          min_stock_level: formData.min_stock_level,
+          barcode: formData.barcode || null,
+          is_active: formData.is_active,
+          woocommerce_id: null,
+          is_bundle: false,
+          external_bundle_type: null,
+          track_serial_numbers: false,
+        };
+        
+        const result = await inventory.createProduct(productData);
+        
+        // If created successfully and we have initial stock, create a stock movement
+        if (result && formData.current_stock > 0) {
+          await inventory.createStockMovement(
+            result.id,
+            'in',
+            formData.current_stock,
+            formData.purchase_price,
+            'Начална наличност при създаване на продукт'
+          );
+        }
+      }
+      setIsDialogOpen(false);
+      refetchProducts();
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsDialogOpen(false);
-    refetchProducts();
   };
 
   const handleDelete = async () => {

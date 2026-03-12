@@ -318,6 +318,10 @@ export function useInventory() {
       stockAfter = stockBefore + quantity;
     } else if (movementType === 'out') {
       stockAfter = stockBefore - quantity;
+      if (stockAfter < 0) {
+        toast({ title: 'Грешка', description: `Недостатъчна наличност. Налични: ${stockBefore} бр.`, variant: 'destructive' });
+        return null;
+      }
     } else if (movementType === 'adjustment') {
       stockAfter = quantity; // For adjustment, quantity IS the new stock level
     }

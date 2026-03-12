@@ -86,7 +86,7 @@ export interface StockBatch {
   supplier?: Supplier;
 }
 
-export type MovementType = 'in' | 'out' | 'adjustment' | 'return';
+export type MovementType = 'in' | 'out' | 'adjustment' | 'return' | 'transfer';
 export type DocumentType = 'receiving' | 'dispatch' | 'adjustment' | 'return' | 'inventory';
 
 export interface StockDocument {

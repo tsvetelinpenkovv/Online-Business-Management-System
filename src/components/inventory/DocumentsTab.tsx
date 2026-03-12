@@ -489,9 +489,9 @@ export const DocumentsTab: FC<DocumentsTabProps> = ({ inventory }) => {
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={!items.some(item => item.productId && item.quantity > 0)}
+              disabled={!items.some(item => item.productId && item.quantity > 0) || isSubmitting}
             >
-              Създай документ
+              {isSubmitting ? 'Създаване...' : 'Създай документ'}
             </Button>
           </DialogFooter>
         </DialogContent>

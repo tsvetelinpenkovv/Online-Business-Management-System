@@ -148,27 +148,27 @@
  
          const stockBefore = product.current_stock;
  
-         // Create OUT movement from source warehouse
-         await supabase.from('stock_movements').insert({
-           product_id: item.productId,
-           movement_type: 'transfer',
-           quantity: item.quantity,
-           stock_before: stockBefore,
-           stock_after: stockBefore, // Stock stays same for transfer
-           warehouse_id: fromWarehouse,
-           reason: `Трансфер към ${toWarehouseName}${notes ? ': ' + notes : ''}`,
-         });
- 
-         // Create IN movement to destination warehouse
-         await supabase.from('stock_movements').insert({
-           product_id: item.productId,
-           movement_type: 'transfer',
-           quantity: item.quantity,
-           stock_before: stockBefore,
-           stock_after: stockBefore, // Stock stays same for transfer
-           warehouse_id: toWarehouse,
-           reason: `Трансфер от ${fromWarehouseName}${notes ? ': ' + notes : ''}`,
-         });
+          // Create OUT movement from source warehouse
+          await supabase.from('stock_movements').insert({
+            product_id: item.productId,
+            movement_type: 'transfer' as any,
+            quantity: item.quantity,
+            stock_before: stockBefore,
+            stock_after: stockBefore, // Global stock stays same for transfer
+            warehouse_id: fromWarehouse,
+            reason: `Трансфер към ${toWarehouseName}${notes ? ': ' + notes : ''}`,
+          });
+
+          // Create IN movement to destination warehouse
+          await supabase.from('stock_movements').insert({
+            product_id: item.productId,
+            movement_type: 'transfer' as any,
+            quantity: item.quantity,
+            stock_before: stockBefore,
+            stock_after: stockBefore, // Global stock stays same for transfer
+            warehouse_id: toWarehouse,
+            reason: `Трансфер от ${fromWarehouseName}${notes ? ': ' + notes : ''}`,
+          });
  
          // Update stock_by_warehouse if exists
          // Decrease from source
