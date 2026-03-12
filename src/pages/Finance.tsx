@@ -117,7 +117,7 @@ const Finance = () => {
       amount: Number(expenseAmount),
       category: expenseCategory,
       description: expenseDescription || null,
-      expense_date: expenseDate,
+      expense_date: format(expenseDate, 'yyyy-MM-dd'),
     });
     setExpenseAmount('');
     setExpenseDescription('');
