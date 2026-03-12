@@ -69,6 +69,7 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
   const [products, setProducts] = useState<ProductItem[]>([]);
   const { couriers, getCourierByUrl } = useCouriers();
   const [courierLocked, setCourierLocked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!order) return;
