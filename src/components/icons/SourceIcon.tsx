@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, Ref } from 'react';
 import { Phone } from 'lucide-react';
 import woocommerceLogo from '@/assets/woocommerce-logo.png';
 import { PrestaShopLogo, OpenCartLogo, MagentoLogo, ShopifyLogo } from './PlatformLogos';
