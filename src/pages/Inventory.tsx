@@ -254,7 +254,7 @@ export default function Inventory() {
               <Button
                 size="sm"
                 onClick={() => navigate(buildPath('/orders'))}
-                className="hidden sm:flex bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 hover:bg-blue-500/25"
+                className="hidden sm:flex bg-muted text-foreground border-border hover:bg-muted/80"
                 title="Управление на поръчки"
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
