@@ -15,7 +15,7 @@ import {
   Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
   FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings,
-  Percent, ClipboardList, MoreVertical, LogOut
+  Percent, ClipboardList, MoreVertical, LogOut, ShoppingCart
 } from 'lucide-react';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import {
