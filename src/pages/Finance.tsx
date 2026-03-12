@@ -14,8 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock, Calendar, ChevronDown, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { bg } from 'date-fns/locale';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 const PaymentStatusBadge = ({ status }: { status: string }) => {
   switch (status) {
@@ -34,12 +41,12 @@ const Finance = () => {
   const { canEdit, canCreate, canDelete } = usePermissions();
   const { orders, expenses, loading, updatePaymentStatus, addExpense, deleteExpense, getSummary } = useFinance();
 
-  const [dateFrom, setDateFrom] = useState(() => {
+  const [dateFrom, setDateFrom] = useState<Date>(() => {
     const d = new Date();
     d.setDate(1);
-    return d.toISOString().split('T')[0];
+    return d;
   });
-  const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dateTo, setDateTo] = useState<Date>(() => new Date());
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -47,7 +54,7 @@ const Finance = () => {
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState('other');
   const [expenseDescription, setExpenseDescription] = useState('');
-  const [expenseDate, setExpenseDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [expenseDate, setExpenseDate] = useState<Date>(() => new Date());
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
 
   // Payment edit
@@ -56,14 +63,16 @@ const Finance = () => {
   const [editPaidAmount, setEditPaidAmount] = useState('');
   const [editPaymentMethod, setEditPaymentMethod] = useState('');
 
-  const summary = useMemo(() => getSummary(dateFrom, dateTo), [getSummary, dateFrom, dateTo]);
+  const summary = useMemo(() => getSummary(format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd')), [getSummary, dateFrom, dateTo]);
 
   const filteredOrders = useMemo(() => {
     let filtered = orders;
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
 
-    if (dateFrom) filtered = filtered.filter(o => o.created_at >= dateFrom);
-    if (dateTo) {
-      const to = new Date(dateTo);
+    if (fromStr) filtered = filtered.filter(o => o.created_at >= fromStr);
+    if (toStr) {
+      const to = new Date(toStr);
       to.setDate(to.getDate() + 1);
       filtered = filtered.filter(o => o.created_at < to.toISOString());
     }
@@ -82,8 +91,10 @@ const Finance = () => {
 
   const filteredExpenses = useMemo(() => {
     let filtered = expenses;
-    if (dateFrom) filtered = filtered.filter(e => e.expense_date >= dateFrom);
-    if (dateTo) filtered = filtered.filter(e => e.expense_date <= dateTo);
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
+    if (fromStr) filtered = filtered.filter(e => e.expense_date >= fromStr);
+    if (toStr) filtered = filtered.filter(e => e.expense_date <= toStr);
     return filtered;
   }, [expenses, dateFrom, dateTo]);
 
@@ -106,7 +117,7 @@ const Finance = () => {
       amount: Number(expenseAmount),
       category: expenseCategory,
       description: expenseDescription || null,
-      expense_date: expenseDate,
+      expense_date: format(expenseDate, 'yyyy-MM-dd'),
     });
     setExpenseAmount('');
     setExpenseDescription('');
@@ -146,9 +157,35 @@ const Finance = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
             <span className="text-muted-foreground">—</span>
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </header>
@@ -300,7 +337,20 @@ const Finance = () => {
                       </div>
                       <div>
                         <Label>Дата</Label>
-                        <Input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                              <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                                <span className="text-sm">{formatDateWithYear(expenseDate)}</span>
+                              </div>
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent mode="single" selected={expenseDate} onSelect={(d) => d && setExpenseDate(d)} initialFocus locale={bg} />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div>
                         <Label>Описание</Label>

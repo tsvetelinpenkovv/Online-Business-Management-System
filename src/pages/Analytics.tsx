@@ -6,26 +6,32 @@ import { buildPath } from '@/components/SecretPathGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getFlagByCountryCode } from '@/components/orders/StoreFilterTabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   ArrowLeft, TrendingUp, TrendingDown, ShoppingCart, DollarSign,
-  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store,
+  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store, Calendar, ChevronDown,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
+import { bg } from 'date-fns/locale';
 import { exportOrdersExcel, exportOrdersPDF } from '@/lib/exportUtils';
 import { SalesByProductChart } from '@/components/analytics/SalesByProductChart';
 import { SalesByRegionChart } from '@/components/analytics/SalesByRegionChart';
 import { RevenueExpenseTrend } from '@/components/analytics/RevenueExpenseTrend';
 import { MapPin, Wallet } from 'lucide-react';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 const COLORS = [
   'hsl(221, 83%, 53%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)',
@@ -62,15 +68,13 @@ const Analytics = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
 
-  const [dateFrom, setDateFrom] = useState(() => {
-    const d = new Date(); d.setMonth(d.getMonth() - 3); return d.toISOString().split('T')[0];
-  });
-  const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dateFrom, setDateFrom] = useState<Date>(() => subMonths(new Date(), 3));
+  const [dateTo, setDateTo] = useState<Date>(() => new Date());
 
   const [sourceFilter, setSourceFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, storeRevenue, loading, refetch, orders: rawOrders } = useAnalytics(dateFrom, dateTo);
+  const { kpi, dailyRevenue, abcAnalysis, topCustomers, sourceDistribution, statusDistribution, storeRevenue, loading, refetch, orders: rawOrders } = useAnalytics(format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'));
 
   // Get unique sources and statuses for filter dropdowns
   const uniqueSources = useMemo(() => {
@@ -100,8 +104,8 @@ const Analytics = () => {
     const totalRevenue = filteredOrders.reduce((s, o) => s + Number(o.total_price), 0);
     const totalOrders = filteredOrders.length;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const from = new Date(dateFrom);
-    const to = new Date(dateTo);
+    const from = dateFrom;
+    const to = dateTo;
     const daysRaw = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24) + 1;
     const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 1;
     const deliveredCount = filteredOrders.filter(o => o.status === 'Доставена' || o.status === 'Завършена').length;
@@ -137,13 +141,13 @@ const Analytics = () => {
   const handleExportExcel = () => {
     const data = hasFilters ? filteredOrders : rawOrders;
     if (data.length === 0) return;
-    exportOrdersExcel(data, `аналитика_${dateFrom}_${dateTo}.xlsx`);
+    exportOrdersExcel(data, `аналитика_${format(dateFrom, 'yyyy-MM-dd')}_${format(dateTo, 'yyyy-MM-dd')}.xlsx`);
   };
 
   const handleExportPDF = () => {
     const data = hasFilters ? filteredOrders : rawOrders;
     if (data.length === 0) return;
-    exportOrdersPDF(data, undefined, dateFrom, dateTo);
+    exportOrdersPDF(data, undefined, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'));
   };
 
   if (authLoading || loading) {
@@ -179,9 +183,35 @@ const Analytics = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[130px] sm:w-36" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[140px] sm:w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
             <span className="text-muted-foreground">—</span>
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[130px] sm:w-36" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[140px] sm:w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" size="icon" onClick={refetch}>
               <RefreshCw className="w-4 h-4" />
             </Button>
@@ -406,7 +436,7 @@ const Analytics = () => {
           </TabsContent>
 
           <TabsContent value="trend">
-            <RevenueExpenseTrend orders={hasFilters ? filteredOrders : rawOrders} dateFrom={dateFrom} dateTo={dateTo} />
+            <RevenueExpenseTrend orders={hasFilters ? filteredOrders : rawOrders} dateFrom={format(dateFrom, 'yyyy-MM-dd')} dateTo={format(dateTo, 'yyyy-MM-dd')} />
           </TabsContent>
 
           <TabsContent value="abc">

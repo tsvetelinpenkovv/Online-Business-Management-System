@@ -2,8 +2,6 @@ import { FC, useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -12,14 +10,21 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useInventory } from '@/hooks/useInventory';
 import { 
   TrendingUp, TrendingDown, DollarSign, BarChart3, Package, 
-  FolderTree, Truck, Loader2, Download, Euro, Percent
+  FolderTree, Truck, Loader2, Download, Euro, Percent, Calendar, ChevronDown
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 interface ProfitabilityReportProps {
   inventory: ReturnType<typeof useInventory>;
@@ -60,8 +65,8 @@ interface SupplierProfitability {
 
 export const ProfitabilityReport: FC<ProfitabilityReportProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
-  const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [dateFrom, setDateFrom] = useState<Date>(subDays(new Date(), 30));
+  const [dateTo, setDateTo] = useState<Date>(new Date());
   const [orderData, setOrderData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'profit' | 'margin' | 'revenue'>('profit');
@@ -73,11 +78,13 @@ export const ProfitabilityReport: FC<ProfitabilityReportProps> = ({ inventory })
   const fetchOrderData = async () => {
     setLoading(true);
     // Fetch orders with items for the period
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
     const { data } = await supabase
       .from('orders')
       .select('id, total_price, created_at, status, order_items:order_items(product_name, quantity, unit_price, total_price, catalog_number)')
-      .gte('created_at', dateFrom)
-      .lte('created_at', dateTo + 'T23:59:59')
+      .gte('created_at', fromStr)
+      .lte('created_at', toStr + 'T23:59:59')
       .not('status', 'in', '("Отказана","Върната")');
     
     setOrderData(data || []);
@@ -227,15 +234,36 @@ export const ProfitabilityReport: FC<ProfitabilityReportProps> = ({ inventory })
       {/* Period Selector */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs">От</Label>
-              <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-            </div>
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs">До</Label>
-              <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[160px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
+            <span className="text-muted-foreground">—</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[160px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
             <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />

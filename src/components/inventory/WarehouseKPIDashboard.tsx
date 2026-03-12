@@ -3,25 +3,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { 
   Warehouse, Package, AlertTriangle, TrendingUp, TrendingDown,
   BarChart3, Boxes, Euro, Clock, RotateCcw, Skull, ArrowUpDown,
-  Loader2, Calendar
+  Loader2, Calendar, X, ChevronDown
 } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { format, subDays, differenceInDays, parseISO } from 'date-fns';
+import { format, subDays, differenceInDays } from 'date-fns';
+import { bg } from 'date-fns/locale';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--info))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--accent))'];
 
 export const WarehouseKPIDashboard: FC = () => {
   const isMobile = useIsMobile();
   const inventory = useInventory();
-  const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [dateFrom, setDateFrom] = useState<Date>(subDays(new Date(), 30));
+  const [dateTo, setDateTo] = useState<Date>(new Date());
   const [movementData, setMovementData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,11 +37,13 @@ export const WarehouseKPIDashboard: FC = () => {
 
   const fetchMovements = async () => {
     setLoading(true);
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
     const { data } = await supabase
       .from('stock_movements')
       .select('*, product:inventory_products(name, sku, purchase_price, sale_price)')
-      .gte('created_at', dateFrom)
-      .lte('created_at', dateTo + 'T23:59:59')
+      .gte('created_at', fromStr)
+      .lte('created_at', toStr + 'T23:59:59')
       .order('created_at', { ascending: false });
     setMovementData(data || []);
     setLoading(false);
@@ -60,7 +68,7 @@ export const WarehouseKPIDashboard: FC = () => {
 
   // 4. Stock Turnover Rate
   const turnoverRate = useMemo(() => {
-    const periodDays = differenceInDays(parseISO(dateTo), parseISO(dateFrom)) || 1;
+    const periodDays = differenceInDays(dateTo, dateFrom) || 1;
     const totalOutQty = movementData
       .filter(m => m.movement_type === 'out')
       .reduce((sum: number, m: any) => sum + (m.quantity || 0), 0);
@@ -158,15 +166,36 @@ export const WarehouseKPIDashboard: FC = () => {
       {/* Period Selector */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> От</Label>
-              <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-            </div>
-            <div className="space-y-1 flex-1">
-              <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> До</Label>
-              <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[160px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
+            <span className="text-muted-foreground">—</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[160px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
           </div>
         </CardContent>
       </Card>

@@ -2,8 +2,6 @@ import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -22,9 +20,11 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SortableHeader } from '@/components/ui/sortable-header';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { 
   Package, TrendingUp, Warehouse, Download, FileSpreadsheet,
-  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History, FileText
+  ArrowDownToLine, ArrowUpFromLine, Copy, Check, Barcode, FolderTree, Boxes, Euro, History, FileText, Calendar, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
@@ -44,6 +44,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
+
 type StockSortKey = 'sku' | 'name' | 'category' | 'current_stock' | 'min_stock_level' | 'purchase_price' | 'value';
 type MovementReportSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'total_price';
 
@@ -53,8 +57,8 @@ interface ReportsTabProps {
 
 export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
   const isMobile = useIsMobile();
-  const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [dateFrom, setDateFrom] = useState<Date>(startOfMonth(new Date()));
+  const [dateTo, setDateTo] = useState<Date>(endOfMonth(new Date()));
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [stockSortKey, setStockSortKey] = useState<StockSortKey>('name');
   const [stockSortDirection, setStockSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -77,8 +81,8 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
     return inventory.movements.filter(m => {
       const movementDate = parseISO(m.created_at);
       return isWithinInterval(movementDate, {
-        start: parseISO(dateFrom),
-        end: parseISO(dateTo + 'T23:59:59'),
+        start: dateFrom,
+        end: new Date(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate(), 23, 59, 59),
       });
     });
   }, [inventory.movements, dateFrom, dateTo]);
@@ -189,7 +193,7 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
       filteredMovements.forEach(m => {
         csv += `"${format(new Date(m.created_at), 'dd.MM.yyyy HH:mm')}","${MOVEMENT_TYPE_LABELS[m.movement_type]}","${m.product?.name || ''}","${m.product?.sku || ''}",${m.quantity},${m.stock_before},${m.stock_after},${m.unit_price},${m.total_price}\n`;
       });
-      filename = `движения_${dateFrom}_${dateTo}.csv`;
+      filename = `движения_${format(dateFrom, 'yyyy-MM-dd')}_${format(dateTo, 'yyyy-MM-dd')}.csv`;
     }
 
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -431,23 +435,36 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
 
         <TabsContent value="movements" className="space-y-4">
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-sm">От дата</Label>
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-sm">До дата</Label>
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[160px] justify-between">
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+                </PopoverContent>
+              </Popover>
+              <span className="text-muted-foreground">—</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[160px] justify-between">
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+                </PopoverContent>
+              </Popover>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -461,11 +478,11 @@ export const ReportsTab: FC<ReportsTabProps> = ({ inventory }) => {
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   CSV формат
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportMovementsReportExcel(filteredMovements, dateFrom, dateTo)}>
+                <DropdownMenuItem onClick={() => exportMovementsReportExcel(filteredMovements, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'))}>
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Excel формат
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportMovementsReportPDF(filteredMovements, dateFrom, dateTo)}>
+                <DropdownMenuItem onClick={() => exportMovementsReportPDF(filteredMovements, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'))}>
                   <FileText className="w-4 h-4 mr-2" />
                   PDF формат
                 </DropdownMenuItem>

@@ -15,13 +15,19 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { 
   History, Search, RefreshCw, Eye, User, Calendar, 
   FileText, ArrowRight, Plus, Pencil, Trash2, 
-  LogIn, LogOut, Download, Package, List, Clock
+  LogIn, LogOut, Download, Package, List, Clock, X, ChevronDown
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 import * as XLSX from 'xlsx';
 
 const ACTION_LABELS: Record<string, { label: string; icon: React.ElementType; color: string }> = {
@@ -95,8 +101,8 @@ export const AuditLogTab: FC = () => {
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [tableFilter, setTableFilter] = useState<string>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedLog, setSelectedLog] = useState<typeof logs[0] | null>(null);
   const [viewMode, setViewMode] = useState<string>('table');
 
@@ -125,7 +131,7 @@ export const AuditLogTab: FC = () => {
       
       let matchesDate = true;
       if (dateFrom) {
-        matchesDate = matchesDate && new Date(log.created_at) >= new Date(dateFrom);
+        matchesDate = matchesDate && new Date(log.created_at) >= dateFrom;
       }
       if (dateTo) {
         const toDate = new Date(dateTo);
@@ -257,10 +263,49 @@ export const AuditLogTab: FC = () => {
           </Select>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Calendar className="w-4 h-4 text-muted-foreground" />
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[140px] h-9" placeholder="От" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[160px] h-9 justify-between">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate text-sm">{dateFrom ? formatDateWithYear(dateFrom) : 'От дата'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {dateFrom && (
+                    <span role="button" onClick={(e) => { e.stopPropagation(); setDateFrom(undefined); }} className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors">
+                      <X className="h-3 w-3" />
+                    </span>
+                  )}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus locale={bg} />
+            </PopoverContent>
+          </Popover>
           <span className="text-muted-foreground">—</span>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[140px] h-9" placeholder="До" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[160px] h-9 justify-between">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate text-sm">{dateTo ? formatDateWithYear(dateTo) : 'До дата'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {dateTo && (
+                    <span role="button" onClick={(e) => { e.stopPropagation(); setDateTo(undefined); }} className="hover:bg-destructive/20 hover:text-destructive rounded p-0.5 transition-colors">
+                      <X className="h-3 w-3" />
+                    </span>
+                  )}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent mode="single" selected={dateTo} onSelect={setDateTo} initialFocus locale={bg} />
+            </PopoverContent>
+          </Popover>
           <div className="ml-auto flex items-center gap-2">
             <Tabs value={viewMode} onValueChange={setViewMode}>
               <TabsList className="h-9">
