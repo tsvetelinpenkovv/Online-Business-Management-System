@@ -374,7 +374,7 @@ export const CourierApiSettings = forwardRef<CourierApiSettingsRef>((_, ref) => 
 
         {fields.includes('client_secret') && (
           <div className="space-y-2">
-            <Label htmlFor={`client_secret-${courier.id}`}>Client Secret</Label>
+            <Label htmlFor={`client_secret-${courier.id}`}>Клиентска тайна (Client Secret)</Label>
             <div className="relative">
               <Input
                 id={`client_secret-${courier.id}`}
