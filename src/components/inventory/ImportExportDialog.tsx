@@ -893,7 +893,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             <p className="text-sm text-muted-foreground">
               Изберете какво искате да експортирате:
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {exportButtons.map(({ type, label, icon: Icon, color }) => (
                 <Button
                   key={type}
