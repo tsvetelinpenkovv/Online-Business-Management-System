@@ -8,6 +8,7 @@ import { ORDER_STATUSES } from '@/types/order';
 import { StatusBadge } from './StatusBadge';
 import { SourceIcon } from '@/components/icons/SourceIcon';
 import { useInterfaceTexts } from '@/hooks/useInterfaceTexts';
+import { useEcommercePlatforms } from '@/hooks/useEcommercePlatforms';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +61,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
 }) => {
   const navigate = useNavigate();
   const { getText } = useInterfaceTexts();
+  const { platforms } = useEcommercePlatforms();
+  const enabledPlatforms = platforms.filter(p => p.is_enabled);
   const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
 
   const getStatusLabel = () => {
@@ -72,9 +75,11 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
     const sourceLabels: Record<string, string> = {
       google: 'Google',
       facebook: 'Facebook',
-      woocommerce: 'WooCommerce',
       phone: 'Телефон',
     };
+    // Check enabled platforms for label
+    const platform = enabledPlatforms.find(p => p.name === sourceFilter);
+    if (platform) return platform.display_name;
     return sourceLabels[sourceFilter] || sourceFilter;
   };
 
@@ -146,10 +151,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
               <SourceIcon source="facebook" className="w-4 h-4 mr-2" />
               Facebook
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSourceFilterChange('woocommerce')}>
-              <SourceIcon source="woocommerce" className="w-4 h-4 mr-2" />
-              WooCommerce
-            </DropdownMenuItem>
+            {enabledPlatforms.map((platform) => (
+              <DropdownMenuItem key={platform.name} onClick={() => onSourceFilterChange(platform.name)}>
+                <SourceIcon source={platform.name} className="w-4 h-4 mr-2" />
+                {platform.display_name}
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuItem onClick={() => onSourceFilterChange('phone')}>
               <SourceIcon source="phone" className="w-4 h-4 mr-2" />
               Телефон
@@ -336,10 +343,12 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
                 <SourceIcon source="facebook" className="w-4 h-4 mr-2" />
                 Facebook
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSourceFilterChange('woocommerce')}>
-                <SourceIcon source="woocommerce" className="w-4 h-4 mr-2" />
-                WooCommerce
-              </DropdownMenuItem>
+              {enabledPlatforms.map((platform) => (
+                <DropdownMenuItem key={platform.name} onClick={() => onSourceFilterChange(platform.name)}>
+                  <SourceIcon source={platform.name} className="w-4 h-4 mr-2" />
+                  {platform.display_name}
+                </DropdownMenuItem>
+              ))}
               <DropdownMenuItem onClick={() => onSourceFilterChange('phone')}>
                 <SourceIcon source="phone" className="w-4 h-4 mr-2" />
                 Телефон
