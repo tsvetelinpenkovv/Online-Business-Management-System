@@ -183,9 +183,35 @@ const Analytics = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[130px] sm:w-36" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[140px] sm:w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateFrom)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
             <span className="text-muted-foreground">—</span>
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[130px] sm:w-36" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[140px] sm:w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-sm">{formatDateWithYear(dateTo)}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} initialFocus locale={bg} />
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" size="icon" onClick={refetch}>
               <RefreshCw className="w-4 h-4" />
             </Button>

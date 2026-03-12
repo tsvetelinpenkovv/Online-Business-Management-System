@@ -337,7 +337,20 @@ const Finance = () => {
                       </div>
                       <div>
                         <Label>Дата</Label>
-                        <Input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                              <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                                <span className="text-sm">{formatDateWithYear(expenseDate)}</span>
+                              </div>
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent mode="single" selected={expenseDate} onSelect={(d) => d && setExpenseDate(d)} initialFocus locale={bg} />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div>
                         <Label>Описание</Label>
