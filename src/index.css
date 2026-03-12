@@ -142,6 +142,12 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 
+  /* Remove background from number input spinner buttons */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    background: transparent;
+  }
+
   /* Remove focus outline on mouse click, keep it for keyboard navigation */
   button:focus:not(:focus-visible),
   [role="button"]:focus:not(:focus-visible),
