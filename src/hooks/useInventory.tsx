@@ -153,7 +153,7 @@ export function useInventory() {
   }, [fetchAll]);
 
   // Product CRUD
-  const createProduct = async (product: Omit<InventoryProduct, 'id' | 'created_at' | 'updated_at' | 'current_stock' | 'category' | 'unit'>) => {
+  const createProduct = async (product: Omit<InventoryProduct, 'id' | 'created_at' | 'updated_at' | 'current_stock' | 'reserved_stock' | 'category' | 'unit'>) => {
     const { data, error } = await supabase
       .from('inventory_products')
       .insert(product)
