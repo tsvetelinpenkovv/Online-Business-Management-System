@@ -215,6 +215,8 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       setOpen(false);
       setConfirmText('');
       onReset?.();
+      // Force page reload after reset
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error: any) {
       toast({
         title: 'Грешка',
