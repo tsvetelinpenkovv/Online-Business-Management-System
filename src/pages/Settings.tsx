@@ -1932,6 +1932,56 @@ const Settings = () => {
             <SiteCustomizationTab isAdmin={isAdmin} />
           </TabsContent>
 
+          <TabsContent value="defaults" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Дефолтни настройки
+                </CardTitle>
+                <CardDescription>
+                  Настройте поведението на системата по подразбиране
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Начална страница след вход</Label>
+                  <Select
+                    value={companySettings?.default_landing_page || 'orders'}
+                    onValueChange={(value) => setCompanySettings(prev => prev ? { ...prev, default_landing_page: value } : prev)}
+                  >
+                    <SelectTrigger className="w-full sm:w-64">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="orders">Управление на поръчки</SelectItem>
+                      <SelectItem value="inventory">Складова програма</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Изберете коя страница да се отваря първо при влизане в системата.
+                  </p>
+                </div>
+
+                <Separator />
+
+                <Button onClick={handleSaveCompanySettings} disabled={savingCompany}>
+                  {savingCompany ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Запазване...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Запази дефолтните настройки
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="docs" className="space-y-6">
             <DocumentationTab />
           </TabsContent>
