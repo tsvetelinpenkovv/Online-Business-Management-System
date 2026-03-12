@@ -186,6 +186,22 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
 
   return (
     <div className="space-y-4">
+      {/* Bulk Actions */}
+      <BulkActionsToolbar
+        selectedCount={selectedIds.size}
+        totalCount={filteredAndSortedSuppliers.length}
+        allSelected={selectedIds.size === filteredAndSortedSuppliers.length && filteredAndSortedSuppliers.length > 0}
+        onSelectAll={(checked) => {
+          if (checked) setSelectedIds(new Set(filteredAndSortedSuppliers.map(s => s.id)));
+          else setSelectedIds(new Set());
+        }}
+        onDelete={canDelete('inventory') ? async () => {
+          for (const id of selectedIds) { await inventory.deleteSupplier(id); }
+          setSelectedIds(new Set());
+        } : undefined}
+        canDelete={canDelete('inventory')}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-md">
