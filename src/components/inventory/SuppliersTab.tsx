@@ -1,5 +1,7 @@
 import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionsToolbar } from './BulkActionsToolbar';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Supplier } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
@@ -58,6 +60,7 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editSupplier, setEditSupplier] = useState<Supplier | null>(null);
   const [sortKey, setSortKey] = useState<SupplierSortKey>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -183,6 +186,22 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
 
   return (
     <div className="space-y-4">
+      {/* Bulk Actions */}
+      <BulkActionsToolbar
+        selectedCount={selectedIds.size}
+        totalCount={filteredAndSortedSuppliers.length}
+        allSelected={selectedIds.size === filteredAndSortedSuppliers.length && filteredAndSortedSuppliers.length > 0}
+        onSelectAll={(checked) => {
+          if (checked) setSelectedIds(new Set(filteredAndSortedSuppliers.map(s => s.id)));
+          else setSelectedIds(new Set());
+        }}
+        onDelete={canDelete('inventory') ? async () => {
+          for (const id of selectedIds) { await inventory.deleteSupplier(id); }
+          setSelectedIds(new Set());
+        } : undefined}
+        canDelete={canDelete('inventory')}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-md">
@@ -293,6 +312,15 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={selectedIds.size === filteredAndSortedSuppliers.length && filteredAndSortedSuppliers.length > 0}
+                        onCheckedChange={(checked) => {
+                          if (checked) setSelectedIds(new Set(filteredAndSortedSuppliers.map(s => s.id)));
+                          else setSelectedIds(new Set());
+                        }}
+                      />
+                    </TableHead>
                     <SortableHeader columnKey="name">
                       <Building className="w-4 h-4 text-muted-foreground" />
                       Наименование
@@ -320,14 +348,24 @@ export const SuppliersTab: FC<SuppliersTabProps> = ({ inventory }) => {
                 <TableBody>
                   {filteredAndSortedSuppliers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         <p>Няма намерени доставчици</p>
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredAndSortedSuppliers.map((supplier) => (
-                      <TableRow key={supplier.id}>
+                      <TableRow key={supplier.id} data-state={selectedIds.has(supplier.id) ? 'selected' : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(supplier.id)}
+                            onCheckedChange={(checked) => {
+                              const next = new Set(selectedIds);
+                              if (checked) next.add(supplier.id); else next.delete(supplier.id);
+                              setSelectedIds(next);
+                            }}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{supplier.name}</p>

@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush, SlidersHorizontal } from 'lucide-react';
 import { OutgoingWebhooksSettings } from '@/components/settings/OutgoingWebhooksSettings';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
@@ -72,6 +72,7 @@ interface CompanySettings {
   login_description: string | null;
   login_background_color: string | null;
   secret_path: string | null;
+  default_landing_page: string;
 }
 
 const Settings = () => {
@@ -261,6 +262,7 @@ const Settings = () => {
           footer_link: companySettings.footer_link,
           footer_website: companySettings.footer_website,
           secret_path: companySettings.secret_path,
+          default_landing_page: companySettings.default_landing_page,
         })
         .eq('id', companySettings.id);
 
@@ -731,6 +733,10 @@ const Settings = () => {
                 <TabsTrigger value="customization" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Визуализация">
                   <Paintbrush className="w-4 h-4" />
                   <span>Визуализация</span>
+                </TabsTrigger>
+                <TabsTrigger value="defaults" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Дефолтни настройки">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>Дефолтни</span>
                 </TabsTrigger>
                 <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-destructive" />
@@ -1924,6 +1930,56 @@ const Settings = () => {
 
           <TabsContent value="customization" className="space-y-6">
             <SiteCustomizationTab isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="defaults" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Дефолтни настройки
+                </CardTitle>
+                <CardDescription>
+                  Настройте поведението на системата по подразбиране
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Начална страница след вход</Label>
+                  <Select
+                    value={companySettings?.default_landing_page || 'orders'}
+                    onValueChange={(value) => setCompanySettings(prev => prev ? { ...prev, default_landing_page: value } : prev)}
+                  >
+                    <SelectTrigger className="w-full sm:w-64">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="orders">Управление на поръчки</SelectItem>
+                      <SelectItem value="inventory">Складова програма</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Изберете коя страница да се отваря първо при влизане в системата.
+                  </p>
+                </div>
+
+                <Separator />
+
+                <Button onClick={handleSaveCompanySettings} disabled={savingCompany}>
+                  {savingCompany ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Запазване...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Запази дефолтните настройки
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="docs" className="space-y-6">

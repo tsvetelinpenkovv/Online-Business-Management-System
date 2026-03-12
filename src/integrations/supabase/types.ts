@@ -160,6 +160,7 @@ export type Database = {
           company_name: string | null
           correspondence_address: string | null
           created_at: string
+          default_landing_page: string
           eik: string | null
           email: string | null
           footer_link: string | null
@@ -190,6 +191,7 @@ export type Database = {
           company_name?: string | null
           correspondence_address?: string | null
           created_at?: string
+          default_landing_page?: string
           eik?: string | null
           email?: string | null
           footer_link?: string | null
@@ -220,6 +222,7 @@ export type Database = {
           company_name?: string | null
           correspondence_address?: string | null
           created_at?: string
+          default_landing_page?: string
           eik?: string | null
           email?: string | null
           footer_link?: string | null

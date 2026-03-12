@@ -20,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
-type ExportType = 'products' | 'suppliers' | 'categories' | 'documents' | 'revision';
+type ExportType = 'products' | 'suppliers' | 'categories' | 'documents' | 'revision' | 'movements' | 'prices' | 'warehouses';
 type FileFormat = 'csv' | 'xlsx' | 'xls' | 'ods';
 type ImportStep = 'select' | 'mapping' | 'preview';
 
@@ -93,7 +93,26 @@ const FIELD_DEFINITIONS: Record<ExportType, { key: string; label: string; requir
     { key: 'name', label: 'Име' },
     { key: 'current_stock', label: 'Системна наличност' },
     { key: 'actual_stock', label: 'Реална наличност', required: true },
-  ]
+  ],
+  movements: [
+    { key: 'sku', label: 'SKU', required: true },
+    { key: 'movement_type', label: 'Тип (in/out/adjustment)', required: true },
+    { key: 'quantity', label: 'Количество', required: true },
+    { key: 'unit_price', label: 'Ед. цена' },
+    { key: 'reason', label: 'Причина' },
+  ],
+  prices: [
+    { key: 'sku', label: 'SKU', required: true },
+    { key: 'purchase_price', label: 'Покупна цена' },
+    { key: 'sale_price', label: 'Продажна цена' },
+  ],
+  warehouses: [
+    { key: 'code', label: 'Код', required: true },
+    { key: 'name', label: 'Име', required: true },
+    { key: 'address', label: 'Адрес' },
+    { key: 'city', label: 'Град' },
+    { key: 'phone', label: 'Телефон' },
+  ],
 };
 
 const TEMPLATE_DATA: Record<ExportType, { headers: string[]; sampleRows: string[][] }> = {
@@ -129,6 +148,27 @@ const TEMPLATE_DATA: Record<ExportType, { headers: string[]; sampleRows: string[
       ['PRD-001', 'Примерен продукт 1', '100', ''],
       ['PRD-002', 'Примерен продукт 2', '50', ''],
     ]
+  },
+  movements: {
+    headers: ['SKU', 'Тип (in/out/adjustment)', 'Количество', 'Ед. цена', 'Причина'],
+    sampleRows: [
+      ['PRD-001', 'in', '50', '10.00', 'Доставка от доставчик'],
+      ['PRD-002', 'out', '5', '8.50', 'Продажба'],
+    ]
+  },
+  prices: {
+    headers: ['SKU', 'Покупна цена', 'Продажна цена'],
+    sampleRows: [
+      ['PRD-001', '10.00', '15.00'],
+      ['PRD-002', '5.00', '8.50'],
+    ]
+  },
+  warehouses: {
+    headers: ['Код', 'Име', 'Адрес', 'Град', 'Телефон'],
+    sampleRows: [
+      ['WH-001', 'Основен склад', 'ул. Примерна 1', 'София', '+359888123456'],
+      ['WH-002', 'Втори склад', 'бул. Друг 5', 'Пловдив', '+359877654321'],
+    ]
   }
 };
 
@@ -137,7 +177,10 @@ const TYPE_LABELS: Record<ExportType, string> = {
   suppliers: 'Доставчици',
   categories: 'Категории',
   documents: 'Документи',
-  revision: 'Ревизия'
+  revision: 'Ревизия',
+  movements: 'Движения',
+  prices: 'Цени',
+  warehouses: 'Складове',
 };
 
 // Try to auto-detect column mapping based on header names
@@ -267,8 +310,36 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             p.sku,
             p.name,
             p.current_stock.toString(),
-            '' // Empty column for actual stock to be filled during revision
+            ''
           ])
+        };
+
+      case 'movements':
+        return {
+          headers: TEMPLATE_DATA.movements.headers,
+          rows: inventory.movements.map(m => [
+            m.product?.sku || '',
+            m.movement_type,
+            m.quantity.toString(),
+            (m.unit_price || 0).toString(),
+            m.reason || ''
+          ])
+        };
+
+      case 'prices':
+        return {
+          headers: TEMPLATE_DATA.prices.headers,
+          rows: inventory.products.map(p => [
+            p.sku,
+            p.purchase_price.toString(),
+            p.sale_price.toString(),
+          ])
+        };
+
+      case 'warehouses':
+        return {
+          headers: TEMPLATE_DATA.warehouses.headers,
+          rows: [] // Will be populated from warehouse data
         };
     }
   };
@@ -505,7 +576,71 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             success++;
             break;
           }
+          case 'movements': {
+            const sku = getMappedValue(row, 'sku');
+            const movementType = getMappedValue(row, 'movement_type');
+            const quantity = parseFloat(getMappedValue(row, 'quantity'));
+            
+            if (!sku) { errors.push(`Ред ${i + 2}: Липсва SKU`); continue; }
+            if (!movementType || !['in', 'out', 'adjustment', 'return'].includes(movementType)) {
+              errors.push(`Ред ${i + 2}: Невалиден тип движение "${movementType}"`); continue;
+            }
+            if (isNaN(quantity) || quantity <= 0) { errors.push(`Ред ${i + 2}: Невалидно количество`); continue; }
+            
+            const product = inventory.products.find(p => p.sku === sku);
+            if (!product) { errors.push(`Ред ${i + 2}: Продукт с SKU "${sku}" не е намерен`); continue; }
+            
+            const unitPrice = parseFloat(getMappedValue(row, 'unit_price')) || 0;
+            const reason = getMappedValue(row, 'reason') || 'Масов импорт';
+            
+            await inventory.createStockMovement(
+              product.id,
+              movementType as 'in' | 'out' | 'adjustment' | 'return',
+              quantity,
+              unitPrice,
+              reason
+            );
+            success++;
+            break;
+          }
+          case 'prices': {
+            const sku = getMappedValue(row, 'sku');
+            if (!sku) { errors.push(`Ред ${i + 2}: Липсва SKU`); continue; }
+            
+            const product = inventory.products.find(p => p.sku === sku);
+            if (!product) { errors.push(`Ред ${i + 2}: Продукт с SKU "${sku}" не е намерен`); continue; }
+            
+            const purchasePrice = getMappedValue(row, 'purchase_price');
+            const salePrice = getMappedValue(row, 'sale_price');
+            
+            const updates: any = {};
+            if (purchasePrice) updates.purchase_price = parseFloat(purchasePrice);
+            if (salePrice) updates.sale_price = parseFloat(salePrice);
+            
+            if (Object.keys(updates).length > 0) {
+              await inventory.updateProduct(product.id, updates);
+              success++;
+            }
+            break;
+          }
+          case 'warehouses': {
+            const code = getMappedValue(row, 'code');
+            const name = getMappedValue(row, 'name');
+            if (!code || !name) { errors.push(`Ред ${i + 2}: Липсва код или име`); continue; }
+            
+            const { supabase } = await import('@/integrations/supabase/client');
+            await supabase.from('warehouses').insert({
+              code,
+              name,
+              address: getMappedValue(row, 'address') || null,
+              city: getMappedValue(row, 'city') || null,
+              phone: getMappedValue(row, 'phone') || null,
+            });
+            success++;
+            break;
+          }
         }
+
       } catch (err) {
         errors.push(`Ред ${i + 2}: ${err instanceof Error ? err.message : 'Неизвестна грешка'}`);
       }
@@ -532,10 +667,13 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
 
   const exportButtons = [
     { type: 'products' as ExportType, label: 'Артикули', icon: Package, color: 'bg-primary' },
-    { type: 'revision' as ExportType, label: 'Ревизия', icon: FileSpreadsheet, color: 'bg-purple' },
-    { type: 'suppliers' as ExportType, label: 'Доставчици', icon: Users, color: 'bg-success' },
-    { type: 'categories' as ExportType, label: 'Категории', icon: FolderTree, color: 'bg-info' },
-    { type: 'documents' as ExportType, label: 'Документи', icon: FileText, color: 'bg-warning' },
+    { type: 'revision' as ExportType, label: 'Ревизия', icon: FileSpreadsheet, color: 'bg-purple-600' },
+    { type: 'suppliers' as ExportType, label: 'Доставчици', icon: Users, color: 'bg-emerald-600' },
+    { type: 'categories' as ExportType, label: 'Категории', icon: FolderTree, color: 'bg-blue-600' },
+    { type: 'documents' as ExportType, label: 'Документи', icon: FileText, color: 'bg-amber-600' },
+    { type: 'movements' as ExportType, label: 'Движения', icon: FileSpreadsheet, color: 'bg-indigo-600' },
+    { type: 'prices' as ExportType, label: 'Цени', icon: FileSpreadsheet, color: 'bg-rose-600' },
+    { type: 'warehouses' as ExportType, label: 'Складове', icon: FileSpreadsheet, color: 'bg-teal-600' },
   ];
 
   // Mapping step
@@ -701,7 +839,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) resetImport(); onOpenChange(o); }}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5" />
@@ -755,7 +893,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             <p className="text-sm text-muted-foreground">
               Изберете какво искате да експортирате:
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {exportButtons.map(({ type, label, icon: Icon, color }) => (
                 <Button
                   key={type}
@@ -803,7 +941,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             <p className="text-sm text-muted-foreground">
               Изберете тип данни за импорт:
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {exportButtons.filter(b => b.type !== 'documents').map(({ type, label, icon: Icon, color }) => (
                 <Button
                   key={type}
