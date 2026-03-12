@@ -139,4 +139,5 @@ export const MOVEMENT_TYPE_LABELS: Record<MovementType, string> = {
   out: 'Разход',
   adjustment: 'Корекция',
   return: 'Връщане',
+  transfer: 'Трансфер',
 };
