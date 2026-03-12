@@ -603,10 +603,13 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
 
   const exportButtons = [
     { type: 'products' as ExportType, label: 'Артикули', icon: Package, color: 'bg-primary' },
-    { type: 'revision' as ExportType, label: 'Ревизия', icon: FileSpreadsheet, color: 'bg-purple' },
-    { type: 'suppliers' as ExportType, label: 'Доставчици', icon: Users, color: 'bg-success' },
-    { type: 'categories' as ExportType, label: 'Категории', icon: FolderTree, color: 'bg-info' },
-    { type: 'documents' as ExportType, label: 'Документи', icon: FileText, color: 'bg-warning' },
+    { type: 'revision' as ExportType, label: 'Ревизия', icon: FileSpreadsheet, color: 'bg-purple-600' },
+    { type: 'suppliers' as ExportType, label: 'Доставчици', icon: Users, color: 'bg-emerald-600' },
+    { type: 'categories' as ExportType, label: 'Категории', icon: FolderTree, color: 'bg-blue-600' },
+    { type: 'documents' as ExportType, label: 'Документи', icon: FileText, color: 'bg-amber-600' },
+    { type: 'movements' as ExportType, label: 'Движения', icon: FileSpreadsheet, color: 'bg-indigo-600' },
+    { type: 'prices' as ExportType, label: 'Цени', icon: FileSpreadsheet, color: 'bg-rose-600' },
+    { type: 'warehouses' as ExportType, label: 'Складове', icon: FileSpreadsheet, color: 'bg-teal-600' },
   ];
 
   // Mapping step
