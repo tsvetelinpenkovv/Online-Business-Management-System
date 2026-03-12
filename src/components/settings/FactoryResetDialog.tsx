@@ -35,9 +35,9 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const [deleteLogoFavicon, setDeleteLogoFavicon] = useState(true);
   const [deleteCompanySettings, setDeleteCompanySettings] = useState(true);
   const [deleteApiSettings, setDeleteApiSettings] = useState(true);
-  const [deleteCouriers, setDeleteCouriers] = useState(false);
-  const [deleteEcommercePlatforms, setDeleteEcommercePlatforms] = useState(false);
-  const [deleteStores, setDeleteStores] = useState(false);
+  const [deleteCouriers, setDeleteCouriers] = useState(true);
+  const [deleteEcommercePlatforms, setDeleteEcommercePlatforms] = useState(true);
+  const [deleteStores, setDeleteStores] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
