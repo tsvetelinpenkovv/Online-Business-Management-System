@@ -152,11 +152,37 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteEcommercePlatforms) {
-        await supabase.from('ecommerce_platforms').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        // Deactivate instead of delete
+        await supabase.from('ecommerce_platforms').update({ is_enabled: false, updated_at: new Date().toISOString() }).neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (deleteStores) {
-        await supabase.from('stores').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        // Deactivate instead of delete + disable multi-store
+        await supabase.from('stores').update({ is_enabled: false, updated_at: new Date().toISOString() }).neq('id', '00000000-0000-0000-0000-000000000000');
+        const { data: cs2 } = await supabase.from('company_settings').select('id').limit(1).maybeSingle();
+        if (cs2) {
+          await supabase.from('company_settings').update({ multi_store_enabled: false }).eq('id', cs2.id);
+        }
+      }
+
+      // Disable Nekorekten module
+      const { data: nekorektenSetting } = await supabase.from('api_settings').select('id').eq('setting_key', 'nekorekten_enabled').maybeSingle();
+      if (nekorektenSetting) {
+        await supabase.from('api_settings').update({ setting_value: 'false', updated_at: new Date().toISOString() }).eq('id', nekorektenSetting.id);
+      } else {
+        await supabase.from('api_settings').insert({ setting_key: 'nekorekten_enabled', setting_value: 'false' });
+      }
+
+      // Disable Connectix/Messages module
+      const { data: connectixSetting } = await supabase.from('api_settings').select('id, setting_value').eq('setting_key', 'connectix_config').maybeSingle();
+      if (connectixSetting) {
+        try {
+          const config = JSON.parse(connectixSetting.setting_value || '{}');
+          config.is_enabled = false;
+          await supabase.from('api_settings').update({ setting_value: JSON.stringify(config), updated_at: new Date().toISOString() }).eq('id', connectixSetting.id);
+        } catch {
+          await supabase.from('api_settings').update({ setting_value: JSON.stringify({ is_enabled: false }), updated_at: new Date().toISOString() }).eq('id', connectixSetting.id);
+        }
       }
 
       // Invalidate all cached queries so UI refreshes
@@ -250,11 +276,11 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-ecommerce" checked={deleteEcommercePlatforms} onCheckedChange={(checked) => setDeleteEcommercePlatforms(!!checked)} />
-                <Label htmlFor="delete-ecommerce" className="cursor-pointer">Всички e-commerce платформи</Label>
+                <Label htmlFor="delete-ecommerce" className="cursor-pointer">Деактивиране на всички e-commerce платформи</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-stores" checked={deleteStores} onCheckedChange={(checked) => setDeleteStores(!!checked)} />
-                <Label htmlFor="delete-stores" className="cursor-pointer">Всички магазини</Label>
+                <Label htmlFor="delete-stores" className="cursor-pointer">Деактивиране на всички магазини и multi-store</Label>
               </div>
             </div>
 
