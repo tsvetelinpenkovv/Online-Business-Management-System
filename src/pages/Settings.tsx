@@ -72,6 +72,7 @@ interface CompanySettings {
   login_description: string | null;
   login_background_color: string | null;
   secret_path: string | null;
+  default_landing_page: string;
 }
 
 const Settings = () => {
