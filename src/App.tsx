@@ -72,7 +72,18 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if ((e.target as HTMLElement)?.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="app-theme">
       <AuthProvider>
