@@ -1,5 +1,7 @@
 import { FC, useState, useMemo } from 'react';
 import { useInventory } from '@/hooks/useInventory';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionsToolbar } from './BulkActionsToolbar';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Supplier } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
