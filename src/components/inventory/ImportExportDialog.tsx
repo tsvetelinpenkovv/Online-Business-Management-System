@@ -177,7 +177,10 @@ const TYPE_LABELS: Record<ExportType, string> = {
   suppliers: 'Доставчици',
   categories: 'Категории',
   documents: 'Документи',
-  revision: 'Ревизия'
+  revision: 'Ревизия',
+  movements: 'Движения',
+  prices: 'Цени',
+  warehouses: 'Складове',
 };
 
 // Try to auto-detect column mapping based on header names
