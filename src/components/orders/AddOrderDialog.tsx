@@ -145,15 +145,15 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
 
     setIsSubmitting(true);
     try {
-      const customerName = `${formData.first_name} ${formData.last_name}`.trim();
+      const customerName = `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim();
       const newCode = String(lastOrderId + 1);
       
       // Combine products into a single string if multiple
       const productName = products.map(p => 
-        p.quantity > 1 ? `${p.product_name} (x${p.quantity})` : p.product_name
+        p.quantity > 1 ? `${p.product_name.trim()} (x${p.quantity})` : p.product_name.trim()
       ).filter(n => n).join(', ');
       
-      const catalogNumber = products.map(p => p.catalog_number).filter(c => c).join(', ');
+      const catalogNumber = products.map(p => p.catalog_number.trim()).filter(c => c).join(', ');
       const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
       
       const selectedStore = stores.find(s => s.id === effectiveStoreId);

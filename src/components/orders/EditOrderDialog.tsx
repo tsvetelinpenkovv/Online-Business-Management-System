@@ -69,6 +69,7 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
   const [products, setProducts] = useState<ProductItem[]>([]);
   const { couriers, getCourierByUrl } = useCouriers();
   const [courierLocked, setCourierLocked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!order) return;
@@ -123,26 +124,39 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
     return products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
   };
 
-  const handleSave = () => {
-    if (order && formData) {
+  const handleSave = async () => {
+    if (!order || !formData || isSubmitting) return;
+
+    // Validate required fields
+    const customerName = (formData.customer_name || '').trim();
+    const phone = (formData.phone || '').trim();
+    if (!customerName || !phone) return;
+
+    setIsSubmitting(true);
+    try {
       // Combine products into order fields
       const productName = products.map(p => 
-        p.quantity > 1 ? `${p.product_name} (x${p.quantity})` : p.product_name
+        p.quantity > 1 ? `${p.product_name.trim()} (x${p.quantity})` : p.product_name.trim()
       ).filter(n => n).join(', ');
       
-      const catalogNumber = products.map(p => p.catalog_number).filter(c => c).join(', ');
+      const catalogNumber = products.map(p => p.catalog_number.trim()).filter(c => c).join(', ');
       const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
       const totalPrice = calculateTotalPrice() || formData.total_price || 0;
 
       onSave({ 
         ...order, 
         ...formData,
+        customer_name: customerName,
+        phone,
+        customer_email: (formData.customer_email || '').trim() || null,
         product_name: productName,
         catalog_number: catalogNumber || null,
         quantity: totalQuantity,
         total_price: totalPrice
       } as Order);
       onClose();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -348,11 +362,14 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Отказ
           </Button>
-          <Button onClick={handleSave}>
-            Запази
+          <Button 
+            onClick={handleSave} 
+            disabled={isSubmitting || !(formData.customer_name || '').trim() || !(formData.phone || '').trim()}
+          >
+            {isSubmitting ? 'Запазване...' : 'Запази'}
           </Button>
         </DialogFooter>
       </DialogContent>
