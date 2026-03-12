@@ -51,7 +51,7 @@ export const CustomCodeEditor: FC<Props> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileCode className="w-5 h-5" />
-            Custom JavaScript
+            Потребителски JavaScript
           </CardTitle>
           <CardDescription>
             Добавете JavaScript код (analytics, tracking pixels, custom логика). Изпълнява се еднократно при зареждане.
