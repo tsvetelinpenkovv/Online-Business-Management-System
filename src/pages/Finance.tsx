@@ -14,8 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock, Calendar, ChevronDown, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { bg } from 'date-fns/locale';
+
+const formatDateWithYear = (date: Date) => {
+  return format(date, 'dd.MM.yy', { locale: bg }) + ' г.';
+};
 
 const PaymentStatusBadge = ({ status }: { status: string }) => {
   switch (status) {
