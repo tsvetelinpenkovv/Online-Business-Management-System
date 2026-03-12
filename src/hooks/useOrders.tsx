@@ -205,12 +205,24 @@ export const useOrders = (
 
   const deleteOrders = async (ids: number[]) => {
     try {
+      // Collect orders for audit before deleting
+      const ordersToDelete: Order[] = [];
+      for (const id of ids) {
+        const order = orders.find(o => o.id === id) || await fetchOrderById(id);
+        if (order) ordersToDelete.push(order);
+      }
+
       const { error } = await supabase
         .from('orders')
         .delete()
         .in('id', ids);
 
       if (error) throw error;
+
+      // Log audit for each deleted order
+      for (const order of ordersToDelete) {
+        await logAuditAction('delete', 'orders', order.id.toString(), order as any, null);
+      }
 
       setOrders(orders.filter(order => !ids.includes(order.id)));
       setTotalCount(prev => prev - ids.length);
