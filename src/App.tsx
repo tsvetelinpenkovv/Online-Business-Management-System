@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { InterfaceTextsProvider } from "@/hooks/useInterfaceTexts";
 import { SecretPathGuard } from "@/components/SecretPathGuard";
 import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
-import { lazy, Suspense, ReactNode } from "react";
+import { lazy, Suspense, ReactNode, useEffect } from "react";
 import { Loader2, Package } from "lucide-react";
 import { useParams, Navigate } from "react-router-dom";
 import { useSiteCustomization } from "@/hooks/useSiteCustomization";
@@ -72,7 +72,18 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if ((e.target as HTMLElement)?.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="app-theme">
       <AuthProvider>
@@ -122,6 +133,7 @@ const App = () => (
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
