@@ -109,7 +109,7 @@ export const CustomCodeEditor: FC<Props> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5" />
-            Custom HTML (Body)
+            Потребителски HTML (Body)
           </CardTitle>
           <CardDescription>
             HTML съдържание, което се показва в началото на страницата (банери, уведомления, widgets).
