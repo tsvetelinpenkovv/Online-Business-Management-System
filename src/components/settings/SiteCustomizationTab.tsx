@@ -58,7 +58,7 @@ export const SiteCustomizationTab: FC<Props> = ({ isAdmin }) => {
       {isSafe && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-700 dark:text-yellow-400 text-sm">
           <AlertTriangle className="w-5 h-5 shrink-0" />
-          <span><strong>Safe Mode активен</strong> — Custom CSS, JS и HTML не се зареждат. Премахнете <code>?safe=1</code> от URL-а за нормален режим.</span>
+          <span><strong>Безопасен режим е активен</strong> — Потребителски CSS, JS и HTML не се зареждат. Премахнете <code>?safe=1</code> от URL-а за нормален режим.</span>
         </div>
       )}
 
