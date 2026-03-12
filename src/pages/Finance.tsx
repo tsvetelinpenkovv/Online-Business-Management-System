@@ -63,7 +63,7 @@ const Finance = () => {
   const [editPaidAmount, setEditPaidAmount] = useState('');
   const [editPaymentMethod, setEditPaymentMethod] = useState('');
 
-  const summary = useMemo(() => getSummary(dateFrom, dateTo), [getSummary, dateFrom, dateTo]);
+  const summary = useMemo(() => getSummary(format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd')), [getSummary, dateFrom, dateTo]);
 
   const filteredOrders = useMemo(() => {
     let filtered = orders;
