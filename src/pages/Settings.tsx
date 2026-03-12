@@ -733,6 +733,10 @@ const Settings = () => {
                   <Paintbrush className="w-4 h-4" />
                   <span>Визуализация</span>
                 </TabsTrigger>
+                <TabsTrigger value="defaults" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Дефолтни настройки">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>Дефолтни</span>
+                </TabsTrigger>
                 <TabsTrigger value="docs" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Документация">
                   <BookOpen className="w-4 h-4 text-destructive" />
                   <span>Документация</span>
