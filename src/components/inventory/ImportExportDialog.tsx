@@ -576,7 +576,71 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             success++;
             break;
           }
+          case 'movements': {
+            const sku = getMappedValue(row, 'sku');
+            const movementType = getMappedValue(row, 'movement_type');
+            const quantity = parseFloat(getMappedValue(row, 'quantity'));
+            
+            if (!sku) { errors.push(`Ред ${i + 2}: Липсва SKU`); continue; }
+            if (!movementType || !['in', 'out', 'adjustment', 'return'].includes(movementType)) {
+              errors.push(`Ред ${i + 2}: Невалиден тип движение "${movementType}"`); continue;
+            }
+            if (isNaN(quantity) || quantity <= 0) { errors.push(`Ред ${i + 2}: Невалидно количество`); continue; }
+            
+            const product = inventory.products.find(p => p.sku === sku);
+            if (!product) { errors.push(`Ред ${i + 2}: Продукт с SKU "${sku}" не е намерен`); continue; }
+            
+            const unitPrice = parseFloat(getMappedValue(row, 'unit_price')) || 0;
+            const reason = getMappedValue(row, 'reason') || 'Масов импорт';
+            
+            await inventory.createStockMovement(
+              product.id,
+              movementType as 'in' | 'out' | 'adjustment' | 'return',
+              quantity,
+              unitPrice,
+              reason
+            );
+            success++;
+            break;
+          }
+          case 'prices': {
+            const sku = getMappedValue(row, 'sku');
+            if (!sku) { errors.push(`Ред ${i + 2}: Липсва SKU`); continue; }
+            
+            const product = inventory.products.find(p => p.sku === sku);
+            if (!product) { errors.push(`Ред ${i + 2}: Продукт с SKU "${sku}" не е намерен`); continue; }
+            
+            const purchasePrice = getMappedValue(row, 'purchase_price');
+            const salePrice = getMappedValue(row, 'sale_price');
+            
+            const updates: any = {};
+            if (purchasePrice) updates.purchase_price = parseFloat(purchasePrice);
+            if (salePrice) updates.sale_price = parseFloat(salePrice);
+            
+            if (Object.keys(updates).length > 0) {
+              await inventory.updateProduct(product.id, updates);
+              success++;
+            }
+            break;
+          }
+          case 'warehouses': {
+            const code = getMappedValue(row, 'code');
+            const name = getMappedValue(row, 'name');
+            if (!code || !name) { errors.push(`Ред ${i + 2}: Липсва код или име`); continue; }
+            
+            const { supabase } = await import('@/integrations/supabase/client');
+            await supabase.from('warehouses').insert({
+              code,
+              name,
+              address: getMappedValue(row, 'address') || null,
+              city: getMappedValue(row, 'city') || null,
+              phone: getMappedValue(row, 'phone') || null,
+            });
+            success++;
+            break;
+          }
         }
+
       } catch (err) {
         errors.push(`Ред ${i + 2}: ${err instanceof Error ? err.message : 'Неизвестна грешка'}`);
       }
