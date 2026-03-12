@@ -78,11 +78,13 @@ export const ProfitabilityReport: FC<ProfitabilityReportProps> = ({ inventory })
   const fetchOrderData = async () => {
     setLoading(true);
     // Fetch orders with items for the period
+    const fromStr = format(dateFrom, 'yyyy-MM-dd');
+    const toStr = format(dateTo, 'yyyy-MM-dd');
     const { data } = await supabase
       .from('orders')
       .select('id, total_price, created_at, status, order_items:order_items(product_name, quantity, unit_price, total_price, catalog_number)')
-      .gte('created_at', dateFrom)
-      .lte('created_at', dateTo + 'T23:59:59')
+      .gte('created_at', fromStr)
+      .lte('created_at', toStr + 'T23:59:59')
       .not('status', 'in', '("Отказана","Върната")');
     
     setOrderData(data || []);
