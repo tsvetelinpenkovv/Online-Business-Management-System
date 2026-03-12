@@ -502,6 +502,7 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
               woocommerce_id: null,
               is_bundle: false,
               external_bundle_type: null,
+              track_serial_numbers: false,
             });
             success++;
             break;
