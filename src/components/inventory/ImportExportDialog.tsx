@@ -310,8 +310,36 @@ export const ImportExportDialog: FC<ImportExportDialogProps> = ({
             p.sku,
             p.name,
             p.current_stock.toString(),
-            '' // Empty column for actual stock to be filled during revision
+            ''
           ])
+        };
+
+      case 'movements':
+        return {
+          headers: TEMPLATE_DATA.movements.headers,
+          rows: inventory.movements.map(m => [
+            m.product?.sku || '',
+            m.movement_type,
+            m.quantity.toString(),
+            (m.unit_price || 0).toString(),
+            m.reason || ''
+          ])
+        };
+
+      case 'prices':
+        return {
+          headers: TEMPLATE_DATA.prices.headers,
+          rows: inventory.products.map(p => [
+            p.sku,
+            p.purchase_price.toString(),
+            p.sale_price.toString(),
+          ])
+        };
+
+      case 'warehouses':
+        return {
+          headers: TEMPLATE_DATA.warehouses.headers,
+          rows: [] // Will be populated from warehouse data
         };
     }
   };
