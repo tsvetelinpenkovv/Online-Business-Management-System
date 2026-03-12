@@ -42,7 +42,7 @@ export const CustomCodeEditor: FC<Props> = ({
       <Alert variant="destructive">
         <ShieldAlert className="h-4 w-4" />
         <AlertDescription>
-          <strong>Внимание!</strong> Custom JavaScript и HTML кодът се изпълняват директно в браузъра. Добавяйте код само от доверени източници. Грешен код може да счупи сайта.
+          <strong>Внимание!</strong> Потребителският JavaScript и HTML код се изпълняват директно в браузъра. Добавяйте код само от доверени източници. Грешен код може да счупи сайта.
         </AlertDescription>
       </Alert>
 
