@@ -379,6 +379,47 @@ export type Database = {
           },
         ]
       }
+      courier_tracking_config: {
+        Row: {
+          courier_id: string
+          created_at: string
+          delivered_status_name: string
+          id: string
+          is_enabled: boolean
+          polling_interval_minutes: number
+          returned_status_name: string
+          updated_at: string
+        }
+        Insert: {
+          courier_id: string
+          created_at?: string
+          delivered_status_name?: string
+          id?: string
+          is_enabled?: boolean
+          polling_interval_minutes?: number
+          returned_status_name?: string
+          updated_at?: string
+        }
+        Update: {
+          courier_id?: string
+          created_at?: string
+          delivered_status_name?: string
+          id?: string
+          is_enabled?: boolean
+          polling_interval_minutes?: number
+          returned_status_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_tracking_config_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: true
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couriers: {
         Row: {
           created_at: string
