@@ -959,7 +959,7 @@ export const DocumentationTab = () => {
 
           <Separator className="my-6" />
 
-          <div className="space-y-4">
+          <div className="space-y-4" ref={fullTextRef}>
             <h3 className="font-semibold flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Пълен текст на документацията
