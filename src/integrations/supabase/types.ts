@@ -858,6 +858,107 @@ export type Database = {
         }
         Relationships: []
       }
+      media_files: {
+        Row: {
+          bucket: string
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          folder_id: string | null
+          height: number | null
+          id: string
+          mime_type: string | null
+          product_id: string | null
+          public_url: string | null
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          folder_id?: string | null
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          product_id?: string | null
+          public_url?: string | null
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          folder_id?: string | null
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          product_id?: string | null
+          public_url?: string | null
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_files_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "media_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_files_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_folders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "media_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_history: {
         Row: {
           action: string
@@ -1323,6 +1424,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order_amount: number | null
+          updated_at: string
+          used_count: number
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_amount?: number | null
+          updated_at?: string
+          used_count?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_amount?: number | null
+          updated_at?: string
+          used_count?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
       }
       return_items: {
         Row: {
