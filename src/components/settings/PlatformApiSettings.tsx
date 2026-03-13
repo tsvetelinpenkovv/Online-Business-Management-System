@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Save, TestTube, Copy, Check, RefreshCw } from 'lucide-react';
+import { Loader2, Save, TestTube, Copy, Check, RefreshCw, Link, Code, FileJson } from 'lucide-react';
 import { useEcommercePlatforms, EcommercePlatform } from '@/hooks/useEcommercePlatforms';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +19,7 @@ interface PlatformConfig {
   api_key: string;
   api_secret: string;
   webhook_url?: string;
+  webhook_secret?: string;
 }
 
 const platformLogos: Record<string, React.ReactNode> = {
@@ -27,6 +28,7 @@ const platformLogos: Record<string, React.ReactNode> = {
   opencart: <OpenCartLogo className="w-6 h-6" />,
   magento: <MagentoLogo className="w-6 h-6" />,
   shopify: <ShopifyLogo className="w-6 h-6" />,
+  custom_api: <Link className="w-6 h-6 text-primary" />,
 };
 
 const platformApiLabels: Record<string, { apiKey: string; apiSecret: string; description: string }> = {
@@ -54,6 +56,11 @@ const platformApiLabels: Record<string, { apiKey: string; apiSecret: string; des
     apiKey: 'API Ключ', 
     apiSecret: 'API Таен ключ',
     description: 'Създайте частно приложение от Shopify Admin → Apps → Manage private apps'
+  },
+  custom_api: {
+    apiKey: '',
+    apiSecret: '',
+    description: 'Свържете вашия собствен сайт чрез REST API / Webhook'
   },
 };
 
