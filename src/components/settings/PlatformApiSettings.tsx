@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Save, TestTube, Copy, Check, RefreshCw } from 'lucide-react';
+import { Loader2, Save, TestTube, Copy, Check, RefreshCw, Link, Code, FileJson } from 'lucide-react';
 import { useEcommercePlatforms, EcommercePlatform } from '@/hooks/useEcommercePlatforms';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +19,7 @@ interface PlatformConfig {
   api_key: string;
   api_secret: string;
   webhook_url?: string;
+  webhook_secret?: string;
 }
 
 const platformLogos: Record<string, React.ReactNode> = {
@@ -27,6 +28,7 @@ const platformLogos: Record<string, React.ReactNode> = {
   opencart: <OpenCartLogo className="w-6 h-6" />,
   magento: <MagentoLogo className="w-6 h-6" />,
   shopify: <ShopifyLogo className="w-6 h-6" />,
+  custom_api: <Link className="w-6 h-6 text-primary" />,
 };
 
 const platformApiLabels: Record<string, { apiKey: string; apiSecret: string; description: string }> = {
@@ -54,6 +56,11 @@ const platformApiLabels: Record<string, { apiKey: string; apiSecret: string; des
     apiKey: 'API Ключ', 
     apiSecret: 'API Таен ключ',
     description: 'Създайте частно приложение от Shopify Admin → Apps → Manage private apps'
+  },
+  custom_api: {
+    apiKey: '',
+    apiSecret: '',
+    description: 'Свържете вашия собствен сайт чрез REST API / Webhook'
   },
 };
 
@@ -186,12 +193,84 @@ export const PlatformApiSettings: FC = () => {
   };
 
   const getWebhookUrl = (platformName: string): string => {
-    const webhookPlatforms = ['woocommerce', 'prestashop', 'opencart', 'magento', 'shopify'];
+    const webhookPlatforms = ['woocommerce', 'prestashop', 'opencart', 'magento', 'shopify', 'custom_api'];
+    if (platformName === 'custom_api') {
+      return `${supabaseUrl}/functions/v1/custom-webhook`;
+    }
     if (webhookPlatforms.includes(platformName)) {
       return `${supabaseUrl}/functions/v1/${platformName}-webhook`;
     }
     return '';
   };
+
+  const generateWebhookSecret = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = 'capi_';
+    for (let i = 0; i < 32; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  const saveCustomApiConfig = async (platform: EcommercePlatform) => {
+    setSaving(platform.name);
+    try {
+      let config = configs[platform.name] || { store_url: '', api_key: '', api_secret: '' };
+      
+      // Generate webhook secret if not exists
+      if (!config.webhook_secret) {
+        config = { ...config, webhook_secret: generateWebhookSecret() };
+        setConfigs(prev => ({ ...prev, [platform.name]: config }));
+      }
+
+      const { error } = await supabase
+        .from('api_settings')
+        .upsert({
+          setting_key: 'custom_api_config',
+          setting_value: JSON.stringify({
+            is_enabled: platform.is_enabled,
+            webhook_secret: config.webhook_secret,
+            store_url: config.store_url,
+          }),
+        }, { onConflict: 'setting_key' });
+
+      if (error) throw error;
+      toast({ title: 'Успех', description: 'Custom API настройките са запазени' });
+    } catch (err) {
+      toast({ title: 'Грешка', description: 'Неуспешно запазване', variant: 'destructive' });
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const loadCustomApiConfig = async () => {
+    const { data } = await supabase
+      .from('api_settings')
+      .select('setting_value')
+      .eq('setting_key', 'custom_api_config')
+      .maybeSingle();
+    
+    if (data?.setting_value) {
+      try {
+        const parsed = JSON.parse(data.setting_value);
+        setConfigs(prev => ({
+          ...prev,
+          custom_api: {
+            store_url: parsed.store_url || '',
+            api_key: '',
+            api_secret: '',
+            webhook_secret: parsed.webhook_secret || '',
+          }
+        }));
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    if (platforms.some(p => p.name === 'custom_api')) {
+      loadCustomApiConfig();
+    }
+  }, [platforms]);
 
   const copyWebhookUrl = (platformName: string) => {
     const url = getWebhookUrl(platformName);
@@ -390,6 +469,129 @@ export const PlatformApiSettings: FC = () => {
                     </div>
                   </div>
 
+                {platform.name === 'custom_api' ? (
+                  /* Custom API Platform - Special UI */
+                  <>
+                    <div className="sm:pl-9 space-y-4">
+                      {/* Webhook URL */}
+                      <div className="space-y-2">
+                        <Label>Webhook URL (дайте го на разработчика на вашия сайт)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={webhookUrl}
+                            readOnly
+                            className="font-mono text-xs bg-muted text-muted-foreground"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => copyWebhookUrl(platform.name)}
+                            className="shrink-0"
+                          >
+                            {copiedWebhook === platform.name ? (
+                              <Check className="w-4 h-4 text-success" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* API Key */}
+                      <div className="space-y-2">
+                        <Label>API Ключ за автентикация (x-api-key header)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={config.webhook_secret || ''}
+                            readOnly
+                            className="font-mono text-xs bg-muted"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (config.webhook_secret) {
+                                navigator.clipboard.writeText(config.webhook_secret);
+                                toast({ title: 'Копирано', description: 'API ключът е копиран' });
+                              }
+                            }}
+                            className="shrink-0"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Този ключ трябва да се изпраща като <code className="bg-muted px-1 rounded">x-api-key</code> header при всяка заявка
+                        </p>
+                      </div>
+
+                      {/* Store URL (optional) */}
+                      <div className="space-y-2">
+                        <Label>URL на сайта (опционално, за справка)</Label>
+                        <Input
+                          value={config.store_url}
+                          onChange={(e) => updateConfig(platform.name, 'store_url', e.target.value)}
+                          placeholder="https://mysite.com"
+                        />
+                      </div>
+
+                      {/* JSON Format Documentation */}
+                      <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <FileJson className="w-4 h-4 text-muted-foreground" />
+                          <Label className="text-sm font-medium">Формат на заявката (POST JSON)</Label>
+                        </div>
+                        <pre className="text-xs font-mono bg-background rounded p-3 overflow-x-auto whitespace-pre">
+{`POST ${webhookUrl}
+Headers:
+  Content-Type: application/json
+  x-api-key: <вашият_api_ключ>
+
+Body:
+{
+  "customer_name": "Иван Иванов",     // задължително
+  "phone": "+359888123456",            // задължително
+  "product_name": "Продукт 1",        // задължително
+  "total_price": 49.99,               // задължително
+  "quantity": 2,                       // опционално (по подр. 1)
+  "customer_email": "ivan@mail.bg",    // опционално
+  "delivery_address": "ул. Тест 1",   // опционално
+  "comment": "Бележка",               // опционално
+  "payment_method": "cod",            // опционално: cod|cash|card|bank_transfer
+  "catalog_number": "SKU-001",        // опционално
+  "items": [                           // опционално - детайли
+    {
+      "product_name": "Артикул 1",
+      "quantity": 1,
+      "unit_price": 25.00,
+      "catalog_number": "SKU-001"
+    }
+  ]
+}`}
+                        </pre>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-2 sm:pl-9">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => saveCustomApiConfig(platform)}
+                        disabled={saving === platform.name}
+                      >
+                        {saving === platform.name ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        {config.webhook_secret ? 'Запази' : 'Генерирай ключ и запази'}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  /* Standard Platform UI */
+                  <>
                   {/* API Settings */}
                   <div className="grid gap-4 sm:grid-cols-3 sm:pl-9">
                     <div className="space-y-2">
@@ -491,6 +693,8 @@ export const PlatformApiSettings: FC = () => {
                       Синхронизация
                     </Button>
                   </div>
+                  </>
+                )}
                 </div>
               </div>
             );
