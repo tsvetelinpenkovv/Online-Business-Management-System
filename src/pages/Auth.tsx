@@ -594,7 +594,7 @@ const Auth = () => {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 mr-2" />
+                      <ShieldCheck className="w-4 h-4 mr-2" />
                       Създай администратор
                     </>
                   )}
