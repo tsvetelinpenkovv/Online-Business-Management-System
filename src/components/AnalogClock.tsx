@@ -51,7 +51,7 @@ export const AnalogClock = ({ size = 36 }: { size?: number }) => {
         <div className="relative cursor-pointer shrink-0 rounded-full ring-1 ring-border/60 shadow-md bg-white" style={{ width: size, height: size }}>
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
             {/* Face */}
-            <circle cx={cx} cy={cy} r={r - 1} className="fill-card stroke-border" strokeWidth="1" />
+            <circle cx={cx} cy={cy} r={r - 1} fill="white" stroke="hsl(0 0% 85%)" strokeWidth="1" />
 
             {/* Markers */}
             {markers.map((m, i) => (
