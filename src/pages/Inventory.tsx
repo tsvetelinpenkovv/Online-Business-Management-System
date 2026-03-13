@@ -497,7 +497,7 @@ export default function Inventory() {
 
           {activeTab === 'dashboard' && (
             <TabsContent value="dashboard" className="mt-4 sm:mt-6" forceMount>
-              <InventoryDashboard inventory={inventory} />
+              <InventoryDashboard />
               <div className="mt-6">
                 <SyncJobsPanel />
               </div>
