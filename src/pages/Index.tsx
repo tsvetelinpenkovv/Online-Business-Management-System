@@ -685,6 +685,7 @@ const Index = () => {
 
           {/* Desktop actions - navigation buttons */}
           <div className="hidden md:flex items-center gap-1.5">
+            <AnalogClock size={36} />
             {canCreate('orders') && (
               <Button onClick={() => setShowAddOrderDialog(true)} size="sm" className="hidden lg:flex gap-1.5">
                 <Plus className="w-4 h-4" />
@@ -894,10 +895,8 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Clock strip */}
-      <div className="flex justify-center py-3 bg-card/50 border-b">
-        <AnalogClock size={80} />
-      </div>
+
+
 
       <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
         <KPIDashboard />
