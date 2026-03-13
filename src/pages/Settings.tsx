@@ -14,7 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush, SlidersHorizontal, Percent } from 'lucide-react';
+import { PromoCodesSettings } from '@/components/settings/PromoCodesSettings';
 import { OutgoingWebhooksSettings } from '@/components/settings/OutgoingWebhooksSettings';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
