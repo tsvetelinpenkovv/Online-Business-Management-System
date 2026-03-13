@@ -592,32 +592,6 @@ Body:
                 ) : (
                   /* Standard Platform UI */
                   <>
-                  {/* Platform Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <EditableSourceLogo
-                        sourceId={platform.id}
-                        sourceName={platform.display_name}
-                        currentLogo={platformLogos[platform.name]}
-                        logoUrl={platform.logo_url}
-                        size="lg"
-                      />
-                      <div className="min-w-0">
-                        <h3 className="font-medium truncate">{platform.display_name}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{labels.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <Badge variant={platform.is_enabled ? 'default' : 'secondary'} className={`text-xs ${platform.is_enabled ? 'bg-success' : ''}`}>
-                        {platform.is_enabled ? 'Активен' : 'Неактивен'}
-                      </Badge>
-                      <Switch
-                        checked={platform.is_enabled}
-                        onCheckedChange={(checked) => togglePlatform(platform.id, checked)}
-                      />
-                    </div>
-                  </div>
-
                   {/* API Settings */}
                   <div className="grid gap-4 sm:grid-cols-3 sm:pl-9">
                     <div className="space-y-2">
@@ -719,6 +693,8 @@ Body:
                       Синхронизация
                     </Button>
                   </div>
+                  </>
+                )}
                 </div>
               </div>
             );
