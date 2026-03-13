@@ -80,37 +80,37 @@ export const MovementsTab: FC = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Търси по артикул или причина..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Търси по причина..."
+            value={movementsPage.search}
+            onChange={(e) => movementsPage.setSearch(e.target.value)}
             className="pl-10"
           />
         </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
+        <Select value={movementsPage.typeFilter} onValueChange={movementsPage.setTypeFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Тип движение" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Всички типове</SelectItem>
-            <SelectItem value="in" className="text-green-500 focus:text-green-500">
+            <SelectItem value="in" className="text-success focus:text-success">
               <div className="flex items-center gap-2">
                 <ArrowDownToLine className="w-4 h-4" />
                 Приход
               </div>
             </SelectItem>
-            <SelectItem value="out" className="text-red-500 focus:text-red-500">
+            <SelectItem value="out" className="text-destructive focus:text-destructive">
               <div className="flex items-center gap-2">
                 <ArrowUpFromLine className="w-4 h-4" />
                 Разход
               </div>
             </SelectItem>
-            <SelectItem value="adjustment" className="text-blue-500 focus:text-blue-500">
+            <SelectItem value="adjustment" className="text-info focus:text-info">
               <div className="flex items-center gap-2">
                 <RefreshCw className="w-4 h-4" />
                 Корекция
               </div>
             </SelectItem>
-            <SelectItem value="return" className="text-orange-500 focus:text-orange-500">
+            <SelectItem value="return" className="text-warning focus:text-warning">
               <div className="flex items-center gap-2">
                 <ArrowDownToLine className="w-4 h-4" />
                 Връщане
