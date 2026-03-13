@@ -466,7 +466,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           <Button 
             variant="outline" 
             onClick={() => navigate('/inventory')}
-            className="col-span-1 sm:w-auto h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground"
+            className={`${!connectixEnabled && !nekorektenEnabled ? 'col-span-2' : 'col-span-1'} sm:w-auto h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground`}
           >
             <Warehouse className="w-4 h-4 mr-2" />
             Склад
