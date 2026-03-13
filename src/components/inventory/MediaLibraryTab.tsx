@@ -79,6 +79,18 @@ export function MediaLibraryTab() {
     if (currentFolderId === folder.id) setCurrentFolderId(null);
   };
 
+  const handleDownloadFile = (file: MediaFile) => {
+    if (file.public_url) {
+      const link = document.createElement('a');
+      link.href = file.public_url;
+      link.download = file.file_name;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const handleMoveFile = async (targetFolderId: string | null) => {
     if (!moveFileTarget) return;
     await media.moveFile(moveFileTarget.id, targetFolderId);
