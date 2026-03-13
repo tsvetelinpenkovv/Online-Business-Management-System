@@ -57,7 +57,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     payment_method: 'cod' as string,
   });
   const [products, setProducts] = useState<ProductItem[]>([
-    { product_name: '', catalog_number: '', quantity: 1, price: 0 }
+    { product_name: '', catalog_number: '', quantity: 1, price: 0, inventory_product_id: undefined }
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(0);
