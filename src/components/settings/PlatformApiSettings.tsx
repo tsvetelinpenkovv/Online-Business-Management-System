@@ -469,6 +469,155 @@ export const PlatformApiSettings: FC = () => {
                     </div>
                   </div>
 
+                {platform.name === 'custom_api' ? (
+                  /* Custom API Platform - Special UI */
+                  <>
+                    <div className="sm:pl-9 space-y-4">
+                      {/* Webhook URL */}
+                      <div className="space-y-2">
+                        <Label>Webhook URL (дайте го на разработчика на вашия сайт)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={webhookUrl}
+                            readOnly
+                            className="font-mono text-xs bg-muted text-muted-foreground"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => copyWebhookUrl(platform.name)}
+                            className="shrink-0"
+                          >
+                            {copiedWebhook === platform.name ? (
+                              <Check className="w-4 h-4 text-success" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* API Key */}
+                      <div className="space-y-2">
+                        <Label>API Ключ за автентикация (x-api-key header)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={config.webhook_secret || ''}
+                            readOnly
+                            className="font-mono text-xs bg-muted"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (config.webhook_secret) {
+                                navigator.clipboard.writeText(config.webhook_secret);
+                                toast({ title: 'Копирано', description: 'API ключът е копиран' });
+                              }
+                            }}
+                            className="shrink-0"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Този ключ трябва да се изпраща като <code className="bg-muted px-1 rounded">x-api-key</code> header при всяка заявка
+                        </p>
+                      </div>
+
+                      {/* Store URL (optional) */}
+                      <div className="space-y-2">
+                        <Label>URL на сайта (опционално, за справка)</Label>
+                        <Input
+                          value={config.store_url}
+                          onChange={(e) => updateConfig(platform.name, 'store_url', e.target.value)}
+                          placeholder="https://mysite.com"
+                        />
+                      </div>
+
+                      {/* JSON Format Documentation */}
+                      <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <FileJson className="w-4 h-4 text-muted-foreground" />
+                          <Label className="text-sm font-medium">Формат на заявката (POST JSON)</Label>
+                        </div>
+                        <pre className="text-xs font-mono bg-background rounded p-3 overflow-x-auto whitespace-pre">
+{`POST ${webhookUrl}
+Headers:
+  Content-Type: application/json
+  x-api-key: <вашият_api_ключ>
+
+Body:
+{
+  "customer_name": "Иван Иванов",     // задължително
+  "phone": "+359888123456",            // задължително
+  "product_name": "Продукт 1",        // задължително
+  "total_price": 49.99,               // задължително
+  "quantity": 2,                       // опционално (по подр. 1)
+  "customer_email": "ivan@mail.bg",    // опционално
+  "delivery_address": "ул. Тест 1",   // опционално
+  "comment": "Бележка",               // опционално
+  "payment_method": "cod",            // опционално: cod|cash|card|bank_transfer
+  "catalog_number": "SKU-001",        // опционално
+  "items": [                           // опционално - детайли
+    {
+      "product_name": "Артикул 1",
+      "quantity": 1,
+      "unit_price": 25.00,
+      "catalog_number": "SKU-001"
+    }
+  ]
+}`}
+                        </pre>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-2 sm:pl-9">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => saveCustomApiConfig(platform)}
+                        disabled={saving === platform.name}
+                      >
+                        {saving === platform.name ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        {config.webhook_secret ? 'Запази' : 'Генерирай ключ и запази'}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  /* Standard Platform UI */
+                  <>
+                  {/* Platform Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <EditableSourceLogo
+                        sourceId={platform.id}
+                        sourceName={platform.display_name}
+                        currentLogo={platformLogos[platform.name]}
+                        logoUrl={platform.logo_url}
+                        size="lg"
+                      />
+                      <div className="min-w-0">
+                        <h3 className="font-medium truncate">{platform.display_name}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{labels.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <Badge variant={platform.is_enabled ? 'default' : 'secondary'} className={`text-xs ${platform.is_enabled ? 'bg-success' : ''}`}>
+                        {platform.is_enabled ? 'Активен' : 'Неактивен'}
+                      </Badge>
+                      <Switch
+                        checked={platform.is_enabled}
+                        onCheckedChange={(checked) => togglePlatform(platform.id, checked)}
+                      />
+                    </div>
+                  </div>
+
                   {/* API Settings */}
                   <div className="grid gap-4 sm:grid-cols-3 sm:pl-9">
                     <div className="space-y-2">
