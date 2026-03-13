@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { FloatingCalculator } from '@/components/FloatingCalculator';
+import { AnalogClock } from '@/components/AnalogClock';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -320,6 +322,8 @@ export default function Inventory() {
                 Обнови
               </Button>
               <div className="hidden sm:flex items-center gap-1">
+                <AnalogClock />
+                <FloatingCalculator />
                 <ThemeToggle />
                 <QuickCacheClear />
                 <Button
