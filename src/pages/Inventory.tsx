@@ -609,7 +609,6 @@ export default function Inventory() {
       <BarcodeScannerDialog
         open={isScannerOpen}
         onOpenChange={setIsScannerOpen}
-        inventory={inventory}
       />
 
       {/* Import/Export Dialog */}
