@@ -251,6 +251,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
           is_bundle: false,
           external_bundle_type: null,
           track_serial_numbers: false,
+          weight_kg: null,
+          length_cm: null,
+          width_cm: null,
+          height_cm: null,
         };
         
         const result = await inventory.createProduct(productData);
