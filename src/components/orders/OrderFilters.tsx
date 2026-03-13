@@ -95,15 +95,16 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   return (
     <div className="flex flex-col gap-3 p-3 sm:p-4 bg-card rounded-lg border">
       {/* Desktop: all in one row */}
-      <div className="hidden lg:flex items-center gap-3 justify-center flex-wrap">
+      <div className="hidden lg:flex items-center gap-3 flex-wrap">
         {onToggleStatistics && (
           <Button 
             variant={showStatistics ? "default" : "outline"} 
-            size="icon"
             onClick={onToggleStatistics}
             title="Статистика"
+            size={!connectixEnabled && !nekorektenEnabled ? "default" : "icon"}
           >
             <BarChart3 className="w-4 h-4" />
+            {!connectixEnabled && !nekorektenEnabled && <span className="ml-1">Статистика</span>}
           </Button>
         )}
         <div className="relative w-[280px]">
