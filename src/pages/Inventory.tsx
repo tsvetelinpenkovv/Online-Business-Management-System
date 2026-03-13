@@ -15,7 +15,7 @@ import {
   Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
   FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings,
-  Percent, ClipboardList, MoreVertical, LogOut, ShoppingCart
+  Percent, ClipboardList, MoreVertical, LogOut, ShoppingCart, Image
 } from 'lucide-react';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import {
@@ -44,6 +44,7 @@ import { SerialNumbersTab } from '@/components/inventory/SerialNumbersTab';
 import { BarcodeInventoryDialog } from '@/components/inventory/BarcodeInventoryDialog';
 import { ProfitabilityReport } from '@/components/inventory/ProfitabilityReport';
 import { WarehouseKPIDashboard } from '@/components/inventory/WarehouseKPIDashboard';
+import { MediaLibraryTab } from '@/components/inventory/MediaLibraryTab';
 import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
@@ -444,6 +445,13 @@ export default function Inventory() {
                   <span>Серийни номера</span>
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="media" 
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
+                  <Image className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Медия</span>
+                </TabsTrigger>
+                <TabsTrigger 
                   value="warehouse-kpi" 
                   className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                 >
@@ -487,72 +495,110 @@ export default function Inventory() {
             </div>
           </div>
 
-          <TabsContent value="dashboard" className="mt-4 sm:mt-6">
-            <InventoryDashboard inventory={inventory} />
-            <div className="mt-6">
-              <SyncJobsPanel />
-            </div>
-          </TabsContent>
+          {activeTab === 'dashboard' && (
+            <TabsContent value="dashboard" className="mt-4 sm:mt-6" forceMount>
+              <InventoryDashboard inventory={inventory} />
+              <div className="mt-6">
+                <SyncJobsPanel />
+              </div>
+            </TabsContent>
+          )}
 
-          <TabsContent value="products" className="mt-4 sm:mt-6">
-            <ProductsTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'products' && (
+            <TabsContent value="products" className="mt-4 sm:mt-6" forceMount>
+              <ProductsTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="suppliers" className="mt-4 sm:mt-6">
-            <SuppliersTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'suppliers' && (
+            <TabsContent value="suppliers" className="mt-4 sm:mt-6" forceMount>
+              <SuppliersTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="categories" className="mt-4 sm:mt-6">
-            <CategoriesTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'categories' && (
+            <TabsContent value="categories" className="mt-4 sm:mt-6" forceMount>
+              <CategoriesTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="documents" className="mt-4 sm:mt-6">
-            <DocumentsTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'documents' && (
+            <TabsContent value="documents" className="mt-4 sm:mt-6" forceMount>
+              <DocumentsTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="movements" className="mt-4 sm:mt-6">
-            <MovementsTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'movements' && (
+            <TabsContent value="movements" className="mt-4 sm:mt-6" forceMount>
+              <MovementsTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="reports" className="mt-4 sm:mt-6">
-            <ReportsTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'reports' && (
+            <TabsContent value="reports" className="mt-4 sm:mt-6" forceMount>
+              <ReportsTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="price-history" className="mt-4 sm:mt-6">
-            <PriceHistoryTab />
-          </TabsContent>
+          {activeTab === 'price-history' && (
+            <TabsContent value="price-history" className="mt-4 sm:mt-6" forceMount>
+              <PriceHistoryTab />
+            </TabsContent>
+          )}
 
-          <TabsContent value="forecast" className="mt-4 sm:mt-6">
-            <ForecastTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'forecast' && (
+            <TabsContent value="forecast" className="mt-4 sm:mt-6" forceMount>
+              <ForecastTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="profitability" className="mt-4 sm:mt-6">
-            <ProfitabilityReport inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'profitability' && (
+            <TabsContent value="profitability" className="mt-4 sm:mt-6" forceMount>
+              <ProfitabilityReport inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="serial-numbers" className="mt-4 sm:mt-6">
-            <SerialNumbersTab inventory={inventory} />
-          </TabsContent>
+          {activeTab === 'serial-numbers' && (
+            <TabsContent value="serial-numbers" className="mt-4 sm:mt-6" forceMount>
+              <SerialNumbersTab inventory={inventory} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="warehouse-kpi" className="mt-4 sm:mt-6">
-            <WarehouseKPIDashboard />
-          </TabsContent>
+          {activeTab === 'media' && (
+            <TabsContent value="media" className="mt-4 sm:mt-6" forceMount>
+              <MediaLibraryTab />
+            </TabsContent>
+          )}
 
-          <TabsContent value="warehouse-dashboard" className="mt-4 sm:mt-6">
-            <WarehouseDashboard />
-          </TabsContent>
+          {activeTab === 'warehouse-kpi' && (
+            <TabsContent value="warehouse-kpi" className="mt-4 sm:mt-6" forceMount>
+              <WarehouseKPIDashboard />
+            </TabsContent>
+          )}
 
-          <TabsContent value="warehouses" className="mt-4 sm:mt-6">
-            <WarehouseSettings />
-          </TabsContent>
+          {activeTab === 'warehouse-dashboard' && (
+            <TabsContent value="warehouse-dashboard" className="mt-4 sm:mt-6" forceMount>
+              <WarehouseDashboard />
+            </TabsContent>
+          )}
 
-          <TabsContent value="audit-log" className="mt-4 sm:mt-6">
-            <AuditLogTab />
-          </TabsContent>
+          {activeTab === 'warehouses' && (
+            <TabsContent value="warehouses" className="mt-4 sm:mt-6" forceMount>
+              <WarehouseSettings />
+            </TabsContent>
+          )}
 
-          <TabsContent value="stock-settings" className="mt-4 sm:mt-6">
-            <StockDeductionSettings />
-          </TabsContent>
+          {activeTab === 'audit-log' && (
+            <TabsContent value="audit-log" className="mt-4 sm:mt-6" forceMount>
+              <AuditLogTab />
+            </TabsContent>
+          )}
+
+          {activeTab === 'stock-settings' && (
+            <TabsContent value="stock-settings" className="mt-4 sm:mt-6" forceMount>
+              <StockDeductionSettings />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 
