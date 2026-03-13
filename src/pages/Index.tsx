@@ -685,6 +685,7 @@ const Index = () => {
 
           {/* Desktop actions - navigation buttons */}
           <div className="hidden md:flex items-center gap-1.5">
+            <AnalogClock size={36} />
             {canCreate('orders') && (
               <Button onClick={() => setShowAddOrderDialog(true)} size="sm" className="hidden lg:flex gap-1.5">
                 <Plus className="w-4 h-4" />
