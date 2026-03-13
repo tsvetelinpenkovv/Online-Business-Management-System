@@ -375,11 +375,11 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                     value={product.product_name}
                     onChange={(val) => updateProductField(index, 'product_name', val)}
                     onSelect={(p) => {
-                      // Update all product fields at once to prevent state issues
                       updateProduct(index, {
                         product_name: p.name,
                         catalog_number: p.sku,
                         price: p.sale_price || product.price,
+                        inventory_product_id: p.id,
                       });
                     }}
                     placeholder="Търси продукт..."
