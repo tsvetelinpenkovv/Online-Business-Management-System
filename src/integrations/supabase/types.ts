@@ -703,9 +703,11 @@ export type Database = {
           current_stock: number
           description: string | null
           external_bundle_type: string | null
+          height_cm: number | null
           id: string
           is_active: boolean
           is_bundle: boolean
+          length_cm: number | null
           min_stock_level: number | null
           name: string
           purchase_price: number | null
@@ -715,6 +717,8 @@ export type Database = {
           track_serial_numbers: boolean
           unit_id: string | null
           updated_at: string
+          weight_kg: number | null
+          width_cm: number | null
           woocommerce_id: number | null
         }
         Insert: {
@@ -724,9 +728,11 @@ export type Database = {
           current_stock?: number
           description?: string | null
           external_bundle_type?: string | null
+          height_cm?: number | null
           id?: string
           is_active?: boolean
           is_bundle?: boolean
+          length_cm?: number | null
           min_stock_level?: number | null
           name: string
           purchase_price?: number | null
@@ -736,6 +742,8 @@ export type Database = {
           track_serial_numbers?: boolean
           unit_id?: string | null
           updated_at?: string
+          weight_kg?: number | null
+          width_cm?: number | null
           woocommerce_id?: number | null
         }
         Update: {
@@ -745,9 +753,11 @@ export type Database = {
           current_stock?: number
           description?: string | null
           external_bundle_type?: string | null
+          height_cm?: number | null
           id?: string
           is_active?: boolean
           is_bundle?: boolean
+          length_cm?: number | null
           min_stock_level?: number | null
           name?: string
           purchase_price?: number | null
@@ -757,6 +767,8 @@ export type Database = {
           track_serial_numbers?: boolean
           unit_id?: string | null
           updated_at?: string
+          weight_kg?: number | null
+          width_cm?: number | null
           woocommerce_id?: number | null
         }
         Relationships: [
@@ -1059,6 +1071,7 @@ export type Database = {
           catalog_number: string | null
           created_at: string
           id: string
+          inventory_product_id: string | null
           order_id: number
           product_name: string
           quantity: number
@@ -1070,6 +1083,7 @@ export type Database = {
           catalog_number?: string | null
           created_at?: string
           id?: string
+          inventory_product_id?: string | null
           order_id: number
           product_name: string
           quantity?: number
@@ -1081,6 +1095,7 @@ export type Database = {
           catalog_number?: string | null
           created_at?: string
           id?: string
+          inventory_product_id?: string | null
           order_id?: number
           product_name?: string
           quantity?: number
@@ -1089,6 +1104,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_items_inventory_product_id_fkey"
+            columns: ["inventory_product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
@@ -2272,6 +2294,60 @@ export type Database = {
           wc_webhook_secret?: string | null
         }
         Relationships: []
+      }
+      supplier_products: {
+        Row: {
+          created_at: string
+          id: string
+          is_preferred: boolean | null
+          lead_time_days: number | null
+          notes: string | null
+          product_id: string
+          supplier_id: string
+          supplier_price: number | null
+          supplier_sku: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_preferred?: boolean | null
+          lead_time_days?: number | null
+          notes?: string | null
+          product_id: string
+          supplier_id: string
+          supplier_price?: number | null
+          supplier_sku?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_preferred?: boolean | null
+          lead_time_days?: number | null
+          notes?: string | null
+          product_id?: string
+          supplier_id?: string
+          supplier_price?: number | null
+          supplier_sku?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppliers: {
         Row: {
