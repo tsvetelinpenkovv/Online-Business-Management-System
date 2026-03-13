@@ -48,17 +48,17 @@ export const AnalogClock = ({ size = 36 }: { size?: number }) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="relative cursor-pointer shrink-0 rounded-full ring-1 ring-border/60 shadow-md bg-card" style={{ width: size, height: size }}>
+        <div className="relative cursor-pointer shrink-0 rounded-full ring-1 ring-border/60 shadow-md bg-white" style={{ width: size, height: size }}>
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
             {/* Face */}
-            <circle cx={cx} cy={cy} r={r - 1} className="fill-card stroke-border" strokeWidth="1" />
+            <circle cx={cx} cy={cy} r={r - 1} fill="white" stroke="hsl(0 0% 85%)" strokeWidth="1" />
 
             {/* Markers */}
             {markers.map((m, i) => (
               <line
                 key={i}
                 x1={m.x1} y1={m.y1} x2={m.x2} y2={m.y2}
-                className={m.isMain ? 'stroke-foreground' : 'stroke-muted-foreground/40'}
+                stroke={m.isMain ? '#1a1a1a' : 'rgba(120,120,120,0.4)'}
                 strokeWidth={m.isMain ? 1.5 : 0.5}
                 strokeLinecap="round"
               />
@@ -68,7 +68,7 @@ export const AnalogClock = ({ size = 36 }: { size?: number }) => {
             <line
               x1={cx} y1={cy + 2}
               x2={cx} y2={cy - r * 0.38}
-              className="stroke-foreground"
+              stroke="#1a1a1a"
               strokeWidth={2}
               strokeLinecap="round"
               transform={`rotate(${hourDeg}, ${cx}, ${cy})`}
@@ -78,7 +78,7 @@ export const AnalogClock = ({ size = 36 }: { size?: number }) => {
             <line
               x1={cx} y1={cy + 2}
               x2={cx} y2={cy - r * 0.52}
-              className="stroke-foreground"
+              stroke="#1a1a1a"
               strokeWidth={1.5}
               strokeLinecap="round"
               transform={`rotate(${minuteDeg}, ${cx}, ${cy})`}
