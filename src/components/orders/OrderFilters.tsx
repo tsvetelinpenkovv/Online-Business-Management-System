@@ -51,6 +51,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   onStatusFilterChange,
   sourceFilter,
   onSourceFilterChange,
+  paymentMethodFilter = 'all',
+  onPaymentMethodFilterChange,
   dateFrom,
   dateTo,
   onDateFromChange,
@@ -65,7 +67,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   const { getText } = useInterfaceTexts();
   const { platforms } = useEcommercePlatforms();
   const enabledPlatforms = platforms.filter(p => p.is_enabled);
-  const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
+  const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || paymentMethodFilter !== 'all' || dateFrom || dateTo;
 
   const getStatusLabel = () => {
     if (statusFilter === 'all') return getText('orders_status_filter_label');
