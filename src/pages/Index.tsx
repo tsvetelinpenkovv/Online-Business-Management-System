@@ -893,6 +893,11 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Clock strip */}
+      <div className="flex justify-center py-3 bg-card/50 border-b">
+        <AnalogClock size={80} />
+      </div>
+
       <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
         <KPIDashboard />
         <OrderFilters
