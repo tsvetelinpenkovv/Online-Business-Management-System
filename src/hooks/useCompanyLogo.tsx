@@ -75,8 +75,9 @@ export const useCompanyLogo = () => {
           .remove(existingFiles.map(f => f.name));
       }
 
-      // Get file extension
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      // Compress image before upload
+      const compressedFile = await compressLogo(file);
+      const ext = compressedFile.name.split('.').pop()?.toLowerCase() || 'webp';
       const fileName = `${LOGO_PATH}.${ext}`;
 
       // Upload new logo
