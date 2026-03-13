@@ -96,15 +96,39 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteInventory) {
+        if (deleteSerialNumbers) {
+          await supabase.from('serial_numbers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        }
         await supabase.from('stock_movements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('stock_documents').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('stock_batches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('price_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('product_bundles').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('stock_by_warehouse').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (deleteProductImages) {
+          await supabase.from('product_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          // Clear product-images storage bucket
+          const { data: piFiles } = await supabase.storage.from('product-images').list();
+          if (piFiles && piFiles.length > 0) {
+            await supabase.storage.from('product-images').remove(piFiles.map(f => f.name));
+          }
+        }
+        await supabase.from('supplier_products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('inventory_products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('inventory_categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('suppliers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      } else {
+        // Even without full inventory delete, allow standalone deletions
+        if (deleteSerialNumbers) {
+          await supabase.from('serial_numbers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        }
+        if (deleteProductImages) {
+          await supabase.from('product_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          const { data: piFiles } = await supabase.storage.from('product-images').list();
+          if (piFiles && piFiles.length > 0) {
+            await supabase.storage.from('product-images').remove(piFiles.map(f => f.name));
+          }
+        }
       }
 
       if (deleteLogoFavicon) {
