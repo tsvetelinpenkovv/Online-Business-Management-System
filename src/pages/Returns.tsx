@@ -32,6 +32,7 @@ const Returns = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState<Return | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate(buildPath('/auth'));
