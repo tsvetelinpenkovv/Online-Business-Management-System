@@ -78,7 +78,7 @@ export const AnalogClock = ({ size = 36 }: { size?: number }) => {
             <line
               x1={cx} y1={cy + 2}
               x2={cx} y2={cy - r * 0.52}
-              className="stroke-foreground"
+              stroke="#1a1a1a"
               strokeWidth={1.5}
               strokeLinecap="round"
               transform={`rotate(${minuteDeg}, ${cx}, ${cy})`}
