@@ -12,7 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buildPath } from '@/components/SecretPathGuard';
 import { CustomerDetailDialog } from '@/components/crm/CustomerDetailDialog';
-import { ArrowLeft, Users, Search, RefreshCw, Loader2, Download, UserPlus, Phone, Mail, Euro, ShoppingCart } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, Users, Search, RefreshCw, Loader2, Download, UserPlus, Phone, Mail, Euro, ShoppingCart, Printer, Trash2 } from 'lucide-react';
 
 const TAG_COLORS: Record<string, string> = {
   'VIP': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
