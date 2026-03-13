@@ -23,7 +23,7 @@ import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { FloatingCalculator } from '@/components/FloatingCalculator';
-import { AnalogClock } from '@/components/AnalogClock';
+
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
