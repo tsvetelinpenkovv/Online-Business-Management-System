@@ -84,6 +84,15 @@ const Returns = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <GlobalSearchDialog />
+            <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+              <Printer className="w-4 h-4" />
+            </Button>
+            {selectedIds.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {selectedIds.length} избрани
+              </Badge>
+            )}
             <Button variant="outline" size="icon" onClick={() => fetchReturns()}>
               <RefreshCw className="w-4 h-4" />
             </Button>
