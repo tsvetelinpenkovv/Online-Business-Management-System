@@ -44,6 +44,7 @@ import { SerialNumbersTab } from '@/components/inventory/SerialNumbersTab';
 import { BarcodeInventoryDialog } from '@/components/inventory/BarcodeInventoryDialog';
 import { ProfitabilityReport } from '@/components/inventory/ProfitabilityReport';
 import { WarehouseKPIDashboard } from '@/components/inventory/WarehouseKPIDashboard';
+import { MediaLibraryTab } from '@/components/inventory/MediaLibraryTab';
 import { useWarehouses } from '@/hooks/useWarehouses';
 
 export default function Inventory() {
