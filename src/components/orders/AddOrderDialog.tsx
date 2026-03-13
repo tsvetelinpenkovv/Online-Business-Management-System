@@ -111,7 +111,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
   }, [autoFillApplied]);
 
   const addProduct = () => {
-    setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+    setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0, inventory_product_id: undefined }]);
   };
 
   const removeProduct = (index: number) => {
