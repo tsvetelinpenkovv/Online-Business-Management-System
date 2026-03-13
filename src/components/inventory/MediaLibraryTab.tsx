@@ -351,8 +351,8 @@ export function MediaLibraryTab() {
 }
 
 // Helper components
-function FileCard({ file, onPreview, onDelete, onMove, formatSize }: {
-  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; formatSize: (n: number | null) => string;
+function FileCard({ file, onPreview, onDelete, onMove, onDownload, formatSize }: {
+  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; onDownload: () => void; formatSize: (n: number | null) => string;
 }) {
   return (
     <div className="group relative border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-card">
