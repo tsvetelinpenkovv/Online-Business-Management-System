@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   FolderPlus, Upload, Trash2, Move, Eye, MoreVertical, FolderOpen,
   Image, ChevronRight, Grid3X3, List, Loader2, FileImage, HardDrive,
-  FolderTree, ChevronDown, Pencil, Search, X
+  FolderTree, ChevronDown, Pencil, Search, X, Download
 } from 'lucide-react';
 
 export function MediaLibraryTab() {
