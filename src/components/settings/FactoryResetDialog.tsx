@@ -66,6 +66,10 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         await supabase.from('shipments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
+      if (deleteOrderHistory) {
+        await supabase.from('order_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
       if (deleteInvoices) {
         await supabase.from('credit_notes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('invoices').delete().neq('id', '00000000-0000-0000-0000-000000000000');
