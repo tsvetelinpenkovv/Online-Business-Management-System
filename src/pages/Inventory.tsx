@@ -329,8 +329,7 @@ export default function Inventory() {
                 Обнови
               </Button>
               <div className="hidden sm:flex items-center gap-1">
-                <AnalogClock />
-                <FloatingCalculator />
+                <FloatingCalculator onDockChange={handleCalcDock} />
                 <ThemeToggle />
                 <QuickCacheClear />
                 <Button
