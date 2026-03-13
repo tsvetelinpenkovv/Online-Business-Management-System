@@ -732,6 +732,8 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <GlobalSearchDialog />
+            <AnalogClock />
+            <FloatingCalculator />
             <ThemeToggle />
             <StockAlertsButton />
             <QuickCacheClear />
