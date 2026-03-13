@@ -95,7 +95,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   return (
     <div className="flex flex-col gap-3 p-3 sm:p-4 bg-card rounded-lg border">
       {/* Desktop: all in one row */}
-      <div className="hidden lg:flex items-center gap-3">
+      <div className="hidden lg:flex items-center gap-3 justify-center flex-wrap">
         {onToggleStatistics && (
           <Button 
             variant={showStatistics ? "default" : "outline"} 
@@ -328,7 +328,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center items-center gap-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-9 justify-between overflow-hidden flex-1 sm:flex-auto">
