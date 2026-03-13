@@ -273,6 +273,7 @@ export function MediaLibraryTab() {
                       onPreview={() => setPreviewFile(file)}
                       onDelete={() => handleDeleteFile(file)}
                       onMove={() => setMoveFileTarget(file)}
+                      onDownload={() => handleDownloadFile(file)}
                       formatSize={formatSize}
                     />
                   ))}
