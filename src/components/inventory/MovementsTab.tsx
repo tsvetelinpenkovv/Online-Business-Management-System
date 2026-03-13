@@ -1,7 +1,7 @@
-import { FC, useState, useMemo } from 'react';
-import { useInventory } from '@/hooks/useInventory';
+import { FC, useState } from 'react';
 import { MOVEMENT_TYPE_LABELS, MovementType } from '@/types/inventory';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -21,35 +21,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
-  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check, Package
+  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check, Package, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMovementsPage, MovementSortKey } from '@/hooks/useMovementsPage';
 
-type MovementSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'stock_before' | 'stock_after' | 'unit_price' | 'total_price' | 'reason';
-
-interface MovementsTabProps {
-  inventory: ReturnType<typeof useInventory>;
-}
-
-export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
+export const MovementsTab: FC = () => {
   const isMobile = useIsMobile();
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const movementsPage = useMovementsPage(50);
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<MovementSortKey>('created_at');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const handleSort = (key: MovementSortKey) => {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDirection('asc');
-    }
-  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
