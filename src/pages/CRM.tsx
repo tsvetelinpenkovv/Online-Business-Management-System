@@ -35,6 +35,7 @@ export default function CRM() {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const canViewCRM = isAdmin || canView('crm');
   const canEditCRM = isAdmin || canEdit('crm');
