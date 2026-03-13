@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MessageCircle, Smartphone, ArrowLeft, Search, 
-  Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2, List
+  Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2, List, Printer
 } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { useToast } from '@/hooks/use-toast';

@@ -15,7 +15,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CreateReturnDialog } from '@/components/returns/CreateReturnDialog';
 import { ReturnDetailDialog } from '@/components/returns/ReturnDetailDialog';
-import { Package, ArrowLeft, Plus, Search, RotateCcw, Trash2, MoreHorizontal, Eye, Loader2, RefreshCw } from 'lucide-react';
+import { Package, ArrowLeft, Plus, Search, RotateCcw, Trash2, MoreHorizontal, Eye, Loader2, RefreshCw, Printer, Download } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { formatDistanceToNow } from 'date-fns';
 import { bg } from 'date-fns/locale';
 

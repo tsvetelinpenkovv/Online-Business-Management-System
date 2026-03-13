@@ -729,6 +729,7 @@ const Index = () => {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+            <GlobalSearchDialog />
             <ThemeToggle />
             <StockAlertsButton />
             <QuickCacheClear />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, ShieldAlert, CheckCircle2, XCircle, HelpCircle, Loader2, RefreshCw, ExternalLink, Phone, User, Download, Calendar } from 'lucide-react';
+import { ArrowLeft, Search, ShieldAlert, CheckCircle2, XCircle, HelpCircle, Loader2, RefreshCw, ExternalLink, Phone, User, Download, Calendar, Printer } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { useToast } from '@/hooks/use-toast';

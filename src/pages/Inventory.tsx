@@ -46,6 +46,7 @@ import { ProfitabilityReport } from '@/components/inventory/ProfitabilityReport'
 import { WarehouseKPIDashboard } from '@/components/inventory/WarehouseKPIDashboard';
 import { MediaLibraryTab } from '@/components/inventory/MediaLibraryTab';
 import { useWarehouses } from '@/hooks/useWarehouses';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 
 export default function Inventory() {
   const navigate = useNavigate();
