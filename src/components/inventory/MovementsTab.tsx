@@ -211,35 +211,33 @@ export const MovementsTab: FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader columnKey="created_at" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                    <SortableHeader columnKey="created_at" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort}>
                       <History className="w-4 h-4 text-muted-foreground" />
                       Дата/Час
                     </SortableHeader>
-                    <SortableHeader columnKey="movement_type" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                    <SortableHeader columnKey="movement_type" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort}>
                       Тип
                     </SortableHeader>
-                    <SortableHeader columnKey="product" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
-                      <Package className="w-4 h-4 text-muted-foreground" />
+                    <TableHead>
+                      <Package className="w-4 h-4 text-muted-foreground inline mr-1" />
                       Артикул
-                    </SortableHeader>
-                    <SortableHeader columnKey="quantity" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    </TableHead>
+                    <SortableHeader columnKey="quantity" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Количество
                     </SortableHeader>
-                    <SortableHeader columnKey="stock_before" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="stock_before" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Преди
                     </SortableHeader>
-                    <SortableHeader columnKey="stock_after" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="stock_after" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       След
                     </SortableHeader>
-                    <SortableHeader columnKey="unit_price" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="unit_price" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Ед. цена
                     </SortableHeader>
-                    <SortableHeader columnKey="total_price" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="total_price" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Сума
                     </SortableHeader>
-                    <SortableHeader columnKey="reason" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
-                      Причина
-                    </SortableHeader>
+                    <TableHead>Причина</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
