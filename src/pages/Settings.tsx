@@ -743,6 +743,10 @@ const Settings = () => {
                   <BookOpen className="w-4 h-4 text-destructive" />
                   <span>Документация</span>
                 </TabsTrigger>
+                <TabsTrigger value="promo" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Промокодове">
+                  <Percent className="w-4 h-4" />
+                  <span>Промокодове</span>
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
