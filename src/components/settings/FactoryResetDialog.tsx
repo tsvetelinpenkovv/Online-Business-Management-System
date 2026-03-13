@@ -39,6 +39,15 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const [deleteCouriers, setDeleteCouriers] = useState(true);
   const [deleteEcommercePlatforms, setDeleteEcommercePlatforms] = useState(true);
   const [deleteStores, setDeleteStores] = useState(true);
+  // New options
+  const [deleteMediaFiles, setDeleteMediaFiles] = useState(true);
+  const [deleteProductImages, setDeleteProductImages] = useState(true);
+  const [deleteOrderHistory, setDeleteOrderHistory] = useState(true);
+  const [deletePromoCodes, setDeletePromoCodes] = useState(true);
+  const [deleteAutomations, setDeleteAutomations] = useState(true);
+  const [deleteWebhooks, setDeleteWebhooks] = useState(true);
+  const [deleteWarehouses, setDeleteWarehouses] = useState(true);
+  const [deleteSerialNumbers, setDeleteSerialNumbers] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
