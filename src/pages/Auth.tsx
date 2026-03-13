@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff, UserPlus, Sparkles, ShieldCheck } from 'lucide-react';
+import { Package, Loader2, Mail, Lock, LogIn, KeyRound, ArrowLeft, Send, Eye, EyeOff, UserPlus, Settings, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { buildPath } from '@/components/SecretPathGuard';
 
@@ -511,7 +511,7 @@ const Auth = () => {
           {isSetupMode ? (
             <>
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Sparkles className="w-5 h-5 text-primary" />
+                <Settings className="w-5 h-5 text-primary" />
                 <CardTitle className="text-2xl">Първоначална настройка</CardTitle>
               </div>
               <CardDescription>
@@ -594,7 +594,7 @@ const Auth = () => {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 mr-2" />
+                      <ShieldCheck className="w-4 h-4 mr-2" />
                       Създай администратор
                     </>
                   )}
