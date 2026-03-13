@@ -73,7 +73,8 @@ export const EditableSourceLogo: FC<EditableSourceLogoProps> = ({
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const compressedFile = await compressLogo(file);
+      const fileExt = compressedFile.name.split('.').pop();
       const fileName = `${sourceId}-${Date.now()}.${fileExt}`;
       const filePath = `source-logos/${fileName}`;
 
