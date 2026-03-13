@@ -173,6 +173,27 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {onPaymentMethodFilterChange && (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[160px] justify-between">
+                <div className="flex items-center">
+                  <Banknote className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{getPaymentMethodLabel()}</span>
+                </div>
+                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('all')}>Всички методи</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('cod')}>Наложен платеж</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('cash')}>На ръка (кеш)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('card')}>С карта</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('bank_transfer')}>Банков превод</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-[160px] justify-between">
