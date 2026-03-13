@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { FloatingCalculator } from '@/components/FloatingCalculator';
+import { FloatingCalculator, getCalcDockMargin } from '@/components/FloatingCalculator';
 import { AnalogClock } from '@/components/AnalogClock';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
