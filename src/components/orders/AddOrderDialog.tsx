@@ -189,6 +189,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           comment: '',
           status: 'Нова',
           source: 'phone',
+          payment_method: 'cod',
         });
         setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
         setAutoFillApplied(false);
