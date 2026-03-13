@@ -32,6 +32,7 @@ interface ProductItem {
   catalog_number: string;
   quantity: number;
   price: number;
+  inventory_product_id?: string;
 }
 
 interface AddOrderDialogProps {
