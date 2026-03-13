@@ -186,6 +186,14 @@ export default function CRM() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox 
+                        checked={selectedIds.length === filtered.length && filtered.length > 0}
+                        onCheckedChange={(checked) => {
+                          setSelectedIds(checked ? filtered.map(c => c.id) : []);
+                        }}
+                      />
+                    </TableHead>
                     <TableHead className="min-w-[150px]">Клиент</TableHead>
                     <TableHead className="min-w-[120px]">Телефон</TableHead>
                     <TableHead className="hidden sm:table-cell">Имейл</TableHead>
