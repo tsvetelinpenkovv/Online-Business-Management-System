@@ -206,7 +206,7 @@ export default function CRM() {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         {customers.length === 0 ? (
                           <div className="space-y-2">
                             <p>Няма клиенти. Натиснете "Синхронизирай от поръчки" за да импортирате клиенти от съществуващите поръчки.</p>

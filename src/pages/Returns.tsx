@@ -159,6 +159,14 @@ const Returns = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={selectedIds.length === filtered.length && filtered.length > 0}
+                        onCheckedChange={(checked) => {
+                          setSelectedIds(checked ? filtered.map(r => r.id) : []);
+                        }}
+                      />
+                    </TableHead>
                     <TableHead className="w-[80px]">ID</TableHead>
                     <TableHead>Поръчка</TableHead>
                     <TableHead>Клиент</TableHead>
