@@ -413,6 +413,7 @@ function FileRow({ file, onPreview, onDelete, onMove, onDownload, formatSize }: 
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onPreview}><Eye className="w-4 h-4 mr-2" />Преглед</DropdownMenuItem>
+          <DropdownMenuItem onClick={onDownload}><Download className="w-4 h-4 mr-2" />Изтегли</DropdownMenuItem>
           <DropdownMenuItem onClick={onMove}><Move className="w-4 h-4 mr-2" />Премести</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onDelete} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />Изтрий</DropdownMenuItem>
