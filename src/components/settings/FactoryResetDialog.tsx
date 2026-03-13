@@ -131,6 +131,23 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
         }
       }
 
+      // Media files (DB records + storage bucket)
+      if (deleteMediaFiles) {
+        const { data: mediaFiles } = await supabase.from('media_files').select('file_path, bucket');
+        if (mediaFiles && mediaFiles.length > 0) {
+          const byBucket: Record<string, string[]> = {};
+          for (const f of mediaFiles) {
+            if (!byBucket[f.bucket]) byBucket[f.bucket] = [];
+            byBucket[f.bucket].push(f.file_path);
+          }
+          for (const [bucket, paths] of Object.entries(byBucket)) {
+            await supabase.storage.from(bucket).remove(paths);
+          }
+        }
+        await supabase.from('media_files').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('media_folders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
       if (deleteLogoFavicon) {
         const { data: logoFiles } = await supabase.storage.from('logos').list();
         if (logoFiles && logoFiles.length > 0) {
@@ -144,6 +161,24 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
 
       if (deleteAuditLogs) {
         await supabase.from('audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deletePromoCodes) {
+        await supabase.from('promo_codes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteAutomations) {
+        await supabase.from('automation_rules').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteWebhooks) {
+        await supabase.from('webhook_deliveries').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('outgoing_webhooks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteWarehouses) {
+        // Deactivate warehouses, don't delete (to preserve structure)
+        await supabase.from('warehouses').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (deleteCompanySettings) {
@@ -182,6 +217,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
 
       if (deleteCouriers) {
         // Delete courier API settings first (FK)
+        await supabase.from('courier_tracking_config').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('courier_api_settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('couriers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
