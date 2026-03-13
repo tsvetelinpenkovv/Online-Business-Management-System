@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useInventory } from '@/hooks/useInventory';
@@ -8,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { FloatingCalculator } from '@/components/FloatingCalculator';
+import { FloatingCalculator, getCalcDockMargin } from '@/components/FloatingCalculator';
 import { AnalogClock } from '@/components/AnalogClock';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,6 +74,12 @@ export default function Inventory() {
   const [footerLink, setFooterLink] = useState<string>('');
   const [footerWebsite, setFooterWebsite] = useState<string>('');
   const [hasShownLowStockAlert, setHasShownLowStockAlert] = useState(false);
+  const [calcDockSide, setCalcDockSide] = useState<'none' | 'left' | 'right'>('none');
+  const [calcOpen, setCalcOpen] = useState(false);
+  const handleCalcDock = useCallback((side: 'none' | 'left' | 'right', open: boolean) => {
+    setCalcDockSide(side);
+    setCalcOpen(open);
+  }, []);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -190,7 +197,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={cn("min-h-screen bg-background flex flex-col transition-all duration-300", getCalcDockMargin(calcDockSide, calcOpen))}>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card border-b shadow-sm">
         <div className="container mx-auto px-3 sm:px-4 py-3">
@@ -322,8 +329,7 @@ export default function Inventory() {
                 Обнови
               </Button>
               <div className="hidden sm:flex items-center gap-1">
-                <AnalogClock />
-                <FloatingCalculator />
+                <FloatingCalculator onDockChange={handleCalcDock} />
                 <ThemeToggle />
                 <QuickCacheClear />
                 <Button
@@ -348,6 +354,11 @@ export default function Inventory() {
           </div>
         </div>
       </header>
+
+      {/* Clock strip */}
+      <div className="flex justify-center py-3 bg-card/50 border-b">
+        <AnalogClock size={80} />
+      </div>
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">

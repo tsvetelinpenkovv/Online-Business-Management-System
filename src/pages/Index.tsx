@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrders, OrdersFilter } from '@/hooks/useOrders';
@@ -16,6 +17,7 @@ import { OrderFilters } from '@/components/orders/OrderFilters';
 import { OrderStatistics } from '@/components/orders/OrderStatistics';
 import { Button } from '@/components/ui/button';
 import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, Download, FileSpreadsheet, FileText, ExternalLink, Clock, FileBox, Plus, ChevronLeft, ChevronRight, Receipt, Eye, EyeOff, Columns3, Users, Euro, BarChart3, RotateCcw, Edit3 } from 'lucide-react';
+import { getCalcDockMargin } from '@/components/FloatingCalculator';
 
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -82,6 +84,12 @@ const Index = () => {
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(getDefaultVisibleColumns);
   const { stores, multiStoreEnabled } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [calcDockSide, setCalcDockSide] = useState<'none' | 'left' | 'right'>('none');
+  const [calcOpen, setCalcOpen] = useState(false);
+  const handleCalcDock = useCallback((side: 'none' | 'left' | 'right', open: boolean) => {
+    setCalcDockSide(side);
+    setCalcOpen(open);
+  }, []);
 
   // Server-side filters for orders
   const ordersFilter: OrdersFilter = useMemo(() => ({
@@ -441,7 +449,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full flex flex-col animate-fade-in">
+    <div className={cn("min-h-screen bg-background w-full flex flex-col animate-fade-in transition-all duration-300", getCalcDockMargin(calcDockSide, calcOpen))}>
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -732,8 +740,7 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <GlobalSearchDialog />
-            <AnalogClock />
-            <FloatingCalculator />
+            <FloatingCalculator onDockChange={handleCalcDock} />
             <ThemeToggle />
             <StockAlertsButton />
             <QuickCacheClear />
@@ -886,6 +893,11 @@ const Index = () => {
           </div>
         </div>
       </header>
+
+      {/* Clock strip */}
+      <div className="flex justify-center py-3 bg-card/50 border-b">
+        <AnalogClock size={80} />
+      </div>
 
       <main className="flex-1 w-full px-2 sm:px-4 py-4 sm:py-6 space-y-4">
         <KPIDashboard />
