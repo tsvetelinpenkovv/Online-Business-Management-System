@@ -93,6 +93,15 @@ export default function CRM() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <GlobalSearchDialog />
+              <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+                <Printer className="w-4 h-4" />
+              </Button>
+              {selectedIds.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {selectedIds.length} избрани
+                </Badge>
+              )}
               {canCreateCRM && (
                 <>
                   <Button variant="outline" size="sm" onClick={syncCustomersFromOrders} className="hidden sm:flex">
