@@ -388,8 +388,8 @@ function FileCard({ file, onPreview, onDelete, onMove, onDownload, formatSize }:
   );
 }
 
-function FileRow({ file, onPreview, onDelete, onMove, formatSize }: {
-  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; formatSize: (n: number | null) => string;
+function FileRow({ file, onPreview, onDelete, onMove, onDownload, formatSize }: {
+  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; onDownload: () => void; formatSize: (n: number | null) => string;
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded hover:bg-muted/50 group">
