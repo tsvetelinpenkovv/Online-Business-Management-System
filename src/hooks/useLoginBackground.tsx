@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { compressBackground } from '@/lib/imageUtils';
 
 export const useLoginBackground = () => {
   const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
@@ -61,12 +62,13 @@ export const useLoginBackground = () => {
       // Delete existing backgrounds first
       await deleteBackground();
 
-      const fileExt = file.name.split('.').pop();
+      const compressedFile = await compressBackground(file);
+      const fileExt = compressedFile.name.split('.').pop();
       const fileName = `background-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('login-backgrounds')
-        .upload(fileName, file);
+        .upload(fileName, compressedFile);
 
       if (uploadError) throw uploadError;
 

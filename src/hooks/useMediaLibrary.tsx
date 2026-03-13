@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { compressImage } from '@/lib/imageUtils';
 
 export interface MediaFolder {
   id: string;
@@ -90,7 +91,9 @@ export function useMediaLibrary(options: UseMediaLibraryOptions = {}) {
     setUploading(true);
     const results: MediaFile[] = [];
 
-    for (const file of fileList) {
+    for (const rawFile of fileList) {
+      // Compress image files before upload
+      const file = rawFile.type.startsWith('image/') ? await compressImage(rawFile) : rawFile;
       const ext = file.name.split('.').pop();
       const filePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 

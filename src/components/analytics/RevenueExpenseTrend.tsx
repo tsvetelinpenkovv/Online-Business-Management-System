@@ -1,4 +1,4 @@
-import { FC, useMemo, useState, useEffect } from 'react';
+import { FC, memo, useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -166,3 +166,5 @@ export const RevenueExpenseTrend: FC<Props> = ({ orders, dateFrom, dateTo }) => 
     </div>
   );
 };
+
+export default memo(RevenueExpenseTrend);

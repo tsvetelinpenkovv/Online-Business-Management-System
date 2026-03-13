@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { compressFavicon } from '@/lib/imageUtils';
 
 const FAVICON_BUCKET = 'logos';
 const FAVICON_PATH = 'favicon';
@@ -88,15 +89,16 @@ export const useFavicon = () => {
         }
       }
 
-      // Get file extension
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      // Compress favicon before upload
+      const compressedFile = await compressFavicon(file);
+      const ext = compressedFile.name.split('.').pop()?.toLowerCase() || 'png';
       const fileName = `${FAVICON_PATH}.${ext}`;
 
       // Upload new favicon
       const { error: uploadError } = await supabase
         .storage
         .from(FAVICON_BUCKET)
-        .upload(fileName, file, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: true,
         });

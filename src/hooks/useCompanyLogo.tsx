@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { compressLogo } from '@/lib/imageUtils';
 
 const LOGO_BUCKET = 'logos';
 const LOGO_PATH = 'company-logo';
@@ -74,15 +75,16 @@ export const useCompanyLogo = () => {
           .remove(existingFiles.map(f => f.name));
       }
 
-      // Get file extension
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      // Compress image before upload
+      const compressedFile = await compressLogo(file);
+      const ext = compressedFile.name.split('.').pop()?.toLowerCase() || 'webp';
       const fileName = `${LOGO_PATH}.${ext}`;
 
       // Upload new logo
       const { error: uploadError } = await supabase
         .storage
         .from(LOGO_BUCKET)
-        .upload(fileName, file, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: true,
         });

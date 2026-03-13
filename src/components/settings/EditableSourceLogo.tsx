@@ -2,6 +2,7 @@ import { FC, useRef, useState } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { compressLogo } from '@/lib/imageUtils';
 
 interface EditableSourceLogoProps {
   sourceId: string;
@@ -72,14 +73,15 @@ export const EditableSourceLogo: FC<EditableSourceLogoProps> = ({
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const compressedFile = await compressLogo(file);
+      const fileExt = compressedFile.name.split('.').pop();
       const fileName = `${sourceId}-${Date.now()}.${fileExt}`;
       const filePath = `source-logos/${fileName}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('login-backgrounds')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, compressedFile, { upsert: true });
 
       if (uploadError) throw uploadError;
 

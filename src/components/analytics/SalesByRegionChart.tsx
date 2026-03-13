@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, memo, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -131,3 +131,5 @@ export const SalesByRegionChart: FC<Props> = ({ orders }) => {
     </div>
   );
 };
+
+export default memo(SalesByRegionChart);
