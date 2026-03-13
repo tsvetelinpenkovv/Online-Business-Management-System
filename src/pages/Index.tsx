@@ -739,8 +739,7 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <GlobalSearchDialog />
-            <AnalogClock />
-            <FloatingCalculator />
+            <FloatingCalculator onDockChange={handleCalcDock} />
             <ThemeToggle />
             <StockAlertsButton />
             <QuickCacheClear />
