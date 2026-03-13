@@ -95,7 +95,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   return (
     <div className="flex flex-col gap-3 p-3 sm:p-4 bg-card rounded-lg border">
       {/* Desktop: all in one row */}
-      <div className="hidden lg:flex items-center gap-3">
+      <div className="hidden lg:flex items-center gap-3 justify-center flex-wrap">
         {onToggleStatistics && (
           <Button 
             variant={showStatistics ? "default" : "outline"} 
