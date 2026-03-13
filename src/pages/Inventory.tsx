@@ -209,6 +209,10 @@ export default function Inventory() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <GlobalSearchDialog />
+              <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат" className="hidden sm:flex">
+                <Printer className="w-4 h-4" />
+              </Button>
               {/* Mobile: consolidated into dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

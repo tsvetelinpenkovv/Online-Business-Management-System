@@ -184,6 +184,10 @@ const Analytics = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <GlobalSearchDialog />
+            <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+              <Printer className="w-4 h-4" />
+            </Button>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-[140px] sm:w-[150px] justify-between">

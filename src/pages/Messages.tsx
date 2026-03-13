@@ -269,14 +269,20 @@ const Messages = () => {
                 </p>
               </div>
             </div>
-            <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
-              {refreshing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              {!isMobile && <span className="ml-2">Обнови</span>}
-            </Button>
+            <div className="flex items-center gap-2">
+              <GlobalSearchDialog />
+              <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+                <Printer className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
+                {refreshing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                {!isMobile && <span className="ml-2">Обнови</span>}
+              </Button>
+            </div>
           </div>
 
           {/* Statistics Cards */}
