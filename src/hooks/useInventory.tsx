@@ -136,17 +136,15 @@ export function useInventory() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    // Only fetch lightweight metadata on mount. Products use useProductsPage.
+    // Movements/documents use useMovementsPage/useDocumentsPage.
     await Promise.all([
-      fetchProducts(),
       fetchCategories(),
       fetchUnits(),
       fetchSuppliers(),
-      fetchDocuments(),
-      fetchMovements(),
-      fetchBatches(),
     ]);
     setLoading(false);
-  }, [fetchProducts, fetchCategories, fetchUnits, fetchSuppliers, fetchDocuments, fetchMovements, fetchBatches]);
+  }, [fetchCategories, fetchUnits, fetchSuppliers]);
 
   useEffect(() => {
     fetchAll();
