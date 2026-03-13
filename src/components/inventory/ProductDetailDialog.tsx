@@ -335,6 +335,17 @@ export const ProductDetailDialog: FC<ProductDetailDialogProps> = ({ product, onC
                 Продажна: {product.sale_price.toFixed(2)} €
               </Badge>
             </div>
+            {/* Weight & Dimensions */}
+            {(product.weight_kg || product.length_cm) && (
+              <div className="flex flex-wrap gap-2 mt-1 justify-center sm:justify-start">
+                {product.weight_kg && (
+                  <Badge variant="outline" className="text-xs">⚖️ {product.weight_kg} kg</Badge>
+                )}
+                {product.length_cm && product.width_cm && product.height_cm && (
+                  <Badge variant="outline" className="text-xs">📐 {product.length_cm}×{product.width_cm}×{product.height_cm} cm</Badge>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

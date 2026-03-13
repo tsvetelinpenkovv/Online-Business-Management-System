@@ -192,7 +192,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           source: 'phone',
           payment_method: 'cod',
         });
-        setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+        setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0, inventory_product_id: undefined }]);
         setAutoFillApplied(false);
         setManualStoreId(null);
         onOpenChange(false);
