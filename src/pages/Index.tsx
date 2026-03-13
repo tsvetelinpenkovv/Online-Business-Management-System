@@ -448,7 +448,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full flex flex-col animate-fade-in">
+    <div className={cn("min-h-screen bg-background w-full flex flex-col animate-fade-in transition-all duration-300", getCalcDockMargin(calcDockSide, calcOpen))}>
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3">
