@@ -218,6 +218,7 @@ export default function Inventory() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <AnalogClock size={36} />
               <GlobalSearchDialog />
               <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат" className="hidden sm:flex">
                 <Printer className="w-4 h-4" />
@@ -269,7 +270,6 @@ export default function Inventory() {
               </DropdownMenu>
               
               {/* Desktop action buttons */}
-              <AnalogClock size={36} />
               <Button
                 variant="outline"
                 size="sm"
