@@ -193,12 +193,84 @@ export const PlatformApiSettings: FC = () => {
   };
 
   const getWebhookUrl = (platformName: string): string => {
-    const webhookPlatforms = ['woocommerce', 'prestashop', 'opencart', 'magento', 'shopify'];
+    const webhookPlatforms = ['woocommerce', 'prestashop', 'opencart', 'magento', 'shopify', 'custom_api'];
+    if (platformName === 'custom_api') {
+      return `${supabaseUrl}/functions/v1/custom-webhook`;
+    }
     if (webhookPlatforms.includes(platformName)) {
       return `${supabaseUrl}/functions/v1/${platformName}-webhook`;
     }
     return '';
   };
+
+  const generateWebhookSecret = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = 'capi_';
+    for (let i = 0; i < 32; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  const saveCustomApiConfig = async (platform: EcommercePlatform) => {
+    setSaving(platform.name);
+    try {
+      let config = configs[platform.name] || { store_url: '', api_key: '', api_secret: '' };
+      
+      // Generate webhook secret if not exists
+      if (!config.webhook_secret) {
+        config = { ...config, webhook_secret: generateWebhookSecret() };
+        setConfigs(prev => ({ ...prev, [platform.name]: config }));
+      }
+
+      const { error } = await supabase
+        .from('api_settings')
+        .upsert({
+          setting_key: 'custom_api_config',
+          setting_value: JSON.stringify({
+            is_enabled: platform.is_enabled,
+            webhook_secret: config.webhook_secret,
+            store_url: config.store_url,
+          }),
+        }, { onConflict: 'setting_key' });
+
+      if (error) throw error;
+      toast({ title: 'Успех', description: 'Custom API настройките са запазени' });
+    } catch (err) {
+      toast({ title: 'Грешка', description: 'Неуспешно запазване', variant: 'destructive' });
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const loadCustomApiConfig = async () => {
+    const { data } = await supabase
+      .from('api_settings')
+      .select('setting_value')
+      .eq('setting_key', 'custom_api_config')
+      .maybeSingle();
+    
+    if (data?.setting_value) {
+      try {
+        const parsed = JSON.parse(data.setting_value);
+        setConfigs(prev => ({
+          ...prev,
+          custom_api: {
+            store_url: parsed.store_url || '',
+            api_key: '',
+            api_secret: '',
+            webhook_secret: parsed.webhook_secret || '',
+          }
+        }));
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    if (platforms.some(p => p.name === 'custom_api')) {
+      loadCustomApiConfig();
+    }
+  }, [platforms]);
 
   const copyWebhookUrl = (platformName: string) => {
     const url = getWebhookUrl(platformName);
