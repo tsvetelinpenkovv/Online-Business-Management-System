@@ -12,7 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buildPath } from '@/components/SecretPathGuard';
 import { CustomerDetailDialog } from '@/components/crm/CustomerDetailDialog';
-import { ArrowLeft, Users, Search, RefreshCw, Loader2, Download, UserPlus, Phone, Mail, Euro, ShoppingCart } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, Users, Search, RefreshCw, Loader2, Download, UserPlus, Phone, Mail, Euro, ShoppingCart, Printer, Trash2 } from 'lucide-react';
 
 const TAG_COLORS: Record<string, string> = {
   'VIP': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
@@ -33,6 +35,7 @@ export default function CRM() {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const canViewCRM = isAdmin || canView('crm');
   const canEditCRM = isAdmin || canEdit('crm');
@@ -90,6 +93,15 @@ export default function CRM() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <GlobalSearchDialog />
+              <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+                <Printer className="w-4 h-4" />
+              </Button>
+              {selectedIds.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {selectedIds.length} избрани
+                </Badge>
+              )}
               {canCreateCRM && (
                 <>
                   <Button variant="outline" size="sm" onClick={syncCustomersFromOrders} className="hidden sm:flex">
@@ -174,6 +186,14 @@ export default function CRM() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox 
+                        checked={selectedIds.length === filtered.length && filtered.length > 0}
+                        onCheckedChange={(checked) => {
+                          setSelectedIds(checked ? filtered.map(c => c.id) : []);
+                        }}
+                      />
+                    </TableHead>
                     <TableHead className="min-w-[150px]">Клиент</TableHead>
                     <TableHead className="min-w-[120px]">Телефон</TableHead>
                     <TableHead className="hidden sm:table-cell">Имейл</TableHead>
@@ -186,7 +206,7 @@ export default function CRM() {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         {customers.length === 0 ? (
                           <div className="space-y-2">
                             <p>Няма клиенти. Натиснете "Синхронизирай от поръчки" за да импортирате клиенти от съществуващите поръчки.</p>
@@ -196,6 +216,14 @@ export default function CRM() {
                     </TableRow>
                   ) : filtered.map(customer => (
                     <TableRow key={customer.id} className="cursor-pointer" onClick={() => setSelectedCustomer(customer)}>
+                      <TableCell onClick={e => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.includes(customer.id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedIds(prev => checked ? [...prev, customer.id] : prev.filter(id => id !== customer.id));
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{customer.name}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">

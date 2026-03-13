@@ -146,6 +146,8 @@
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     background: transparent;
+    opacity: 1;
+    -webkit-appearance: inner-spin-button;
   }
 
   /* Remove focus outline on mouse click, keep it for keyboard navigation */
@@ -267,4 +269,26 @@ img {
   user-select: none;
   pointer-events: auto;
   -webkit-touch-callout: none;
+}
+
+/* Print styles */
+@media print {
+  header, .no-print, [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px;
+  }
+  .print-only {
+    display: block !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  * {
+    box-shadow: none !important;
+  }
 }

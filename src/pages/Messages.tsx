@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MessageCircle, Smartphone, ArrowLeft, Search, 
-  Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2, List
+  Check, CheckCheck, Clock, XCircle, RefreshCw, Loader2, List, Printer
 } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { useToast } from '@/hooks/use-toast';
@@ -268,14 +269,20 @@ const Messages = () => {
                 </p>
               </div>
             </div>
-            <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
-              {refreshing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              {!isMobile && <span className="ml-2">Обнови</span>}
-            </Button>
+            <div className="flex items-center gap-2">
+              <GlobalSearchDialog />
+              <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+                <Printer className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={refreshMessages} disabled={refreshing}>
+                {refreshing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                {!isMobile && <span className="ml-2">Обнови</span>}
+              </Button>
+            </div>
           </div>
 
           {/* Statistics Cards */}

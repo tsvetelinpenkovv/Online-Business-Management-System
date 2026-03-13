@@ -15,8 +15,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   ArrowLeft, TrendingUp, TrendingDown, ShoppingCart, DollarSign,
-  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store, Calendar, ChevronDown,
+  BarChart3, Users, Package, Percent, Truck, RotateCcw, Loader2, RefreshCw, Download, FileSpreadsheet, FileText, Filter, Store, Calendar, ChevronDown, Printer,
 } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -183,6 +184,10 @@ const Analytics = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <GlobalSearchDialog />
+            <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+              <Printer className="w-4 h-4" />
+            </Button>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-[140px] sm:w-[150px] justify-between">

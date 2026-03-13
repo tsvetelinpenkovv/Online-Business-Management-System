@@ -15,7 +15,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CreateReturnDialog } from '@/components/returns/CreateReturnDialog';
 import { ReturnDetailDialog } from '@/components/returns/ReturnDetailDialog';
-import { Package, ArrowLeft, Plus, Search, RotateCcw, Trash2, MoreHorizontal, Eye, Loader2, RefreshCw } from 'lucide-react';
+import { Package, ArrowLeft, Plus, Search, RotateCcw, Trash2, MoreHorizontal, Eye, Loader2, RefreshCw, Printer, Download } from 'lucide-react';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { formatDistanceToNow } from 'date-fns';
 import { bg } from 'date-fns/locale';
 
@@ -30,6 +32,7 @@ const Returns = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState<Return | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate(buildPath('/auth'));
@@ -81,6 +84,15 @@ const Returns = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <GlobalSearchDialog />
+            <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+              <Printer className="w-4 h-4" />
+            </Button>
+            {selectedIds.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {selectedIds.length} избрани
+              </Badge>
+            )}
             <Button variant="outline" size="icon" onClick={() => fetchReturns()}>
               <RefreshCw className="w-4 h-4" />
             </Button>
@@ -147,6 +159,14 @@ const Returns = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={selectedIds.length === filtered.length && filtered.length > 0}
+                        onCheckedChange={(checked) => {
+                          setSelectedIds(checked ? filtered.map(r => r.id) : []);
+                        }}
+                      />
+                    </TableHead>
                     <TableHead className="w-[80px]">ID</TableHead>
                     <TableHead>Поръчка</TableHead>
                     <TableHead>Клиент</TableHead>
@@ -161,13 +181,21 @@ const Returns = () => {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                         <RotateCcw className="w-8 h-8 mx-auto mb-2 opacity-30" />
                         Няма намерени връщания
                       </TableCell>
                     </TableRow>
                   ) : filtered.map(ret => (
                     <TableRow key={ret.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedReturn(ret)}>
+                      <TableCell onClick={e => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.includes(ret.id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedIds(prev => checked ? [...prev, ret.id] : prev.filter(id => id !== ret.id));
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{ret.id.slice(0, 8)}</TableCell>
                       <TableCell>{ret.order_id ? `#${ret.order_id}` : '—'}</TableCell>
                       <TableCell>

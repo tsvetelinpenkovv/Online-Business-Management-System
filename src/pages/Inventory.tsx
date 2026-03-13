@@ -15,7 +15,7 @@ import {
   Package, Users, FolderTree, FileText, 
   BarChart3, History, RefreshCw, Warehouse, ScanBarcode,
   FileSpreadsheet, ChevronLeft, ChevronRight, Loader2, TrendingUp, Euro, Settings,
-  Percent, ClipboardList, MoreVertical, LogOut, ShoppingCart, Image
+  Percent, ClipboardList, MoreVertical, LogOut, ShoppingCart, Image, Printer
 } from 'lucide-react';
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import {
@@ -46,6 +46,7 @@ import { ProfitabilityReport } from '@/components/inventory/ProfitabilityReport'
 import { WarehouseKPIDashboard } from '@/components/inventory/WarehouseKPIDashboard';
 import { MediaLibraryTab } from '@/components/inventory/MediaLibraryTab';
 import { useWarehouses } from '@/hooks/useWarehouses';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -208,6 +209,10 @@ export default function Inventory() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <GlobalSearchDialog />
+              <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат" className="hidden sm:flex">
+                <Printer className="w-4 h-4" />
+              </Button>
               {/* Mobile: consolidated into dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

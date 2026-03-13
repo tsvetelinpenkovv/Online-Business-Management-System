@@ -16,8 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock, Calendar, ChevronDown, X } from 'lucide-react';
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock, Calendar, ChevronDown, X, Printer } from 'lucide-react';
 import { BulkInvoiceExport } from '@/components/finance/BulkInvoiceExport';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 
@@ -157,7 +158,13 @@ const Finance = () => {
               <p className="text-sm text-muted-foreground">Проследяване на плащания и отчети</p>
             </div>
           </div>
-          <BulkInvoiceExport />
+          <div className="flex items-center gap-2">
+            <GlobalSearchDialog />
+            <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат">
+              <Printer className="w-4 h-4" />
+            </Button>
+            <BulkInvoiceExport />
+          </div>
           <div className="flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>

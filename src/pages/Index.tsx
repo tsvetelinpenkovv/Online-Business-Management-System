@@ -19,6 +19,7 @@ import { Package, Settings, LogOut, Loader2, RefreshCw, Printer, Trash2, Tags, D
 
 import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
@@ -728,6 +729,7 @@ const Index = () => {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+            <GlobalSearchDialog />
             <ThemeToggle />
             <StockAlertsButton />
             <QuickCacheClear />
