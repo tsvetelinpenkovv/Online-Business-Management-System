@@ -53,6 +53,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     comment: '',
     status: 'Нова' as OrderStatus,
     source: 'phone' as OrderSource,
+    payment_method: 'cod' as string,
   });
   const [products, setProducts] = useState<ProductItem[]>([
     { product_name: '', catalog_number: '', quantity: 1, price: 0 }
