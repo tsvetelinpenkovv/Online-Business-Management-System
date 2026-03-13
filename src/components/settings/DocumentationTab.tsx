@@ -919,10 +919,17 @@ export const DocumentationTab = () => {
                 Намерени {searchResults.length} резултата за "{searchQuery}"
               </p>
               {searchResults.map((result, idx) => (
-                <div key={idx} className="text-sm py-1 border-b border-border/50 last:border-0">
-                  <span className="text-muted-foreground text-xs">{result.section} → </span>
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSearchQuery('');
+                    scrollToSection(result.section);
+                  }}
+                  className="w-full text-left text-sm py-1.5 px-2 rounded hover:bg-muted border-b border-border/50 last:border-0 cursor-pointer transition-colors"
+                >
+                  <span className="text-primary text-xs font-medium">{result.section} → </span>
                   <span>{result.text}</span>
-                </div>
+                </button>
               ))}
             </div>
           )}
