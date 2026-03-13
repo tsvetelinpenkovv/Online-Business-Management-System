@@ -140,18 +140,21 @@ export default function Inventory() {
     }
   }, [user, authLoading, navigate, canView, permLoading]);
 
-  // Calculate critical stock counts
-  const criticalStockInfo = useMemo(() => {
-    const lowStock = inventory.products.filter(
-      p => p.current_stock <= p.min_stock_level && p.current_stock > 0
-    );
-    const outOfStock = inventory.products.filter(p => p.current_stock <= 0);
-    return {
-      lowStockCount: lowStock.length,
-      outOfStockCount: outOfStock.length,
-      totalCritical: lowStock.length + outOfStock.length,
+  // Calculate critical stock counts from RPC
+  const [criticalStockInfo, setCriticalStockInfo] = useState({ lowStockCount: 0, outOfStockCount: 0, totalCritical: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { data } = await supabase.rpc('get_inventory_stats');
+      if (data) {
+        const d = data as any;
+        const low = Number(d.lowStockProducts || 0);
+        const out = Number(d.outOfStockProducts || 0);
+        setCriticalStockInfo({ lowStockCount: low, outOfStockCount: out, totalCritical: low + out });
+      }
     };
-  }, [inventory.products]);
+    fetchStats();
+  }, []);
 
   // Show toast notification for low stock on first load
   useEffect(() => {

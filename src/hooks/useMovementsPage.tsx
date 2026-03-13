@@ -32,7 +32,7 @@ export function useMovementsPage(pageSize = 50) {
 
       // Type filter
       if (typeFilter !== 'all') {
-        query = query.eq('movement_type', typeFilter);
+        query = query.eq('movement_type', typeFilter as any);
       }
 
       // Search - filter by reason (product search requires join filtering which is limited)

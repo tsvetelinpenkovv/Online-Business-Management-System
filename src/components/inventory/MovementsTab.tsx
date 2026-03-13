@@ -322,6 +322,21 @@ export const MovementsTab: FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Pagination */}
+      {movementsPage.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <Button variant="outline" size="sm" disabled={movementsPage.page <= 1} onClick={() => movementsPage.setPage(p => p - 1)}>
+            <ChevronLeft className="w-4 h-4 mr-1" /> Назад
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Страница {movementsPage.page} от {movementsPage.totalPages} ({movementsPage.totalCount} записа)
+          </span>
+          <Button variant="outline" size="sm" disabled={movementsPage.page >= movementsPage.totalPages} onClick={() => movementsPage.setPage(p => p + 1)}>
+            Напред <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
