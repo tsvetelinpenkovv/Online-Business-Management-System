@@ -53,6 +53,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     comment: '',
     status: 'Нова' as OrderStatus,
     source: 'phone' as OrderSource,
+    payment_method: 'cod' as string,
   });
   const [products, setProducts] = useState<ProductItem[]>([
     { product_name: '', catalog_number: '', quantity: 1, price: 0 }
@@ -175,7 +176,8 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         courier_tracking_url: null,
         courier_id: null,
         store_id: effectiveStoreId || null,
-      });
+        payment_method: formData.payment_method || 'cod',
+      } as any);
 
       if (order) {
         setFormData({
@@ -187,6 +189,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           comment: '',
           status: 'Нова',
           source: 'phone',
+          payment_method: 'cod',
         });
         setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
         setAutoFillApplied(false);
@@ -259,6 +262,23 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                     </div>
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Метод на плащане</Label>
+            <Select
+              value={formData.payment_method}
+              onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cod">Наложен платеж</SelectItem>
+                <SelectItem value="cash">На ръка (кеш)</SelectItem>
+                <SelectItem value="card">С карта</SelectItem>
+                <SelectItem value="bank_transfer">Банков превод</SelectItem>
               </SelectContent>
             </Select>
           </div>

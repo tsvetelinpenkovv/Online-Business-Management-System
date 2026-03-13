@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle, ShieldAlert } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle, ShieldAlert, Banknote } from 'lucide-react';
 import { buildPath } from '@/components/SecretPathGuard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,8 @@ interface OrderFiltersProps {
   onStatusFilterChange: (value: string) => void;
   sourceFilter: string;
   onSourceFilterChange: (value: string) => void;
+  paymentMethodFilter?: string;
+  onPaymentMethodFilterChange?: (value: string) => void;
   dateFrom: Date | undefined;
   dateTo: Date | undefined;
   onDateFromChange: (date: Date | undefined) => void;
@@ -49,6 +51,8 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   onStatusFilterChange,
   sourceFilter,
   onSourceFilterChange,
+  paymentMethodFilter = 'all',
+  onPaymentMethodFilterChange,
   dateFrom,
   dateTo,
   onDateFromChange,
@@ -63,7 +67,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
   const { getText } = useInterfaceTexts();
   const { platforms } = useEcommercePlatforms();
   const enabledPlatforms = platforms.filter(p => p.is_enabled);
-  const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || dateFrom || dateTo;
+  const hasFilters = searchTerm || statusFilter !== 'all' || sourceFilter !== 'all' || paymentMethodFilter !== 'all' || dateFrom || dateTo;
 
   const getStatusLabel = () => {
     if (statusFilter === 'all') return getText('orders_status_filter_label');
@@ -77,10 +81,15 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
       facebook: 'Facebook',
       phone: 'Телефон',
     };
-    // Check enabled platforms for label
     const platform = enabledPlatforms.find(p => p.name === sourceFilter);
     if (platform) return platform.display_name;
     return sourceLabels[sourceFilter] || sourceFilter;
+  };
+
+  const getPaymentMethodLabel = () => {
+    if (paymentMethodFilter === 'all') return 'Плащане';
+    const labels: Record<string, string> = { cod: 'Наложен платеж', cash: 'На ръка', card: 'Карта', bank_transfer: 'Банков превод' };
+    return labels[paymentMethodFilter] || paymentMethodFilter;
   };
 
   return (
@@ -163,6 +172,27 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {onPaymentMethodFilterChange && (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[160px] justify-between">
+                <div className="flex items-center">
+                  <Banknote className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{getPaymentMethodLabel()}</span>
+                </div>
+                <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('all')}>Всички методи</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('cod')}>Наложен платеж</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('cash')}>На ръка (кеш)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('card')}>С карта</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onPaymentMethodFilterChange('bank_transfer')}>Банков превод</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         <Popover>
           <PopoverTrigger asChild>

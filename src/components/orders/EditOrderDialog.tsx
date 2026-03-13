@@ -350,6 +350,24 @@ export const EditOrderDialog: FC<EditOrderDialogProps> = ({ order, onClose, onSa
             </p>
           </div>
 
+          <div className="space-y-2">
+            <Label>Метод на плащане</Label>
+            <Select
+              value={formData.payment_method || 'cod'}
+              onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Избери метод" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cod">Наложен платеж</SelectItem>
+                <SelectItem value="cash">На ръка (кеш)</SelectItem>
+                <SelectItem value="card">С карта</SelectItem>
+                <SelectItem value="bank_transfer">Банков превод</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="col-span-2 space-y-2">
             <Label htmlFor="comment">Коментар</Label>
             <Textarea

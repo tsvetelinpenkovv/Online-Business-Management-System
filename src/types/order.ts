@@ -41,6 +41,7 @@ export interface Order {
   source: OrderSource;
   user_id: string | null;
   stock_deducted?: boolean;
+  payment_method?: string | null;
 }
 
 export interface ApiSetting {
