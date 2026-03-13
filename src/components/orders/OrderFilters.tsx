@@ -81,10 +81,15 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
       facebook: 'Facebook',
       phone: 'Телефон',
     };
-    // Check enabled platforms for label
     const platform = enabledPlatforms.find(p => p.name === sourceFilter);
     if (platform) return platform.display_name;
     return sourceLabels[sourceFilter] || sourceFilter;
+  };
+
+  const getPaymentMethodLabel = () => {
+    if (paymentMethodFilter === 'all') return 'Плащане';
+    const labels: Record<string, string> = { cod: 'Наложен платеж', cash: 'На ръка', card: 'Карта', bank_transfer: 'Банков превод' };
+    return labels[paymentMethodFilter] || paymentMethodFilter;
   };
 
   return (
