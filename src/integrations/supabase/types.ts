@@ -2608,6 +2608,7 @@ export type Database = {
         Args: { doc_type: Database["public"]["Enums"]["document_type"] }
         Returns: string
       }
+      get_inventory_stats: { Args: never; Returns: Json }
       has_permission: {
         Args: { _action: string; _email: string; _module: string }
         Returns: boolean

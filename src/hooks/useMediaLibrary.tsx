@@ -163,6 +163,26 @@ export function useMediaLibrary(options: UseMediaLibraryOptions = {}) {
   }, [toast, fetchFolders]);
 
   const deleteFolder = useCallback(async (id: string) => {
+    // First, fetch and delete all files in this folder from storage
+    const { data: folderFiles } = await supabase
+      .from('media_files')
+      .select('file_path, bucket')
+      .eq('folder_id', id);
+
+    if (folderFiles && folderFiles.length > 0) {
+      // Group by bucket and delete from storage
+      const byBucket: Record<string, string[]> = {};
+      for (const f of folderFiles) {
+        if (!byBucket[f.bucket]) byBucket[f.bucket] = [];
+        byBucket[f.bucket].push(f.file_path);
+      }
+      for (const [bucket, paths] of Object.entries(byBucket)) {
+        await supabase.storage.from(bucket).remove(paths);
+      }
+      // Delete file DB records
+      await supabase.from('media_files').delete().eq('folder_id', id);
+    }
+
     const { error } = await supabase
       .from('media_folders')
       .delete()

@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   FolderPlus, Upload, Trash2, Move, Eye, MoreVertical, FolderOpen,
   Image, ChevronRight, Grid3X3, List, Loader2, FileImage, HardDrive,
-  FolderTree, ChevronDown, Pencil, Search, X
+  FolderTree, ChevronDown, Pencil, Search, X, Download
 } from 'lucide-react';
 
 export function MediaLibraryTab() {
@@ -31,7 +31,7 @@ export function MediaLibraryTab() {
 
   useEffect(() => {
     media.fetchFolders();
-  }, []);
+  }, [media.fetchFolders]);
 
   useEffect(() => {
     media.fetchFiles(currentFolderId, showProductImages);
@@ -77,6 +77,18 @@ export function MediaLibraryTab() {
     if (!confirm(`Изтриване на папка "${folder.name}" и всичко в нея?`)) return;
     await media.deleteFolder(folder.id);
     if (currentFolderId === folder.id) setCurrentFolderId(null);
+  };
+
+  const handleDownloadFile = (file: MediaFile) => {
+    if (file.public_url) {
+      const link = document.createElement('a');
+      link.href = file.public_url;
+      link.download = file.file_name;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleMoveFile = async (targetFolderId: string | null) => {
@@ -247,6 +259,7 @@ export function MediaLibraryTab() {
                       onPreview={() => setPreviewFile(file)}
                       onDelete={() => handleDeleteFile(file)}
                       onMove={() => setMoveFileTarget(file)}
+                      onDownload={() => handleDownloadFile(file)}
                       formatSize={formatSize}
                     />
                   ))}
@@ -260,6 +273,7 @@ export function MediaLibraryTab() {
                       onPreview={() => setPreviewFile(file)}
                       onDelete={() => handleDeleteFile(file)}
                       onMove={() => setMoveFileTarget(file)}
+                      onDownload={() => handleDownloadFile(file)}
                       formatSize={formatSize}
                     />
                   ))}
@@ -351,8 +365,8 @@ export function MediaLibraryTab() {
 }
 
 // Helper components
-function FileCard({ file, onPreview, onDelete, onMove, formatSize }: {
-  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; formatSize: (n: number | null) => string;
+function FileCard({ file, onPreview, onDelete, onMove, onDownload, formatSize }: {
+  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; onDownload: () => void; formatSize: (n: number | null) => string;
 }) {
   return (
     <div className="group relative border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-card">
@@ -375,6 +389,7 @@ function FileCard({ file, onPreview, onDelete, onMove, formatSize }: {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onPreview}><Eye className="w-4 h-4 mr-2" />Преглед</DropdownMenuItem>
+          <DropdownMenuItem onClick={onDownload}><Download className="w-4 h-4 mr-2" />Изтегли</DropdownMenuItem>
           <DropdownMenuItem onClick={onMove}><Move className="w-4 h-4 mr-2" />Премести</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onDelete} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />Изтрий</DropdownMenuItem>
@@ -387,8 +402,8 @@ function FileCard({ file, onPreview, onDelete, onMove, formatSize }: {
   );
 }
 
-function FileRow({ file, onPreview, onDelete, onMove, formatSize }: {
-  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; formatSize: (n: number | null) => string;
+function FileRow({ file, onPreview, onDelete, onMove, onDownload, formatSize }: {
+  file: MediaFile; onPreview: () => void; onDelete: () => void; onMove: () => void; onDownload: () => void; formatSize: (n: number | null) => string;
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded hover:bg-muted/50 group">
@@ -412,6 +427,7 @@ function FileRow({ file, onPreview, onDelete, onMove, formatSize }: {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onPreview}><Eye className="w-4 h-4 mr-2" />Преглед</DropdownMenuItem>
+          <DropdownMenuItem onClick={onDownload}><Download className="w-4 h-4 mr-2" />Изтегли</DropdownMenuItem>
           <DropdownMenuItem onClick={onMove}><Move className="w-4 h-4 mr-2" />Премести</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onDelete} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />Изтрий</DropdownMenuItem>

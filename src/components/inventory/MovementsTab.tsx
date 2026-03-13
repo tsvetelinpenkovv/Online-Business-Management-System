@@ -1,7 +1,7 @@
-import { FC, useState, useMemo } from 'react';
-import { useInventory } from '@/hooks/useInventory';
+import { FC, useState } from 'react';
 import { MOVEMENT_TYPE_LABELS, MovementType } from '@/types/inventory';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -21,35 +21,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import { 
-  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check, Package
+  Search, History, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, Check, Package, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMovementsPage, MovementSortKey } from '@/hooks/useMovementsPage';
 
-type MovementSortKey = 'created_at' | 'movement_type' | 'product' | 'quantity' | 'stock_before' | 'stock_after' | 'unit_price' | 'total_price' | 'reason';
-
-interface MovementsTabProps {
-  inventory: ReturnType<typeof useInventory>;
-}
-
-export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
+export const MovementsTab: FC = () => {
   const isMobile = useIsMobile();
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const movementsPage = useMovementsPage(50);
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<MovementSortKey>('created_at');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const handleSort = (key: MovementSortKey) => {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDirection('asc');
-    }
-  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -58,52 +41,7 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
     toast.success('Код копиран!');
   };
 
-  const filteredAndSortedMovements = useMemo(() => {
-    const filtered = inventory.movements.filter(m => {
-      const matchesSearch = 
-        m.product?.name.toLowerCase().includes(search.toLowerCase()) ||
-        m.product?.sku.toLowerCase().includes(search.toLowerCase()) ||
-        m.reason?.toLowerCase().includes(search.toLowerCase());
-      
-      const matchesType = typeFilter === 'all' || m.movement_type === typeFilter;
-      
-      return matchesSearch && matchesType;
-    });
-
-    return [...filtered].sort((a, b) => {
-      let comparison = 0;
-      switch (sortKey) {
-        case 'created_at':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          break;
-        case 'movement_type':
-          comparison = a.movement_type.localeCompare(b.movement_type);
-          break;
-        case 'product':
-          comparison = (a.product?.name || '').localeCompare(b.product?.name || '');
-          break;
-        case 'quantity':
-          comparison = a.quantity - b.quantity;
-          break;
-        case 'stock_before':
-          comparison = a.stock_before - b.stock_before;
-          break;
-        case 'stock_after':
-          comparison = a.stock_after - b.stock_after;
-          break;
-        case 'unit_price':
-          comparison = a.unit_price - b.unit_price;
-          break;
-        case 'total_price':
-          comparison = a.total_price - b.total_price;
-          break;
-        case 'reason':
-          comparison = (a.reason || '').localeCompare(b.reason || '');
-          break;
-      }
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }, [inventory.movements, search, typeFilter, sortKey, sortDirection]);
+  const filteredAndSortedMovements = movementsPage.movements;
 
   const getMovementIcon = (type: MovementType) => {
     switch (type) {
@@ -142,37 +80,37 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Търси по артикул или причина..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Търси по причина..."
+            value={movementsPage.search}
+            onChange={(e) => movementsPage.setSearch(e.target.value)}
             className="pl-10"
           />
         </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
+        <Select value={movementsPage.typeFilter} onValueChange={movementsPage.setTypeFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Тип движение" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Всички типове</SelectItem>
-            <SelectItem value="in" className="text-green-500 focus:text-green-500">
+            <SelectItem value="in" className="text-success focus:text-success">
               <div className="flex items-center gap-2">
                 <ArrowDownToLine className="w-4 h-4" />
                 Приход
               </div>
             </SelectItem>
-            <SelectItem value="out" className="text-red-500 focus:text-red-500">
+            <SelectItem value="out" className="text-destructive focus:text-destructive">
               <div className="flex items-center gap-2">
                 <ArrowUpFromLine className="w-4 h-4" />
                 Разход
               </div>
             </SelectItem>
-            <SelectItem value="adjustment" className="text-blue-500 focus:text-blue-500">
+            <SelectItem value="adjustment" className="text-info focus:text-info">
               <div className="flex items-center gap-2">
                 <RefreshCw className="w-4 h-4" />
                 Корекция
               </div>
             </SelectItem>
-            <SelectItem value="return" className="text-orange-500 focus:text-orange-500">
+            <SelectItem value="return" className="text-warning focus:text-warning">
               <div className="flex items-center gap-2">
                 <ArrowDownToLine className="w-4 h-4" />
                 Връщане
@@ -273,35 +211,33 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader columnKey="created_at" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                    <SortableHeader columnKey="created_at" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort}>
                       <History className="w-4 h-4 text-muted-foreground" />
                       Дата/Час
                     </SortableHeader>
-                    <SortableHeader columnKey="movement_type" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
+                    <SortableHeader columnKey="movement_type" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort}>
                       Тип
                     </SortableHeader>
-                    <SortableHeader columnKey="product" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
-                      <Package className="w-4 h-4 text-muted-foreground" />
+                    <TableHead>
+                      <Package className="w-4 h-4 text-muted-foreground inline mr-1" />
                       Артикул
-                    </SortableHeader>
-                    <SortableHeader columnKey="quantity" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    </TableHead>
+                    <SortableHeader columnKey="quantity" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Количество
                     </SortableHeader>
-                    <SortableHeader columnKey="stock_before" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="stock_before" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Преди
                     </SortableHeader>
-                    <SortableHeader columnKey="stock_after" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="stock_after" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       След
                     </SortableHeader>
-                    <SortableHeader columnKey="unit_price" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="unit_price" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Ед. цена
                     </SortableHeader>
-                    <SortableHeader columnKey="total_price" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} align="right">
+                    <SortableHeader columnKey="total_price" sortKey={movementsPage.sortKey} sortDirection={movementsPage.sortDirection} onSort={movementsPage.handleSort} align="right">
                       Сума
                     </SortableHeader>
-                    <SortableHeader columnKey="reason" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort}>
-                      Причина
-                    </SortableHeader>
+                    <TableHead>Причина</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -385,6 +321,21 @@ export const MovementsTab: FC<MovementsTabProps> = ({ inventory }) => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pagination */}
+      {movementsPage.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <Button variant="outline" size="sm" disabled={movementsPage.page <= 1} onClick={() => movementsPage.setPage(p => p - 1)}>
+            <ChevronLeft className="w-4 h-4 mr-1" /> Назад
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Страница {movementsPage.page} от {movementsPage.totalPages} ({movementsPage.totalCount} записа)
+          </span>
+          <Button variant="outline" size="sm" disabled={movementsPage.page >= movementsPage.totalPages} onClick={() => movementsPage.setPage(p => p + 1)}>
+            Напред <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
       )}
     </div>
   );
