@@ -676,6 +676,36 @@ export const DocumentationTab = () => {
   const [downloading, setDownloading] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const fullTextRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to a section in the full text by section number
+  const scrollToSection = useCallback((sectionTitle: string) => {
+    const container = fullTextRef.current;
+    if (!container) return;
+    
+    // Extract section number from title like "1. Общ преглед"
+    const sectionNum = sectionTitle.match(/^(\d+)\./)?.[1];
+    if (!sectionNum) return;
+
+    const pre = container.querySelector('pre');
+    if (!pre) return;
+
+    const text = pre.textContent || '';
+    const searchPattern = `## ${sectionNum}.`;
+    const idx = text.indexOf(searchPattern);
+    if (idx === -1) return;
+
+    // Calculate approximate scroll position
+    const lines = text.substring(0, idx).split('\n').length;
+    const lineHeight = 22; // approximate line height in pixels
+    const scrollTop = Math.max(0, lines * lineHeight - 40);
+
+    // Find the ScrollArea viewport
+    const viewport = container.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    }
+  }, []);
 
   // Filter and highlight search results
   const filteredContent = useMemo(() => {
