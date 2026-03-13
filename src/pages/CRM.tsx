@@ -216,6 +216,14 @@ export default function CRM() {
                     </TableRow>
                   ) : filtered.map(customer => (
                     <TableRow key={customer.id} className="cursor-pointer" onClick={() => setSelectedCustomer(customer)}>
+                      <TableCell onClick={e => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.includes(customer.id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedIds(prev => checked ? [...prev, customer.id] : prev.filter(id => id !== customer.id));
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{customer.name}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
