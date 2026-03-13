@@ -58,7 +58,7 @@ export const AnalogClock = ({ size = 36 }: { size?: number }) => {
               <line
                 key={i}
                 x1={m.x1} y1={m.y1} x2={m.x2} y2={m.y2}
-                className={m.isMain ? 'stroke-foreground' : 'stroke-muted-foreground/40'}
+                stroke={m.isMain ? '#1a1a1a' : 'rgba(120,120,120,0.4)'}
                 strokeWidth={m.isMain ? 1.5 : 0.5}
                 strokeLinecap="round"
               />
