@@ -125,7 +125,8 @@ export function useInventory() {
         product:inventory_products(*),
         supplier:suppliers(*)
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(500);
     
     if (error) {
       toast({ title: 'Грешка', description: 'Неуспешно зареждане на партиди', variant: 'destructive' });

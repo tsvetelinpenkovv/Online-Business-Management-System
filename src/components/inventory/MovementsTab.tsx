@@ -41,52 +41,7 @@ export const MovementsTab: FC = () => {
     toast.success('Код копиран!');
   };
 
-  const filteredAndSortedMovements = useMemo(() => {
-    const filtered = inventory.movements.filter(m => {
-      const matchesSearch = 
-        m.product?.name.toLowerCase().includes(search.toLowerCase()) ||
-        m.product?.sku.toLowerCase().includes(search.toLowerCase()) ||
-        m.reason?.toLowerCase().includes(search.toLowerCase());
-      
-      const matchesType = typeFilter === 'all' || m.movement_type === typeFilter;
-      
-      return matchesSearch && matchesType;
-    });
-
-    return [...filtered].sort((a, b) => {
-      let comparison = 0;
-      switch (sortKey) {
-        case 'created_at':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          break;
-        case 'movement_type':
-          comparison = a.movement_type.localeCompare(b.movement_type);
-          break;
-        case 'product':
-          comparison = (a.product?.name || '').localeCompare(b.product?.name || '');
-          break;
-        case 'quantity':
-          comparison = a.quantity - b.quantity;
-          break;
-        case 'stock_before':
-          comparison = a.stock_before - b.stock_before;
-          break;
-        case 'stock_after':
-          comparison = a.stock_after - b.stock_after;
-          break;
-        case 'unit_price':
-          comparison = a.unit_price - b.unit_price;
-          break;
-        case 'total_price':
-          comparison = a.total_price - b.total_price;
-          break;
-        case 'reason':
-          comparison = (a.reason || '').localeCompare(b.reason || '');
-          break;
-      }
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }, [inventory.movements, search, typeFilter, sortKey, sortDirection]);
+  const filteredAndSortedMovements = movementsPage.movements;
 
   const getMovementIcon = (type: MovementType) => {
     switch (type) {
