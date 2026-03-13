@@ -31,7 +31,7 @@ export function MediaLibraryTab() {
 
   useEffect(() => {
     media.fetchFolders();
-  }, []);
+  }, [media.fetchFolders]);
 
   useEffect(() => {
     media.fetchFiles(currentFolderId, showProductImages);
