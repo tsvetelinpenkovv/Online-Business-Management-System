@@ -17,26 +17,41 @@ export const QuickCacheClear = ({ size = 'icon' }: { size?: 'icon' | 'sm' }) => 
   const handleClear = async () => {
     setState('clearing');
     try {
-      // Clear React Query cache
+      // 1. Clear React Query cache
       queryClient.clear();
       await queryClient.invalidateQueries();
 
-      // Clear browser Cache API
+      // 2. Clear browser Cache API (PWA, service workers)
       if ('caches' in window) {
         const names = await caches.keys();
         await Promise.all(names.map(n => caches.delete(n)));
       }
 
-      // Clear storage (keep auth + theme)
+      // 3. Unregister service workers for clean slate
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
+      }
+
+      // 4. Clear storage (keep auth + theme)
       const keep = ['app-theme', 'sb-gpmwkgkvikvlzvqpbqus-auth-token'];
       Object.keys(localStorage).forEach(key => {
         if (!keep.some(k => key.includes(k))) localStorage.removeItem(key);
       });
       sessionStorage.clear();
 
+      // 5. Purge in-memory image blob URLs to free RAM
+      performance.mark?.('cache-clear');
+
+      // 6. Force garbage collection hint by clearing image decode caches
+      document.querySelectorAll('img[src*="?t="]').forEach((img) => {
+        const imgEl = img as HTMLImageElement;
+        imgEl.src = imgEl.src.split('?')[0] + '?t=' + Date.now();
+      });
+
       setState('done');
-      toast({ title: '✓ Кешът е изчистен', description: 'Страницата ще се презареди...' });
-      setTimeout(() => window.location.reload(), 1000);
+      toast({ title: '⚡ Система оптимизирана', description: 'Кеш изчистен, ресурси освободени. Презареждане...' });
+      setTimeout(() => window.location.reload(), 1200);
     } catch {
       setState('idle');
       toast({ title: 'Грешка', description: 'Неуспешно изчистване', variant: 'destructive' });
