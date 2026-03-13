@@ -157,6 +157,7 @@ const Finance = () => {
               <p className="text-sm text-muted-foreground">Проследяване на плащания и отчети</p>
             </div>
           </div>
+          <BulkInvoiceExport />
           <div className="flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>

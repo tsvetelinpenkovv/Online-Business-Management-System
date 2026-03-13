@@ -755,6 +755,10 @@ const Settings = () => {
             <PlatformApiSettings />
           </TabsContent>
 
+          <TabsContent value="promo" className="space-y-6">
+            <PromoCodesSettings />
+          </TabsContent>
+
           {isAdmin && (
             <TabsContent value="stores" className="space-y-6">
               <MultiStoreSettings />
