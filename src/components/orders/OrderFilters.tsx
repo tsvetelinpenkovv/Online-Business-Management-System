@@ -328,7 +328,7 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center items-center gap-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-9 justify-between overflow-hidden flex-1 sm:flex-auto">
