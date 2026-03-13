@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { compressLogo } from '@/lib/imageUtils';
 
 const LOGO_BUCKET = 'logos';
 const LOGO_PATH = 'company-logo';
