@@ -263,6 +263,23 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label>Метод на плащане</Label>
+            <Select
+              value={formData.payment_method}
+              onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cod">Наложен платеж</SelectItem>
+                <SelectItem value="cash">На ръка (кеш)</SelectItem>
+                <SelectItem value="card">С карта</SelectItem>
+                <SelectItem value="bank_transfer">Банков превод</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {/* Store selector - only show when on "All" tab and multi-store is enabled */}
           {!selectedStoreId && enabledStores.length > 0 && (
             <div className="space-y-2">
