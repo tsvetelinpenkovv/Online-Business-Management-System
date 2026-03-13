@@ -530,7 +530,7 @@ export default function Inventory() {
 
           {activeTab === 'movements' && (
             <TabsContent value="movements" className="mt-4 sm:mt-6" forceMount>
-              <MovementsTab inventory={inventory} />
+              <MovementsTab />
             </TabsContent>
           )}
 
