@@ -9,6 +9,7 @@ interface InventoryProduct {
   sku: string;
   sale_price: number | null;
   current_stock: number;
+  weight_kg: number | null;
 }
 
 interface ProductAutocompleteProps {
