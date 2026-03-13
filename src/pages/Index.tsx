@@ -761,7 +761,7 @@ const Index = () => {
             <Button variant="outline" size="icon" onClick={() => navigate(buildPath('/settings'))} title={getText('orders_settings_button_label')} className={!canView('settings') ? 'hidden' : ''}>
               <Settings className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut} title={getText('orders_logout_button_label')}>
+            <Button variant="outline" size="icon" onClick={handleSignOut} title={getText('orders_logout_button_label')}>
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
