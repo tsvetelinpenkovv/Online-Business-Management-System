@@ -355,6 +355,11 @@ export default function Inventory() {
         </div>
       </header>
 
+      {/* Clock strip */}
+      <div className="flex justify-center py-3 bg-card/50 border-b">
+        <AnalogClock size={80} />
+      </div>
+
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
