@@ -270,7 +270,6 @@ export default function Inventory() {
               </DropdownMenu>
               
               {/* Desktop action buttons */}
-              <AnalogClock size={36} />
               <Button
                 variant="outline"
                 size="sm"
