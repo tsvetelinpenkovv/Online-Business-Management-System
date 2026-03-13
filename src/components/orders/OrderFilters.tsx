@@ -462,39 +462,39 @@ export const OrderFilters: FC<OrderFiltersProps> = ({
             </PopoverContent>
           </Popover>
 
-          {/* Action buttons row - centered */}
-          <div className="col-span-2 flex flex-wrap justify-center gap-2">
+          {/* Warehouse button for mobile */}
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/inventory')}
+            className={`${!connectixEnabled && !nekorektenEnabled ? 'col-span-2' : 'col-span-1'} sm:w-auto h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground`}
+          >
+            <Warehouse className="w-4 h-4 mr-2" />
+            Склад
+          </Button>
+
+          {/* Messages button for mobile */}
+          {connectixEnabled && (
             <Button 
               variant="outline" 
-              onClick={() => navigate('/inventory')}
-              className={`${!connectixEnabled && !nekorektenEnabled ? 'flex-1' : ''} h-9 bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground hover:text-foreground dark:hover:text-primary-foreground`}
+              onClick={() => navigate('/messages')}
+              className="col-span-1 sm:w-auto h-9 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
             >
-              <Warehouse className="w-4 h-4 mr-2" />
-              Склад
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Съобщения
             </Button>
+          )}
 
-            {connectixEnabled && (
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/messages')}
-                className="h-9 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-foreground hover:text-foreground"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Съобщения
-              </Button>
-            )}
-
-            {nekorektenEnabled && (
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/nekorekten')}
-                className="h-9 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-foreground hover:text-foreground"
-              >
-                <ShieldAlert className="w-4 h-4 mr-2" />
-                Некоректен
-              </Button>
-            )}
-          </div>
+          {/* Nekorekten button for mobile */}
+          {nekorektenEnabled && (
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/nekorekten')}
+              className="col-span-2 sm:col-span-1 sm:w-auto h-9 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-foreground hover:text-foreground"
+            >
+              <ShieldAlert className="w-4 h-4 mr-2" />
+              Некоректен
+            </Button>
+          )}
 
           {hasFilters && (
             <Button variant="ghost" onClick={onClearFilters} className="col-span-2 sm:col-span-1 h-9 text-muted-foreground">
