@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle, ShieldAlert } from 'lucide-react';
+import { Search, Filter, Calendar, X, Globe, BarChart3, Warehouse, ChevronDown, MessageCircle, ShieldAlert, Banknote } from 'lucide-react';
 import { buildPath } from '@/components/SecretPathGuard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
