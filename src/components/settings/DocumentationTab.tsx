@@ -943,16 +943,17 @@ export const DocumentationTab = () => {
           {/* Sections grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {sections.map((section, index) => (
-              <div 
+              <button 
                 key={index}
-                className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                onClick={() => scrollToSection(section.title)}
+                className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 hover:border-primary/30 transition-colors cursor-pointer text-left"
               >
                 <section.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="font-medium text-sm">{section.title}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{section.description}</p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
