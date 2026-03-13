@@ -197,7 +197,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={cn("min-h-screen bg-background flex flex-col transition-all duration-300", getCalcDockMargin(calcDockSide, calcOpen))}>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card border-b shadow-sm">
         <div className="container mx-auto px-3 sm:px-4 py-3">
