@@ -131,3 +131,5 @@ export const SalesByRegionChart: FC<Props> = ({ orders }) => {
     </div>
   );
 };
+
+export default memo(SalesByRegionChart);

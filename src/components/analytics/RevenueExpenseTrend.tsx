@@ -166,3 +166,5 @@ export const RevenueExpenseTrend: FC<Props> = ({ orders, dateFrom, dateTo }) => 
     </div>
   );
 };
+
+export default memo(RevenueExpenseTrend);

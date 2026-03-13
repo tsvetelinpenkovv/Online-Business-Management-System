@@ -96,3 +96,5 @@ export const SalesByProductChart: FC<Props> = ({ orders }) => {
     </div>
   );
 };
+
+export default memo(SalesByProductChart);
