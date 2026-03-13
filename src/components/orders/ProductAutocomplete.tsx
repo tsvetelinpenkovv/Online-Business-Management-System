@@ -9,6 +9,7 @@ interface InventoryProduct {
   sku: string;
   sale_price: number | null;
   current_stock: number;
+  weight_kg: number | null;
 }
 
 interface ProductAutocompleteProps {
@@ -53,7 +54,7 @@ export const ProductAutocomplete = forwardRef<HTMLDivElement, ProductAutocomplet
       try {
         const { data, error } = await supabase
           .from('inventory_products')
-          .select('id, name, sku, sale_price, current_stock')
+          .select('id, name, sku, sale_price, current_stock, weight_kg')
           .or(`name.ilike.%${value}%,sku.ilike.%${value}%`)
           .eq('is_active', true)
           .limit(10);

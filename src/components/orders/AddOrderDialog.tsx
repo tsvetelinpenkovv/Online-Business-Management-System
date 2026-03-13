@@ -32,6 +32,7 @@ interface ProductItem {
   catalog_number: string;
   quantity: number;
   price: number;
+  inventory_product_id?: string;
 }
 
 interface AddOrderDialogProps {
@@ -56,7 +57,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
     payment_method: 'cod' as string,
   });
   const [products, setProducts] = useState<ProductItem[]>([
-    { product_name: '', catalog_number: '', quantity: 1, price: 0 }
+    { product_name: '', catalog_number: '', quantity: 1, price: 0, inventory_product_id: undefined }
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(0);
@@ -110,7 +111,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
   }, [autoFillApplied]);
 
   const addProduct = () => {
-    setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+    setProducts([...products, { product_name: '', catalog_number: '', quantity: 1, price: 0, inventory_product_id: undefined }]);
   };
 
   const removeProduct = (index: number) => {
@@ -191,7 +192,7 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
           source: 'phone',
           payment_method: 'cod',
         });
-        setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0 }]);
+        setProducts([{ product_name: '', catalog_number: '', quantity: 1, price: 0, inventory_product_id: undefined }]);
         setAutoFillApplied(false);
         setManualStoreId(null);
         onOpenChange(false);
@@ -374,11 +375,11 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
                     value={product.product_name}
                     onChange={(val) => updateProductField(index, 'product_name', val)}
                     onSelect={(p) => {
-                      // Update all product fields at once to prevent state issues
                       updateProduct(index, {
                         product_name: p.name,
                         catalog_number: p.sku,
                         price: p.sale_price || product.price,
+                        inventory_product_id: p.id,
                       });
                     }}
                     placeholder="Търси продукт..."

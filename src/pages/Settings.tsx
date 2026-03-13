@@ -14,7 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Link, Webhook, Plus, Trash2, TestTube, ShieldAlert, ExternalLink, ImageIcon, Upload, X, Users, UserPlus, Crown, Building2, FileText, Truck, Store, ShoppingCart, ChevronLeft, ChevronRight, BookOpen, BarChart3, Type, Shield, Lock, Copy, Check, RotateCcw, Bell, Zap, Database, Globe, HardDrive, RefreshCw, Tags, Paintbrush, SlidersHorizontal, Percent } from 'lucide-react';
+import { PromoCodesSettings } from '@/components/settings/PromoCodesSettings';
 import { OutgoingWebhooksSettings } from '@/components/settings/OutgoingWebhooksSettings';
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog';
 import { RolePermissionsManager } from '@/components/settings/RolePermissionsManager';
@@ -742,12 +743,20 @@ const Settings = () => {
                   <BookOpen className="w-4 h-4 text-destructive" />
                   <span>Документация</span>
                 </TabsTrigger>
+                <TabsTrigger value="promo" className="whitespace-nowrap text-xs sm:text-sm px-2.5 sm:px-3 gap-1" title="Промокодове">
+                  <Percent className="w-4 h-4" />
+                  <span>Промокодове</span>
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
 
           <TabsContent value="platforms" className="space-y-6">
             <PlatformApiSettings />
+          </TabsContent>
+
+          <TabsContent value="promo" className="space-y-6">
+            <PromoCodesSettings />
           </TabsContent>
 
           {isAdmin && (

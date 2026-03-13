@@ -47,6 +47,10 @@ export interface InventoryProduct {
   is_bundle: boolean;
   external_bundle_type: string | null;
   track_serial_numbers: boolean;
+  weight_kg: number | null;
+  length_cm: number | null;
+  width_cm: number | null;
+  height_cm: number | null;
   created_at: string;
   updated_at: string;
   // Joined fields

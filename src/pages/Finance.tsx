@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, CreditCard, Plus, Trash2, Loader2, Receipt, AlertCircle, CheckCircle2, Clock, Calendar, ChevronDown, X } from 'lucide-react';
+import { BulkInvoiceExport } from '@/components/finance/BulkInvoiceExport';
 import { format } from 'date-fns';
 import { bg } from 'date-fns/locale';
 
@@ -156,6 +157,7 @@ const Finance = () => {
               <p className="text-sm text-muted-foreground">Проследяване на плащания и отчети</p>
             </div>
           </div>
+          <BulkInvoiceExport />
           <div className="flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>

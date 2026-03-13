@@ -251,6 +251,10 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
           is_bundle: false,
           external_bundle_type: null,
           track_serial_numbers: false,
+          weight_kg: null,
+          length_cm: null,
+          width_cm: null,
+          height_cm: null,
         };
         
         const result = await inventory.createProduct(productData);
@@ -896,6 +900,59 @@ export const ProductsTab: FC<ProductsTabProps> = ({ inventory, syncStockToWoo = 
                 min="0"
                 value={formData.min_stock_level}
                 onChange={(e) => setFormData({ ...formData, min_stock_level: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+
+            {/* Weight & Dimensions */}
+            <div className="md:col-span-2 pt-2">
+              <p className="text-sm font-medium text-muted-foreground mb-2">📦 Тегло и размери (за товарителници)</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight_kg">Тегло (kg)</Label>
+              <Input
+                id="weight_kg"
+                type="number"
+                step="0.01"
+                min="0"
+                value={(formData as any).weight_kg || ''}
+                onChange={(e) => setFormData({ ...formData, weight_kg: parseFloat(e.target.value) || null } as any)}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="length_cm">Дължина (cm)</Label>
+              <Input
+                id="length_cm"
+                type="number"
+                step="0.1"
+                min="0"
+                value={(formData as any).length_cm || ''}
+                onChange={(e) => setFormData({ ...formData, length_cm: parseFloat(e.target.value) || null } as any)}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="width_cm">Ширина (cm)</Label>
+              <Input
+                id="width_cm"
+                type="number"
+                step="0.1"
+                min="0"
+                value={(formData as any).width_cm || ''}
+                onChange={(e) => setFormData({ ...formData, width_cm: parseFloat(e.target.value) || null } as any)}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="height_cm">Височина (cm)</Label>
+              <Input
+                id="height_cm"
+                type="number"
+                step="0.1"
+                min="0"
+                value={(formData as any).height_cm || ''}
+                onChange={(e) => setFormData({ ...formData, height_cm: parseFloat(e.target.value) || null } as any)}
+                placeholder="0"
               />
             </div>
           </div>

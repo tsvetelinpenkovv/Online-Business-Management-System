@@ -298,7 +298,9 @@ export const useOrders = (
     
     const results = [];
     for (const item of orderItems) {
-      const product = await findProduct(item.catalog_number, item.product_name);
+      const product = (item as any).inventory_product_id
+        ? { id: (item as any).inventory_product_id, ...(await findProduct(item.catalog_number, item.product_name)) }
+        : await findProduct(item.catalog_number, item.product_name);
       if (product) {
         const result = await processProductStock(product, item.quantity, operation, `Поръчка артикул: ${item.product_name}`);
         results.push({ ...result, itemName: item.product_name });
