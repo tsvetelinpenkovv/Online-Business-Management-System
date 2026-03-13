@@ -31,6 +31,8 @@ interface OrderFiltersProps {
   onStatusFilterChange: (value: string) => void;
   sourceFilter: string;
   onSourceFilterChange: (value: string) => void;
+  paymentMethodFilter?: string;
+  onPaymentMethodFilterChange?: (value: string) => void;
   dateFrom: Date | undefined;
   dateTo: Date | undefined;
   onDateFromChange: (date: Date | undefined) => void;
