@@ -84,7 +84,7 @@ export const useCompanyLogo = () => {
       const { error: uploadError } = await supabase
         .storage
         .from(LOGO_BUCKET)
-        .upload(fileName, file, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: true,
         });

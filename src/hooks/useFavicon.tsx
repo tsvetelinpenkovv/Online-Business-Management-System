@@ -98,7 +98,7 @@ export const useFavicon = () => {
       const { error: uploadError } = await supabase
         .storage
         .from(FAVICON_BUCKET)
-        .upload(fileName, file, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: true,
         });

@@ -81,7 +81,7 @@ export const EditableSourceLogo: FC<EditableSourceLogoProps> = ({
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('login-backgrounds')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, compressedFile, { upsert: true });
 
       if (uploadError) throw uploadError;
 
