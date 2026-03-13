@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -38,12 +39,21 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const [deleteCouriers, setDeleteCouriers] = useState(true);
   const [deleteEcommercePlatforms, setDeleteEcommercePlatforms] = useState(true);
   const [deleteStores, setDeleteStores] = useState(true);
+  // New options
+  const [deleteMediaFiles, setDeleteMediaFiles] = useState(true);
+  const [deleteProductImages, setDeleteProductImages] = useState(true);
+  const [deleteOrderHistory, setDeleteOrderHistory] = useState(true);
+  const [deletePromoCodes, setDeletePromoCodes] = useState(true);
+  const [deleteAutomations, setDeleteAutomations] = useState(true);
+  const [deleteWebhooks, setDeleteWebhooks] = useState(true);
+  const [deleteWarehouses, setDeleteWarehouses] = useState(true);
+  const [deleteSerialNumbers, setDeleteSerialNumbers] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const CONFIRM_TEXT = 'ИЗТРИЙ ВСИЧКО';
-  const hasAnySelected = deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon || deleteCompanySettings || deleteApiSettings || deleteCouriers || deleteEcommercePlatforms || deleteStores;
+  const hasAnySelected = deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon || deleteCompanySettings || deleteApiSettings || deleteCouriers || deleteEcommercePlatforms || deleteStores || deleteMediaFiles || deleteProductImages || deleteOrderHistory || deletePromoCodes || deleteAutomations || deleteWebhooks || deleteWarehouses || deleteSerialNumbers;
   const isValid = confirmText === CONFIRM_TEXT && hasAnySelected;
 
   const handleReset = async () => {
@@ -54,6 +64,10 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       // Delete in order to respect foreign key constraints
       if (deleteShipments) {
         await supabase.from('shipments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteOrderHistory) {
+        await supabase.from('order_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (deleteInvoices) {
@@ -82,15 +96,56 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
       }
 
       if (deleteInventory) {
+        if (deleteSerialNumbers) {
+          await supabase.from('serial_numbers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        }
         await supabase.from('stock_movements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('stock_documents').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('stock_batches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('price_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('product_bundles').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('stock_by_warehouse').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (deleteProductImages) {
+          await supabase.from('product_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          // Clear product-images storage bucket
+          const { data: piFiles } = await supabase.storage.from('product-images').list();
+          if (piFiles && piFiles.length > 0) {
+            await supabase.storage.from('product-images').remove(piFiles.map(f => f.name));
+          }
+        }
+        await supabase.from('supplier_products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('inventory_products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('inventory_categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('suppliers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      } else {
+        // Even without full inventory delete, allow standalone deletions
+        if (deleteSerialNumbers) {
+          await supabase.from('serial_numbers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        }
+        if (deleteProductImages) {
+          await supabase.from('product_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          const { data: piFiles } = await supabase.storage.from('product-images').list();
+          if (piFiles && piFiles.length > 0) {
+            await supabase.storage.from('product-images').remove(piFiles.map(f => f.name));
+          }
+        }
+      }
+
+      // Media files (DB records + storage bucket)
+      if (deleteMediaFiles) {
+        const { data: mediaFiles } = await supabase.from('media_files').select('file_path, bucket');
+        if (mediaFiles && mediaFiles.length > 0) {
+          const byBucket: Record<string, string[]> = {};
+          for (const f of mediaFiles) {
+            if (!byBucket[f.bucket]) byBucket[f.bucket] = [];
+            byBucket[f.bucket].push(f.file_path);
+          }
+          for (const [bucket, paths] of Object.entries(byBucket)) {
+            await supabase.storage.from(bucket).remove(paths);
+          }
+        }
+        await supabase.from('media_files').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('media_folders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (deleteLogoFavicon) {
@@ -106,6 +161,24 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
 
       if (deleteAuditLogs) {
         await supabase.from('audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deletePromoCodes) {
+        await supabase.from('promo_codes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteAutomations) {
+        await supabase.from('automation_rules').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteWebhooks) {
+        await supabase.from('webhook_deliveries').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('outgoing_webhooks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (deleteWarehouses) {
+        // Deactivate warehouses, don't delete (to preserve structure)
+        await supabase.from('warehouses').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (deleteCompanySettings) {
@@ -144,6 +217,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
 
       if (deleteCouriers) {
         // Delete courier API settings first (FK)
+        await supabase.from('courier_tracking_config').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('courier_api_settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('couriers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
@@ -251,13 +325,22 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
             </p>
             
             <div className="space-y-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Основни данни</p>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-orders" checked={deleteOrders} onCheckedChange={(checked) => setDeleteOrders(!!checked)} />
                 <Label htmlFor="delete-orders" className="cursor-pointer">Всички поръчки, артикули и съобщения</Label>
               </div>
               <div className="flex items-center space-x-2">
+                <Checkbox id="delete-order-history" checked={deleteOrderHistory} onCheckedChange={(checked) => setDeleteOrderHistory(!!checked)} />
+                <Label htmlFor="delete-order-history" className="cursor-pointer">История на промените по поръчки</Label>
+              </div>
+              <div className="flex items-center space-x-2">
                 <Checkbox id="delete-inventory" checked={deleteInventory} onCheckedChange={(checked) => setDeleteInventory(!!checked)} />
                 <Label htmlFor="delete-inventory" className="cursor-pointer">Всички продукти, категории, доставчици и движения</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-serial-numbers" checked={deleteSerialNumbers} onCheckedChange={(checked) => setDeleteSerialNumbers(!!checked)} />
+                <Label htmlFor="delete-serial-numbers" className="cursor-pointer">Серийни номера</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-shipments" checked={deleteShipments} onCheckedChange={(checked) => setDeleteShipments(!!checked)} />
@@ -276,13 +359,42 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
                 <Label htmlFor="delete-expenses" className="cursor-pointer">Всички разходи</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <Checkbox id="delete-audit-logs" checked={deleteAuditLogs} onCheckedChange={(checked) => setDeleteAuditLogs(!!checked)} />
-                <Label htmlFor="delete-audit-logs" className="cursor-pointer">Всички одит логове</Label>
+                <Checkbox id="delete-promo-codes" checked={deletePromoCodes} onCheckedChange={(checked) => setDeletePromoCodes(!!checked)} />
+                <Label htmlFor="delete-promo-codes" className="cursor-pointer">Всички промо кодове</Label>
+              </div>
+
+              <Separator className="my-2" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Медия и изображения</p>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-product-images" checked={deleteProductImages} onCheckedChange={(checked) => setDeleteProductImages(!!checked)} />
+                <Label htmlFor="delete-product-images" className="cursor-pointer">Кешираните продуктови снимки (product_images + storage)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-media-files" checked={deleteMediaFiles} onCheckedChange={(checked) => setDeleteMediaFiles(!!checked)} />
+                <Label htmlFor="delete-media-files" className="cursor-pointer">Медия библиотека (файлове и папки)</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-logo-favicon" checked={deleteLogoFavicon} onCheckedChange={(checked) => setDeleteLogoFavicon(!!checked)} />
                 <Label htmlFor="delete-logo-favicon" className="cursor-pointer">Лого, фавикон и фон за вход</Label>
               </div>
+
+              <Separator className="my-2" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Логове и автоматизации</p>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-audit-logs" checked={deleteAuditLogs} onCheckedChange={(checked) => setDeleteAuditLogs(!!checked)} />
+                <Label htmlFor="delete-audit-logs" className="cursor-pointer">Всички одит логове</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-automations" checked={deleteAutomations} onCheckedChange={(checked) => setDeleteAutomations(!!checked)} />
+                <Label htmlFor="delete-automations" className="cursor-pointer">Правила за автоматизация</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-webhooks" checked={deleteWebhooks} onCheckedChange={(checked) => setDeleteWebhooks(!!checked)} />
+                <Label htmlFor="delete-webhooks" className="cursor-pointer">Изходящи webhooks и доставки</Label>
+              </div>
+
+              <Separator className="my-2" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Настройки и конфигурация</p>
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-company-settings" checked={deleteCompanySettings} onCheckedChange={(checked) => setDeleteCompanySettings(!!checked)} />
                 <Label htmlFor="delete-company-settings" className="cursor-pointer">Фирмени данни (нулиране)</Label>
@@ -302,6 +414,10 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
               <div className="flex items-center space-x-2">
                 <Checkbox id="delete-stores" checked={deleteStores} onCheckedChange={(checked) => setDeleteStores(!!checked)} />
                 <Label htmlFor="delete-stores" className="cursor-pointer">Деактивиране на всички магазини и multi-store</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="delete-warehouses" checked={deleteWarehouses} onCheckedChange={(checked) => setDeleteWarehouses(!!checked)} />
+                <Label htmlFor="delete-warehouses" className="cursor-pointer">Деактивиране на всички складове</Label>
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -676,6 +676,36 @@ export const DocumentationTab = () => {
   const [downloading, setDownloading] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const fullTextRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to a section in the full text by section number
+  const scrollToSection = useCallback((sectionTitle: string) => {
+    const container = fullTextRef.current;
+    if (!container) return;
+    
+    // Extract section number from title like "1. Общ преглед"
+    const sectionNum = sectionTitle.match(/^(\d+)\./)?.[1];
+    if (!sectionNum) return;
+
+    const pre = container.querySelector('pre');
+    if (!pre) return;
+
+    const text = pre.textContent || '';
+    const searchPattern = `## ${sectionNum}.`;
+    const idx = text.indexOf(searchPattern);
+    if (idx === -1) return;
+
+    // Calculate approximate scroll position
+    const lines = text.substring(0, idx).split('\n').length;
+    const lineHeight = 22; // approximate line height in pixels
+    const scrollTop = Math.max(0, lines * lineHeight - 40);
+
+    // Find the ScrollArea viewport
+    const viewport = container.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    }
+  }, []);
 
   // Filter and highlight search results
   const filteredContent = useMemo(() => {
@@ -889,10 +919,17 @@ export const DocumentationTab = () => {
                 Намерени {searchResults.length} резултата за "{searchQuery}"
               </p>
               {searchResults.map((result, idx) => (
-                <div key={idx} className="text-sm py-1 border-b border-border/50 last:border-0">
-                  <span className="text-muted-foreground text-xs">{result.section} → </span>
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSearchQuery('');
+                    scrollToSection(result.section);
+                  }}
+                  className="w-full text-left text-sm py-1.5 px-2 rounded hover:bg-muted border-b border-border/50 last:border-0 cursor-pointer transition-colors"
+                >
+                  <span className="text-primary text-xs font-medium">{result.section} → </span>
                   <span>{result.text}</span>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -906,22 +943,23 @@ export const DocumentationTab = () => {
           {/* Sections grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {sections.map((section, index) => (
-              <div 
+              <button 
                 key={index}
-                className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                onClick={() => scrollToSection(section.title)}
+                className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 hover:border-primary/30 transition-colors cursor-pointer text-left"
               >
                 <section.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="font-medium text-sm">{section.title}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{section.description}</p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
           <Separator className="my-6" />
 
-          <div className="space-y-4">
+          <div className="space-y-4" ref={fullTextRef}>
             <h3 className="font-semibold flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Пълен текст на документацията
