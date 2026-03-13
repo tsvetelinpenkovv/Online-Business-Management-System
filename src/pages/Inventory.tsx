@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildPath } from '@/components/SecretPathGuard';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { FloatingCalculator, getCalcDockMargin } from '@/components/FloatingCalculator';
-import { AnalogClock } from '@/components/AnalogClock';
+
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -218,7 +218,7 @@ export default function Inventory() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <AnalogClock size={36} />
+              
               <GlobalSearchDialog />
               <Button variant="outline" size="icon" onClick={() => window.print()} title="Печат" className="hidden sm:flex">
                 <Printer className="w-4 h-4" />

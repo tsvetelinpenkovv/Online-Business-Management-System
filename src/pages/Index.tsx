@@ -23,7 +23,7 @@ import { QuickCacheClear } from '@/components/settings/QuickCacheClear';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { GlobalSearchDialog } from '@/components/GlobalSearchDialog';
 import { FloatingCalculator } from '@/components/FloatingCalculator';
-import { AnalogClock } from '@/components/AnalogClock';
+
 import { ORDER_STATUSES, OrderStatus } from '@/types/order';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
@@ -685,7 +685,7 @@ const Index = () => {
 
           {/* Desktop actions - navigation buttons */}
           <div className="hidden md:flex items-center gap-1.5">
-            <AnalogClock size={36} />
+            
             {canCreate('orders') && (
               <Button onClick={() => setShowAddOrderDialog(true)} size="sm" className="hidden lg:flex gap-1.5">
                 <Plus className="w-4 h-4" />
