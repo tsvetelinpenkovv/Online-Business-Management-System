@@ -176,7 +176,8 @@ export const AddOrderDialog: FC<AddOrderDialogProps> = ({ open, onOpenChange, on
         courier_tracking_url: null,
         courier_id: null,
         store_id: effectiveStoreId || null,
-      });
+        payment_method: formData.payment_method || 'cod',
+      } as any);
 
       if (order) {
         setFormData({
