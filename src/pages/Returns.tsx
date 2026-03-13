@@ -181,13 +181,21 @@ const Returns = () => {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                         <RotateCcw className="w-8 h-8 mx-auto mb-2 opacity-30" />
                         Няма намерени връщания
                       </TableCell>
                     </TableRow>
                   ) : filtered.map(ret => (
                     <TableRow key={ret.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedReturn(ret)}>
+                      <TableCell onClick={e => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.includes(ret.id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedIds(prev => checked ? [...prev, ret.id] : prev.filter(id => id !== ret.id));
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{ret.id.slice(0, 8)}</TableCell>
                       <TableCell>{ret.order_id ? `#${ret.order_id}` : '—'}</TableCell>
                       <TableCell>
