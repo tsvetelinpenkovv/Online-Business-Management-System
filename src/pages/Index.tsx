@@ -83,6 +83,12 @@ const Index = () => {
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(getDefaultVisibleColumns);
   const { stores, multiStoreEnabled } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [calcDockSide, setCalcDockSide] = useState<'none' | 'left' | 'right'>('none');
+  const [calcOpen, setCalcOpen] = useState(false);
+  const handleCalcDock = useCallback((side: 'none' | 'left' | 'right', open: boolean) => {
+    setCalcDockSide(side);
+    setCalcOpen(open);
+  }, []);
 
   // Server-side filters for orders
   const ordersFilter: OrdersFilter = useMemo(() => ({
