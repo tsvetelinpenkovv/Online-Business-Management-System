@@ -89,8 +89,9 @@ export const useFavicon = () => {
         }
       }
 
-      // Get file extension
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      // Compress favicon before upload
+      const compressedFile = await compressFavicon(file);
+      const ext = compressedFile.name.split('.').pop()?.toLowerCase() || 'png';
       const fileName = `${FAVICON_PATH}.${ext}`;
 
       // Upload new favicon
