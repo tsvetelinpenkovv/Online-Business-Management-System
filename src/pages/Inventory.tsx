@@ -74,6 +74,12 @@ export default function Inventory() {
   const [footerLink, setFooterLink] = useState<string>('');
   const [footerWebsite, setFooterWebsite] = useState<string>('');
   const [hasShownLowStockAlert, setHasShownLowStockAlert] = useState(false);
+  const [calcDockSide, setCalcDockSide] = useState<'none' | 'left' | 'right'>('none');
+  const [calcOpen, setCalcOpen] = useState(false);
+  const handleCalcDock = useCallback((side: 'none' | 'left' | 'right', open: boolean) => {
+    setCalcDockSide(side);
+    setCalcOpen(open);
+  }, []);
 
   useEffect(() => {
     const fetchSettings = async () => {
