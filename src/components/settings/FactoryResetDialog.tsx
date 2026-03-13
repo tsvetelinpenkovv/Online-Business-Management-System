@@ -53,7 +53,7 @@ export const FactoryResetDialog: FC<FactoryResetDialogProps> = ({ onReset }) => 
   const queryClient = useQueryClient();
 
   const CONFIRM_TEXT = 'ИЗТРИЙ ВСИЧКО';
-  const hasAnySelected = deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon || deleteCompanySettings || deleteApiSettings || deleteCouriers || deleteEcommercePlatforms || deleteStores;
+  const hasAnySelected = deleteOrders || deleteInventory || deleteInvoices || deleteShipments || deleteCustomers || deleteExpenses || deleteAuditLogs || deleteLogoFavicon || deleteCompanySettings || deleteApiSettings || deleteCouriers || deleteEcommercePlatforms || deleteStores || deleteMediaFiles || deleteProductImages || deleteOrderHistory || deletePromoCodes || deleteAutomations || deleteWebhooks || deleteWarehouses || deleteSerialNumbers;
   const isValid = confirmText === CONFIRM_TEXT && hasAnySelected;
 
   const handleReset = async () => {
