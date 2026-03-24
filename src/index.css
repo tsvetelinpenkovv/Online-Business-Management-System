@@ -271,6 +271,68 @@ img {
   -webkit-touch-callout: none;
 }
 
+/* ─── Apple / Safari / Touch optimizations ─── */
+
+/* Remove tap highlight on iOS */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Eliminate 300ms tap delay without disabling pinch-zoom */
+body {
+  touch-action: manipulation;
+}
+
+/* Safe area support for iPhone notch & home indicator */
+#root {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Touch targets: Apple HIG min 44×44px on touch devices */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  select,
+  [type="checkbox"],
+  [type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent Safari auto-zoom on input focus (requires ≥16px) */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Retina hairline borders */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  .border,
+  .border-t,
+  .border-b,
+  .border-l,
+  .border-r {
+    border-width: 0.5px;
+  }
+}
+
+/* Momentum scrolling for overflow containers */
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Print styles */
 @media print {
   header, .no-print, [data-radix-popper-content-wrapper] {
