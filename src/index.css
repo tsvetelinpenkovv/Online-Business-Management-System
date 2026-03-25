@@ -292,14 +292,11 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Touch targets: Apple HIG min 44×44px on touch devices */
+/* Touch targets: Apple HIG min 44×44px on touch devices (excludes small icon elements & form inputs) */
 @media (pointer: coarse) {
-  button,
-  [role="button"],
+  button:not([data-size="icon"]),
   a,
-  select,
-  [type="checkbox"],
-  [type="radio"] {
+  select {
     min-height: 44px;
     min-width: 44px;
   }
@@ -314,16 +311,6 @@ body {
   }
 }
 
-/* Retina hairline borders */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
-  .border,
-  .border-t,
-  .border-b,
-  .border-l,
-  .border-r {
-    border-width: 0.5px;
-  }
-}
 
 /* Momentum scrolling for overflow containers */
 .overflow-auto,
