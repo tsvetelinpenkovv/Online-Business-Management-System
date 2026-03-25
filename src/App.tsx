@@ -133,6 +133,7 @@ const App = () => {
                     {/* Catch-all for 404 */}
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
+                  </main>
                 </Suspense>
               </SecretPathGuard>
             </BrowserRouter>
