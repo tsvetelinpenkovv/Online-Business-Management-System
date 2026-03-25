@@ -311,16 +311,6 @@ body {
   }
 }
 
-/* Retina hairline borders */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
-  .border,
-  .border-t,
-  .border-b,
-  .border-l,
-  .border-r {
-    border-width: 0.5px;
-  }
-}
 
 /* Momentum scrolling for overflow containers */
 .overflow-auto,
