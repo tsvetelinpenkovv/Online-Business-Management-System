@@ -151,6 +151,12 @@ const Analytics = () => {
     exportOrdersPDF(data, undefined, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'));
   };
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(buildPath('/auth'));
+    }
+  }, [user, authLoading, navigate]);
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -158,12 +164,6 @@ const Analytics = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate(buildPath('/auth'));
-    }
-  }, [user, authLoading, navigate]);
 
   if (!user) return null;
 

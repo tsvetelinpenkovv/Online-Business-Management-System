@@ -100,6 +100,12 @@ const Finance = () => {
     return filtered;
   }, [expenses, dateFrom, dateTo]);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(buildPath('/auth'));
+    }
+  }, [user, authLoading, navigate]);
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -107,12 +113,6 @@ const Finance = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate(buildPath('/auth'));
-    }
-  }, [user, authLoading, navigate]);
 
   if (!user) return null;
 
