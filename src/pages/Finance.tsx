@@ -108,10 +108,13 @@ const Finance = () => {
     );
   }
 
-  if (!user) {
-    navigate(buildPath('/auth'));
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(buildPath('/auth'));
+    }
+  }, [user, authLoading, navigate]);
+
+  if (!user) return null;
 
   const handleAddExpense = async () => {
     if (!expenseAmount || Number(expenseAmount) <= 0) return;

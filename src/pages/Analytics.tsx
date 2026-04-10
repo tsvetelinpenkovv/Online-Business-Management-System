@@ -159,7 +159,13 @@ const Analytics = () => {
     );
   }
 
-  if (!user) { navigate(buildPath('/auth')); return null; }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(buildPath('/auth'));
+    }
+  }, [user, authLoading, navigate]);
+
+  if (!user) return null;
 
   const revenueChartConfig = {
     revenue: { label: 'Приходи', color: 'hsl(221, 83%, 53%)' },

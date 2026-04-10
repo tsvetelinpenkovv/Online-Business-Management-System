@@ -217,7 +217,7 @@ const Messages = () => {
               <Button 
                 variant="link" 
                 className="p-0 h-auto text-xs text-primary"
-                onClick={() => navigate(`/?search=${msg.order_id}`)}
+                onClick={() => navigate(buildPath(`/?search=${msg.order_id}`))}
               >
                 #{msg.order_id}
               </Button>
