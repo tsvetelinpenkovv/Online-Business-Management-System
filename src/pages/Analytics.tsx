@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -151,6 +151,12 @@ const Analytics = () => {
     exportOrdersPDF(data, undefined, format(dateFrom, 'yyyy-MM-dd'), format(dateTo, 'yyyy-MM-dd'));
   };
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(buildPath('/auth'));
+    }
+  }, [user, authLoading, navigate]);
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -159,7 +165,7 @@ const Analytics = () => {
     );
   }
 
-  if (!user) { navigate(buildPath('/auth')); return null; }
+  if (!user) return null;
 
   const revenueChartConfig = {
     revenue: { label: 'Приходи', color: 'hsl(221, 83%, 53%)' },

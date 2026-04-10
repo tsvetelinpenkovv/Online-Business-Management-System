@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Order } from '@/types/order';
 import { useCouriers } from '@/hooks/useCouriers';
 import { useCourierApi, ShipmentData } from '@/hooks/useCourierApi';
@@ -69,12 +69,12 @@ export const BulkShipmentDialog = ({
   const [useOrderPrice, setUseOrderPrice] = useState(true);
 
   // Load enabled couriers when dialog opens
-  useState(() => {
+  useEffect(() => {
     if (open) {
       loadEnabledCouriers();
       loadSenderConfig();
     }
-  });
+  }, [open]);
 
   const loadEnabledCouriers = async () => {
     try {

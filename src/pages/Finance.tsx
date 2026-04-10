@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -100,6 +100,12 @@ const Finance = () => {
     return filtered;
   }, [expenses, dateFrom, dateTo]);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(buildPath('/auth'));
+    }
+  }, [user, authLoading, navigate]);
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -108,10 +114,7 @@ const Finance = () => {
     );
   }
 
-  if (!user) {
-    navigate(buildPath('/auth'));
-    return null;
-  }
+  if (!user) return null;
 
   const handleAddExpense = async () => {
     if (!expenseAmount || Number(expenseAmount) <= 0) return;
