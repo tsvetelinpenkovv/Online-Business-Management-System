@@ -430,7 +430,7 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
-  if (authLoading || ordersLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background animate-fade-in">
         <div className="relative">

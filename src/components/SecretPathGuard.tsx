@@ -7,8 +7,10 @@ interface SecretPathGuardProps {
 }
 
 export const SecretPathGuard = ({ children }: SecretPathGuardProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isValidPath, setIsValidPath] = useState(true);
+  // Use cached result to avoid blocking render on repeated mounts
+  const cached = sessionStorage.getItem('secret_path_checked');
+  const [isLoading, setIsLoading] = useState(!cached);
+  const [isValidPath, setIsValidPath] = useState(cached ? cached !== '__invalid__' : true);
   const [secretPath, setSecretPath] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,15 +47,18 @@ export const SecretPathGuard = ({ children }: SecretPathGuardProps) => {
           // Check if current path starts with the secret path
           if (!currentPath.startsWith(normalizedSecretPath)) {
             setIsValidPath(false);
+            sessionStorage.setItem('secret_path_checked', '__invalid__');
           } else {
             setIsValidPath(true);
             // Store the secret path in session storage for navigation
             sessionStorage.setItem('secret_path', normalizedSecretPath);
+            sessionStorage.setItem('secret_path_checked', normalizedSecretPath);
           }
         } else {
           // No secret path configured, allow access
           setIsValidPath(true);
           sessionStorage.removeItem('secret_path');
+          sessionStorage.setItem('secret_path_checked', '__none__');
         }
       } catch (err) {
         if (!isMounted) return;
