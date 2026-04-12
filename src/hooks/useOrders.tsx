@@ -139,7 +139,8 @@ export const useOrders = (
 
   const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show full loading on initial load, not on filter/page changes
+      if (initialLoad) setLoading(true);
       const { data, error, count } = await buildQuery(page);
 
       if (error) throw error;
@@ -153,8 +154,9 @@ export const useOrders = (
       });
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
-  }, [page, buildQuery, toast]);
+  }, [page, buildQuery, toast, initialLoad]);
 
   // Prefetch next page for instant navigation
   const prefetchNextPage = useCallback(async () => {
