@@ -163,16 +163,25 @@ const Index = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Fetch company settings and nekorekten enabled status
+  // Fetch company settings, nekorekten, and connectix in a single batch
   useEffect(() => {
-    const fetchCompanySettings = async () => {
+    const fetchAllSettings = async () => {
       try {
-        const { data } = await supabase
-          .from('company_settings')
-          .select('*')
-          .limit(1)
-          .maybeSingle();
-        if (data) {
+        // Batch: fetch company_settings and relevant api_settings in parallel
+        const [companyRes, apiRes] = await Promise.all([
+          supabase
+            .from('company_settings')
+            .select('*')
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('api_settings')
+            .select('setting_key, setting_value')
+            .in('setting_key', ['nekorekten_enabled', 'connectix_config']),
+        ]);
+
+        if (companyRes.data) {
+          const data = companyRes.data;
           setWebsiteUrl(data.website_url);
           setCompanySettings({
             company_name: data.company_name,
@@ -191,49 +200,28 @@ const Index = () => {
             footer_website: data.footer_website,
           });
         }
-      } catch (error) {
-        console.error('Error fetching company settings:', error);
-      }
-    };
 
-    const fetchNekorektenEnabled = async () => {
-      try {
-        const { data } = await supabase
-          .from('api_settings')
-          .select('setting_value')
-          .eq('setting_key', 'nekorekten_enabled')
-          .maybeSingle();
-        
-        setNekorektenEnabled(data?.setting_value === 'true');
-      } catch (error) {
-        console.error('Error fetching nekorekten enabled:', error);
-      }
-    };
-
-    const fetchConnectixEnabled = async () => {
-      try {
-        const { data } = await supabase
-          .from('api_settings')
-          .select('setting_value')
-          .eq('setting_key', 'connectix_config')
-          .maybeSingle();
-        
-        if (data?.setting_value) {
-          try {
-            const config = JSON.parse(data.setting_value);
-            setConnectixEnabled(config.is_enabled === true);
-          } catch {
-            setConnectixEnabled(false);
+        if (apiRes.data) {
+          for (const item of apiRes.data) {
+            if (item.setting_key === 'nekorekten_enabled') {
+              setNekorektenEnabled(item.setting_value === 'true');
+            }
+            if (item.setting_key === 'connectix_config' && item.setting_value) {
+              try {
+                const config = JSON.parse(item.setting_value);
+                setConnectixEnabled(config.is_enabled === true);
+              } catch {
+                setConnectixEnabled(false);
+              }
+            }
           }
         }
       } catch (error) {
-        console.error('Error fetching connectix enabled:', error);
+        console.error('Error fetching settings:', error);
       }
     };
 
-    fetchCompanySettings();
-    fetchNekorektenEnabled();
-    fetchConnectixEnabled();
+    fetchAllSettings();
   }, []);
 
   // Auto-refresh logic
@@ -430,7 +418,7 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
-  if (authLoading || ordersLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background animate-fade-in">
         <div className="relative">

@@ -36,6 +36,7 @@ export const useOrders = (
   const [orders, setOrders] = useState<Order[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [stockSettings, setStockSettings] = useState<StockSettings>({
     deductionStatus: DEFAULT_SHIPPED_STATUS,
     restoreStatus: DEFAULT_CANCELLED_STATUS,
@@ -138,7 +139,8 @@ export const useOrders = (
 
   const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show full loading on initial load, not on filter/page changes
+      if (initialLoad) setLoading(true);
       const { data, error, count } = await buildQuery(page);
 
       if (error) throw error;
@@ -152,8 +154,9 @@ export const useOrders = (
       });
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
-  }, [page, buildQuery, toast]);
+  }, [page, buildQuery, toast, initialLoad]);
 
   // Prefetch next page for instant navigation
   const prefetchNextPage = useCallback(async () => {
