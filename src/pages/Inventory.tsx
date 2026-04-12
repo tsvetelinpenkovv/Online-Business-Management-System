@@ -83,26 +83,29 @@ export default function Inventory() {
 
   useEffect(() => {
     const fetchSettings = async () => {
+      // Try sessionStorage cache first (set by SecretPathGuard)
+      const cached = sessionStorage.getItem('secret_path_settings');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.inventory_page_title) setInventoryPageTitle(parsed.inventory_page_title);
+          if (parsed.footer_text) setFooterText(parsed.footer_text);
+          if (parsed.footer_link_text) setFooterLinkText(parsed.footer_link_text);
+          if (parsed.footer_link) setFooterLink(parsed.footer_link);
+          if (parsed.footer_website) setFooterWebsite(parsed.footer_website);
+          return;
+        } catch {}
+      }
       const { data } = await supabase
         .from('company_settings')
         .select('inventory_page_title, footer_text, footer_link_text, footer_link, footer_website')
         .limit(1)
         .maybeSingle();
-      if (data?.inventory_page_title) {
-        setInventoryPageTitle(data.inventory_page_title);
-      }
-      if (data?.footer_text) {
-        setFooterText(data.footer_text);
-      }
-      if (data?.footer_link_text) {
-        setFooterLinkText(data.footer_link_text);
-      }
-      if (data?.footer_link) {
-        setFooterLink(data.footer_link);
-      }
-      if (data?.footer_website) {
-        setFooterWebsite(data.footer_website);
-      }
+      if (data?.inventory_page_title) setInventoryPageTitle(data.inventory_page_title);
+      if (data?.footer_text) setFooterText(data.footer_text);
+      if (data?.footer_link_text) setFooterLinkText(data.footer_link_text);
+      if (data?.footer_link) setFooterLink(data.footer_link);
+      if (data?.footer_website) setFooterWebsite(data.footer_website);
     };
     fetchSettings();
   }, []);

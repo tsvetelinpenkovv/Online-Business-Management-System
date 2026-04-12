@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
         // Force new service worker to take control immediately
         skipWaiting: true,
         clientsClaim: true,

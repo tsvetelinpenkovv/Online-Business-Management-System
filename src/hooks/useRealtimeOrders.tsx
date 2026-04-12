@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,6 +19,23 @@ export const useRealtimeOrders = ({
 }: UseRealtimeOrdersOptions = {}) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced refetch: batches rapid events into a single callback after 2s
+  const debouncedRefetch = useCallback((cb?: () => void) => {
+    if (!cb) return;
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      cb();
+      debounceTimerRef.current = null;
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!enabled || !user) return;
@@ -52,7 +69,7 @@ export const useRealtimeOrders = ({
             });
           }
 
-          onNewOrder?.();
+          debouncedRefetch(onNewOrder);
         }
       )
       .on(
@@ -63,7 +80,7 @@ export const useRealtimeOrders = ({
           table: 'orders',
         },
         () => {
-          onOrderUpdated?.();
+          debouncedRefetch(onOrderUpdated);
         }
       )
       .on(
@@ -74,7 +91,7 @@ export const useRealtimeOrders = ({
           table: 'orders',
         },
         () => {
-          onOrderDeleted?.();
+          debouncedRefetch(onOrderDeleted);
         }
       )
       .subscribe();
@@ -82,5 +99,5 @@ export const useRealtimeOrders = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [enabled, user, toast, onNewOrder, onOrderUpdated, onOrderDeleted]);
+  }, [enabled, user, toast, onNewOrder, onOrderUpdated, onOrderDeleted, debouncedRefetch]);
 };
