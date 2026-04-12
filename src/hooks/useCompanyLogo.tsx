@@ -6,13 +6,13 @@ const LOGO_BUCKET = 'logos';
 const LOGO_PATH = 'company-logo';
 
 export const useCompanyLogo = () => {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
   // Show cached logo instantly on mount
   const cachedUrl = typeof window !== 'undefined' ? localStorage.getItem('company_logo_url') : null;
   const [logoUrl, setLogoUrl] = useState<string | null>(cachedUrl);
   const [loading, setLoading] = useState(!cachedUrl);
+  const [logoVersion, setLogoVersion] = useState(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('company_logo_version') || '1' : '1';
+  });
   const [logoVersion, setLogoVersion] = useState(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('company_logo_version') || '1' : '1';
   });
