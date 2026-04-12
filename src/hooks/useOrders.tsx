@@ -36,6 +36,7 @@ export const useOrders = (
   const [orders, setOrders] = useState<Order[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [stockSettings, setStockSettings] = useState<StockSettings>({
     deductionStatus: DEFAULT_SHIPPED_STATUS,
     restoreStatus: DEFAULT_CANCELLED_STATUS,
