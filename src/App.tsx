@@ -15,11 +15,13 @@ import AppErrorBoundary from "@/components/AppErrorBoundary";
 import { useSiteCustomization } from "@/hooks/useSiteCustomization";
 
 
-// Lazy load pages for code splitting
-const Index = lazy(() => import("./pages/Index"));
+// Eagerly load the two primary pages for instant navigation
+import Index from "./pages/Index";
+import Inventory from "./pages/Inventory";
+
+// Lazy load secondary pages
 const Auth = lazy(() => import("./pages/Auth"));
 const Settings = lazy(() => import("./pages/Settings"));
-const Inventory = lazy(() => import("./pages/Inventory"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Nekorekten = lazy(() => import("./pages/Nekorekten"));
 const CRM = lazy(() => import("./pages/CRM"));
