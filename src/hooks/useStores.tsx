@@ -41,6 +41,17 @@ export const useStores = () => {
 
   const fetchMultiStoreEnabled = useCallback(async () => {
     try {
+      // Use cached company_settings from sessionStorage if available
+      const cached = sessionStorage.getItem('secret_path_settings');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.multi_store_enabled !== undefined) {
+            setMultiStoreEnabled(parsed.multi_store_enabled);
+            return;
+          }
+        } catch {}
+      }
       const { data } = await supabase
         .from('company_settings')
         .select('multi_store_enabled')

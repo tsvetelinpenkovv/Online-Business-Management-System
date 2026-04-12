@@ -164,7 +164,7 @@ export function useInventory() {
       return null;
     }
     toast({ title: 'Успех', description: 'Продуктът е създаден' });
-    await fetchProducts();
+    // Don't refetch all products - let paginated views handle their own refresh
     return data;
   };
 
@@ -179,7 +179,6 @@ export function useInventory() {
       return false;
     }
     toast({ title: 'Успех', description: 'Продуктът е актуализиран' });
-    await fetchProducts();
     return true;
   };
 
@@ -194,7 +193,6 @@ export function useInventory() {
       return false;
     }
     toast({ title: 'Успех', description: 'Продуктът е изтрит' });
-    await fetchProducts();
     return true;
   };
 
