@@ -1,177 +1,93 @@
 
 
-# Ultra QA — Full Audit Report & Fix Plan
+# Ultra Deep Performance Optimization Plan
 
-## Findings by Phase
+## Root Cause Analysis
 
-### PHASE 1 — FRONTEND
-No console errors detected. Pages load correctly. Routes are properly configured with secret path validation and 404 fallback.
+The app's boot waterfall currently looks like this:
 
-**Issues found: 2**
-1. **Touch target CSS breaks small UI elements** — The `@media (pointer: coarse)` rule forces `min-height: 44px; min-width: 44px` on ALL buttons, checkboxes, radio buttons, and links globally. This distorts compact UI elements like inline icon buttons (e.g. `size="icon"` buttons at `h-8 w-8`), table row checkboxes, small badges acting as links, and radio/checkbox inputs inside forms. The rule is too aggressive.
-2. **Retina hairline border rule overrides intentional borders** — The `.border` class selector at `2dppx` sets `border-width: 0.5px` which overrides Tailwind's `border-2`, `border-4` etc. on Retina screens, potentially breaking visual emphasis borders.
+```text
+TIME ──────────────────────────────────────────────────────────────►
 
-### PHASE 2 — DATABASE
-Database schema has proper triggers, security definer functions (`is_allowed_user`, `is_admin`, `has_permission`), and RLS infrastructure. Foreign keys use `ON DELETE CASCADE`. No orphaned data patterns detected.
-
-**Issues found: 0**
-
-### PHASE 3 — AUTH & SECURITY
-Auth flow uses email/password with brute-force protection (`check-login-rate`), reCAPTCHA support, and allowed-user whitelist. Session timeout is implemented. Secret path guard adds URL-level protection.
-
-**Issues found: 1**
-3. **Permissions checked via `allowed_users.role` column** — The `usePermissions` hook reads the role from `allowed_users.role` column directly, not from a separate `user_roles` table as recommended. However, this is an existing architectural decision protected by RLS via `is_allowed_user` and `is_admin` security definer functions, and changing it would be a major refactor with risk. **Accepted risk** per project memory.
-
-### PHASE 4 — ADMIN PANEL
-Settings page has role/permission management, CRUD for stores, statuses, couriers, API keys. Permission-gated UI elements work correctly.
-
-**Issues found: 0**
-
-### PHASE 5 — CRUD OPERATIONS
-All entities (orders, products, customers, suppliers, documents, movements) have create/read/update/delete flows with proper permission checks.
-
-**Issues found: 0**
-
-### PHASE 6 — USER FLOWS
-Auth redirect, order creation, inventory management, and navigation flows are properly implemented with loading states and error handling.
-
-**Issues found: 0**
-
-### PHASE 7 — SEO
-Intentionally blocked — `robots.txt` disallows all crawlers, meta robots tags set to `noindex, nofollow`, OG tags emptied. This is correct for an internal management system.
-
-**Issues found: 0**
-
-### PHASE 8 — ACCESSIBILITY
-**Issues found: 3**
-4. **No skip-to-content link** — No skip navigation link exists for keyboard users to bypass the header.
-5. **Limited aria-labels** — Only 5 instances of `aria-label` found across all pages. Most icon-only buttons lack accessible labels.
-6. **No landmark roles** — Pages don't use `<main>`, `<nav>`, `<header>` semantic elements consistently (uses `<div>` wrappers).
-
-### PHASE 9 — FILE UPLOADS
-Storage buckets (logos, login-backgrounds, product-images, media) are properly configured as public. Media library supports folder management with cloud cleanup on delete.
-
-**Issues found: 0**
-
-### PHASE 10 — API & EDGE FUNCTIONS
-All edge functions have `verify_jwt = false` in config.toml. Functions that need auth validate JWTs in code. CORS headers are implemented.
-
-**Issues found: 0**
-
-### PHASE 11 — REAL-TIME
-`useRealtimeOrders` subscribes to orders table changes with proper cleanup. Notifications include sound and browser notification support.
-
-**Issues found: 0**
-
-### PHASE 12 — EMAILS & NOTIFICATIONS
-In-app notification center with localStorage persistence (capped at 50). Notification sound settings configurable. Browser notifications supported.
-
-**Issues found: 0**
-
-### PHASE 13 — PERFORMANCE
-Lazy loading for all pages. QueryClient configured with 2min stale time. Debounced search. Content-visibility hints on loader.
-
-**Issues found: 0**
-
-### PHASE 14 — ERROR HANDLING
-AppErrorBoundary with safe mode. Boot recovery mechanism in index.html. Service worker auto-recovery. Global error handler.
-
-**Issues found: 0**
-
----
-
-## Summary
-
-| Phase | Issues |
-|-------|--------|
-| 1 — Frontend | 2 |
-| 2 — Database | 0 |
-| 3 — Auth | 0 (1 accepted risk) |
-| 4 — Admin | 0 |
-| 5 — CRUD | 0 |
-| 6 — User Flows | 0 |
-| 7 — SEO | 0 |
-| 8 — Accessibility | 3 |
-| 9 — File Uploads | 0 |
-| 10 — API | 0 |
-| 11 — Real-Time | 0 |
-| 12 — Notifications | 0 |
-| 13 — Performance | 0 |
-| 14 — Error Handling | 0 |
-| **Total** | **5** |
-
----
-
-## Fix Plan
-
-### Fix 1: Refine touch target CSS (src/index.css)
-The `@media (pointer: coarse)` rule is too broad. Scope it to exclude small/icon elements:
-
-```css
-/* Before — too aggressive */
-@media (pointer: coarse) {
-  button, [role="button"], a, select, [type="checkbox"], [type="radio"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* After — exclude icon buttons and small interactive elements */
-@media (pointer: coarse) {
-  button:not([data-size="icon"]):not(.h-6):not(.h-7):not(.h-8):not(.w-6):not(.w-7):not(.w-8),
-  a:not(.inline),
-  select {
-    min-height: 44px;
-  }
-}
+1. SecretPathGuard         ██████ (DB query: company_settings)
+   ↓ blocks ALL rendering
+2. Auth state              ███ (supabase.auth.getSession)
+   ↓ blocks page render  
+3. Page mount fires 6+ parallel DB queries:
+   - usePermissions        ██████ (2 queries: allowed_users + role_permissions)
+   - useCompanyLogo        ████ (storage.list)
+   - useInterfaceTexts     ████ (api_settings)
+   - useSiteCustomization  ████ (api_settings)
+   - useStores             ████ (stores + company_settings)
+   - useOrders/useInventory██████████ (main data)
+   - company_settings      ████ (Index.tsx fetches AGAIN)
+   - get_inventory_stats   ████ (Inventory.tsx RPC)
+4. UI renders only AFTER all above resolve
 ```
 
-Remove `[type="checkbox"]` and `[type="radio"]` from the rule entirely — these are styled by Radix and forcing 44px min-size distorts form layouts. Their parent `<label>` or wrapping button already provides the touch target.
+**Key bottlenecks identified:**
 
-### Fix 2: Scope Retina border rule (src/index.css)
-Only apply hairline borders to single-pixel borders, not thicker intentional borders:
+1. **company_settings queried 4+ times per page load** — SecretPathGuard, Index.tsx, useStores, and Inventory.tsx all independently query company_settings
+2. **useCompanyLogo uses storage.list() + cache buster** — `?t=${Date.now()}` defeats ALL caching, forcing a fresh download every single mount
+3. **useInterfaceTexts imports ALL of lucide-react** — `import * as LucideIcons from 'lucide-react'` pulls the entire icon library into the bundle (~200KB+)
+4. **useRealtimeOrders triggers full refetch** — every INSERT/UPDATE/DELETE event calls `refetch()` which re-queries the entire orders page
+5. **useInventory still fetches products on mount** — `fetchProducts()` is defined but `fetchAll()` only calls categories/units/suppliers. However, `createProduct`/`updateProduct`/`deleteProduct` call `fetchProducts()` which loads ALL products without pagination
+6. **No data prefetching between pages** — navigating from Orders to Inventory triggers a complete cold-start data fetch
 
-```css
-/* Before */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
-  .border, .border-t, .border-b, .border-l, .border-r {
-    border-width: 0.5px;
-  }
-}
+## Optimization Plan (5 changes, zero visual impact)
 
-/* After — remove entirely */
-/* Tailwind already handles border rendering well on Retina. 
-   This rule causes more problems than it solves. Remove it. */
+### 1. Eliminate duplicate company_settings queries
+**Files:** `src/pages/Index.tsx`, `src/pages/Inventory.tsx`, `src/hooks/useStores.tsx`
+
+- Create a shared `useCompanySettings` hook that queries `company_settings` once and caches via React Query (`queryKey: ['company_settings']`)
+- Replace all 4+ independent `supabase.from('company_settings')` calls with this single hook
+- SecretPathGuard already caches in sessionStorage — keep that, but make page-level settings use React Query
+
+### 2. Fix useCompanyLogo cache-busting and storage.list overhead
+**File:** `src/hooks/useCompanyLogo.tsx`
+
+- Cache the logo URL in `localStorage` so subsequent mounts show it instantly
+- Remove `?t=${Date.now()}` cache buster — use a version-based approach (only bust on upload)
+- Show cached URL immediately, then verify in background
+
+### 3. Fix lucide-react barrel import in useInterfaceTexts
+**File:** `src/hooks/useInterfaceTexts.tsx`
+
+- Replace `import * as LucideIcons from 'lucide-react'` with a map of individually imported icons
+- This prevents Vite from bundling the entire lucide-react library (saves ~150-200KB from the critical path)
+
+### 4. Debounce realtime refetch calls
+**File:** `src/hooks/useRealtimeOrders.tsx`
+
+- Currently every realtime event triggers an immediate `refetch()` — if 10 orders arrive in 1 second, that's 10 full queries
+- Add a 2-second debounce/throttle so rapid events batch into a single refetch
+
+### 5. Prevent full product list fetch after mutations in useInventory
+**File:** `src/hooks/useInventory.tsx`
+
+- `createProduct`, `updateProduct`, `deleteProduct` all call `fetchProducts()` which loads ALL products without pagination
+- With 700k products this is catastrophic — replace with targeted cache invalidation or optimistic local state updates
+- After mutation, only refetch the current paginated page via `useProductsPage.refetch()`
+
+### 6. Add database composite index for orders query
+**Migration:** Add a composite index on `orders(created_at DESC, id DESC)` to match the exact ORDER BY used by `useOrders.buildQuery`
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_orders_created_at_id ON public.orders (created_at DESC, id DESC);
 ```
 
-### Fix 3: Add skip-to-content link (src/App.tsx)
-Add a visually-hidden skip link before the main content:
+The existing `idx_orders_created_at` only covers `created_at DESC` but the query also sorts by `id DESC`, forcing a secondary sort in memory.
 
-```tsx
-<a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded">
-  Прескочи към съдържанието
-</a>
-```
+## Technical Summary
 
-And add `id="main-content"` to the main content wrapper in each page.
+| Change | Impact | Risk |
+|--------|--------|------|
+| Shared company_settings hook | Eliminates 3-4 redundant DB round-trips per page load | Low |
+| Logo caching | Instant logo display, no storage.list() on every mount | Low |
+| Fix lucide barrel import | ~150-200KB smaller critical bundle | Low |
+| Debounce realtime refetch | Prevents query storms from rapid order events | Low |
+| Stop full product refetch | Prevents loading 700k rows after every mutation | Medium |
+| Composite index | Faster ORDER BY for paginated orders query | None |
 
-### Fix 4: Add aria-labels to icon-only buttons (multiple files)
-Add `aria-label` to all icon-only buttons across pages. Key locations:
-- **Index.tsx**: Theme toggle, cache clear, calculator, settings, logout, refresh, export buttons
-- **Inventory.tsx**: Same header buttons pattern
-- **All pages**: Navigation icon buttons
-
-### Fix 5: Add semantic HTML landmarks (multiple pages)
-Wrap page headers in `<header>`, main content areas in `<main>`, and navigation in `<nav>` where applicable. This is a low-risk improvement with no visual change.
-
----
-
-## Production Readiness Score: **88/100**
-
-The app is production-ready for its use case (internal management system). The 5 issues found are minor — 2 CSS refinements and 3 accessibility improvements. No security vulnerabilities, no data integrity issues, no functional bugs.
-
-## Top 3 Recommendations
-1. **Fix touch target CSS** — Currently distorts compact UI on mobile. Priority: High.
-2. **Add aria-labels to icon buttons** — Quick win for accessibility. Priority: Medium.
-3. **Remove Retina hairline border override** — Prevents unexpected visual regressions. Priority: Medium.
+All changes are logic/architecture only — zero visual impact.
 
