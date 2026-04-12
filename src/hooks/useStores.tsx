@@ -27,12 +27,28 @@ export const useStores = () => {
 
   const fetchStores = useCallback(async () => {
     try {
+      // Try full stores table first (admin-only), fall back to safe view
       const { data, error } = await supabase
         .from('stores')
         .select('*')
         .order('sort_order');
 
-      if (error) throw error;
+      if (error) {
+        // Non-admin: use the safe view without credentials
+        const { data: safeData, error: safeError } = await supabase
+          .from('stores_safe' as any)
+          .select('*')
+          .order('sort_order');
+        if (safeError) throw safeError;
+        setStores((safeData || []).map((s: any) => ({
+          ...s,
+          wc_url: null,
+          wc_consumer_key: null,
+          wc_consumer_secret: null,
+          wc_webhook_secret: null,
+        })) as Store[]);
+        return;
+      }
       setStores((data || []) as Store[]);
     } catch (error) {
       console.error('Error fetching stores:', error);
