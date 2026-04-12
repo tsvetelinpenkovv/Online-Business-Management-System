@@ -13,9 +13,6 @@ export const useCompanyLogo = () => {
   const [logoVersion, setLogoVersion] = useState(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('company_logo_version') || '1' : '1';
   });
-  const [logoVersion, setLogoVersion] = useState(() => {
-    return typeof window !== 'undefined' ? localStorage.getItem('company_logo_version') || '1' : '1';
-  });
 
   const fetchLogo = async () => {
     try {
