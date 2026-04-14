@@ -2477,6 +2477,45 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          details: Json | null
+          id: string
+          is_resolved: boolean | null
+          message: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          source: string
+          title: string
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          is_resolved?: boolean | null
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source: string
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          is_resolved?: boolean | null
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source?: string
+          title?: string
+        }
+        Relationships: []
+      }
       theme_preferences: {
         Row: {
           ip_address: string
