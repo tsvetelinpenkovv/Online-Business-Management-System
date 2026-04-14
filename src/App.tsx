@@ -28,6 +28,7 @@ const CRM = lazy(() => import("./pages/CRM"));
 const Finance = lazy(() => import("./pages/Finance"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Returns = lazy(() => import("./pages/Returns"));
+const Monitoring = lazy(() => import("./pages/Monitoring"));
 
 
 const PageLoader = () => (
