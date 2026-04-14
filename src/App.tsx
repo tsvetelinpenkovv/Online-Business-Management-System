@@ -119,6 +119,7 @@ const App = () => {
                     <Route path="/finance" element={<Finance />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/returns" element={<Returns />} />
+                    <Route path="/monitoring" element={<Monitoring />} />
                     
                     {/* Routes with secret path prefix - validated against configured secret */}
                     <Route path="/:secretPath/" element={<SecretPathValidator><Index /></SecretPathValidator>} />
