@@ -22,9 +22,9 @@ serve(async (req) => {
 
   try {
     const { action, credentials, data } = await req.json();
-    const creds = credentials as CVCCredentials;
+    const creds = credentials as CVCCredentials | undefined;
 
-    if (!creds.username || !creds.password) {
+    if (!creds?.username || !creds?.password) {
       return new Response(
         JSON.stringify({ error: 'CVC username and password are required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
