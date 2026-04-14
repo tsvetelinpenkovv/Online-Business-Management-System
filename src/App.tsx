@@ -28,6 +28,7 @@ const CRM = lazy(() => import("./pages/CRM"));
 const Finance = lazy(() => import("./pages/Finance"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Returns = lazy(() => import("./pages/Returns"));
+const Monitoring = lazy(() => import("./pages/Monitoring"));
 
 
 const PageLoader = () => (
@@ -118,6 +119,7 @@ const App = () => {
                     <Route path="/finance" element={<Finance />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/returns" element={<Returns />} />
+                    <Route path="/monitoring" element={<Monitoring />} />
                     
                     {/* Routes with secret path prefix - validated against configured secret */}
                     <Route path="/:secretPath/" element={<SecretPathValidator><Index /></SecretPathValidator>} />
@@ -131,6 +133,7 @@ const App = () => {
                     <Route path="/:secretPath/finance" element={<SecretPathValidator><Finance /></SecretPathValidator>} />
                     <Route path="/:secretPath/analytics" element={<SecretPathValidator><Analytics /></SecretPathValidator>} />
                     <Route path="/:secretPath/returns" element={<SecretPathValidator><Returns /></SecretPathValidator>} />
+                    <Route path="/:secretPath/monitoring" element={<SecretPathValidator><Monitoring /></SecretPathValidator>} />
                     
                     {/* Catch-all for 404 */}
                     <Route path="*" element={<NotFoundPage />} />
